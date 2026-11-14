@@ -11,5 +11,8 @@
     "dev:web": "npm run dev --workspace apps/web",
     "start": "npx tsx apps/api/src/server.ts",
     "build": "npm run build --workspace apps/web"
+  },
+  "dependencies": {
+    "zustand": "^5.1.0"
   }
 }
