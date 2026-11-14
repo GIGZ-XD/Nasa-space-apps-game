@@ -4,9 +4,10 @@ import { MISSIONS } from "../data/missions";
 import { HomePage } from "../pages/HomePage";
 import { MissionSelectPage } from "../pages/MissionSelectPage";
 import { MissionBriefPage } from "../pages/MissionBriefPage";
+import { LeaderboardPage } from "../pages/LeaderboardPage";
 import { DevHarness } from "./DevHarness";
 
-type Screen = "home" | "select" | "brief" | "workshop";
+type Screen = "home" | "select" | "brief" | "workshop" | "leaderboard";
 
 export function App() {
   const [screen, setScreen] = useState<Screen>(() => (new URLSearchParams(window.location.search).get("screen") as Screen) || "home");
@@ -17,6 +18,7 @@ export function App() {
   const go = (s: string) => setScreen(s as Screen);
   const mission = MISSIONS.find((m) => m.id === missionId) ?? MISSIONS[0];
 
+  if (screen === "leaderboard") return <LeaderboardPage go={go} />;
   if (screen === "select") return <MissionSelectPage go={go} open={(id) => { setMissionId(id); setScreen("brief"); }} />;
   if (screen === "brief") return <MissionBriefPage mission={mission} go={go} start={() => setScreen("workshop")} />;
   if (screen === "workshop")

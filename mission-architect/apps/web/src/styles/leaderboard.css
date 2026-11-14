@@ -1,0 +1,468 @@
+/* ══════════════════════════════════════════════════
+   LEADERBOARD — Futuristic Space-Game Styling
+   Matches the neon-blue/purple retro pixel-art theme
+   ══════════════════════════════════════════════════ */
+
+/* ── header bar ─────────────────────────────────── */
+.lb-header {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 1;
+  gap: 16px;
+}
+
+.lb-back-btn {
+  background: #091533;
+  border: 2px solid #204b88;
+  color: var(--cyan);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  transition: border-color 0.2s, color 0.2s;
+}
+.lb-back-btn:hover {
+  border-color: var(--cyan);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(43,184,255,0.4);
+}
+
+.lb-title-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  justify-content: center;
+}
+
+.lb-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 22px;
+  color: var(--cyan);
+  text-shadow: 0 0 16px rgba(95,227,255,0.7), 2px 2px 0 #002244;
+  letter-spacing: 1.5px;
+  line-height: 1;
+}
+
+.lb-subtitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: #8da4c4;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.lb-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ── filter tabs ─────────────────────────────────── */
+.lb-tab-btn {
+  background: #091533;
+  border: 2px solid #204b88;
+  color: #a0b6d6;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.lb-tab-btn:hover {
+  border-color: var(--cyan);
+  color: #fff;
+}
+.lb-tab-active {
+  background: linear-gradient(180deg, #16467d, #0d274c);
+  border-color: var(--cyan) !important;
+  color: #fff !important;
+  box-shadow: 0 0 12px rgba(43,184,255,0.45);
+}
+
+/* ── refresh button ──────────────────────────────── */
+.lb-refresh-btn {
+  background: #091533;
+  border: 2px solid #204b88;
+  color: var(--cyan);
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+.lb-refresh-btn:hover:not(:disabled) {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.lb-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ── loading / error overlay ─────────────────────── */
+.lb-state-overlay {
+  position: absolute;
+  left: 14px;
+  top: 98px;
+  width: calc(100% - 28px);
+  height: calc(100% - 110px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 10;
+}
+.lb-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #163668;
+  border-top-color: var(--cyan);
+  border-radius: 50%;
+  animation: lb-spin 0.8s linear infinite;
+}
+@keyframes lb-spin {
+  to { transform: rotate(360deg); }
+}
+.lb-state-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  color: var(--cyan);
+  text-align: center;
+  letter-spacing: 1px;
+}
+.lb-state-error {
+  color: #ff4466;
+}
+
+/* ── section label ───────────────────────────────── */
+.lb-section-label {
+  position: absolute;
+  top: 10px;
+  left: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #4a6a9a;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  z-index: 2;
+}
+
+/* ── avatar ──────────────────────────────────────── */
+.lb-avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #2a5894;
+  flex-shrink: 0;
+}
+
+/* ── podium layout ───────────────────────────────── */
+.lb-podium {
+  position: absolute;
+  inset: 0;
+  top: 36px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 20px;
+  padding: 0 20px 16px;
+}
+
+.lb-podium-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+
+.lb-medal { font-size: 28px; line-height: 1; }
+.lb-medal-gold  { filter: drop-shadow(0 0 8px rgba(255,215,0,0.8)); }
+.lb-medal-silver { filter: drop-shadow(0 0 6px rgba(200,200,200,0.6)); }
+.lb-medal-bronze { filter: drop-shadow(0 0 6px rgba(205,127,50,0.6)); }
+
+.lb-pod-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  text-align: center;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lb-podium-gold .lb-pod-name { color: #fff275; font-size: 16px; }
+
+.lb-pod-meta {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cyan);
+}
+
+.lb-you-tag {
+  background: linear-gradient(135deg, #ffd700, #ff8800);
+  color: #000;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.lb-pod-base {
+  width: 100%;
+  min-width: 140px;
+  background: linear-gradient(180deg, #1a3a6e, #0a1e44);
+  border: 2px solid #204b88;
+  border-radius: 4px 4px 0 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 10px;
+  margin-top: 4px;
+}
+.lb-podium-gold   .lb-pod-base { border-color: #ffd700; box-shadow: 0 0 16px rgba(255,215,0,0.3); min-width: 180px; }
+.lb-podium-silver .lb-pod-base { border-color: #c0c0c0; min-width: 155px; }
+.lb-podium-bronze .lb-pod-base { border-color: #cd7f32; min-width: 155px; }
+
+.lb-pod-place {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  color: #4a6a9a;
+  letter-spacing: 1px;
+}
+.lb-podium-gold   .lb-pod-place { color: rgba(255,215,0,0.5); }
+.lb-podium-silver .lb-pod-place { color: rgba(192,192,192,0.5); }
+.lb-podium-bronze .lb-pod-place { color: rgba(205,127,50,0.5); }
+
+/* ── rankings table ──────────────────────────────── */
+.lb-table-wrap {
+  position: absolute;
+  left: 10px; right: 10px;
+  top: 60px; bottom: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 4px;
+}
+.lb-table-wrap::-webkit-scrollbar { width: 7px; }
+.lb-table-wrap::-webkit-scrollbar-track { background: #060e22; border-radius: 4px; }
+.lb-table-wrap::-webkit-scrollbar-thumb { background: #1b4a85; border-radius: 4px; border: 1px solid #2bb8ff; }
+.lb-table-wrap::-webkit-scrollbar-thumb:hover { background: #2bb8ff; }
+
+.lb-row {
+  display: grid;
+  grid-template-columns: 50px 44px 1fr 60px 100px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  transition: background 0.15s;
+  min-height: 48px;
+}
+.lb-row:hover { background: rgba(43,184,255,0.07); }
+
+.lb-row-header {
+  border-bottom: 2px solid #163668 !important;
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #4a6a9a;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.lb-row-current {
+  background: rgba(43,184,255,0.14) !important;
+  border: 1px solid var(--cyan) !important;
+  box-shadow: 0 0 12px rgba(95,227,255,0.25);
+}
+
+.lb-rank-num {
+  font-family: 'Share Tech Mono', monospace;
+  font-weight: 800;
+  font-size: 16px;
+  color: #8da4c4;
+  text-align: center;
+}
+.lb-rank-gold   { color: #ffd700; }
+.lb-rank-silver { color: #d8d8d8; }
+.lb-rank-bronze { color: #e59866; }
+
+.lb-row-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #eaf2ff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lb-you-inline {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.lb-row-level {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cyan);
+  text-align: center;
+}
+
+.lb-row-xp {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold);
+  text-align: right;
+}
+
+/* ── my rank panel ───────────────────────────────── */
+.lb-my-rank {
+  position: absolute;
+  inset: 0;
+  top: 36px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 24px;
+  z-index: 1;
+}
+
+.lb-my-rank-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #09173b;
+  border: 2px solid var(--cyan);
+  border-radius: 8px;
+  padding: 10px 18px;
+  box-shadow: 0 0 14px rgba(95,227,255,0.3);
+  flex-shrink: 0;
+}
+.lb-my-rank-badge span:first-child {
+  font-size: 10px;
+  font-weight: 700;
+  color: #4a6a9a;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.lb-my-rank-badge span:last-child {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--cyan);
+  line-height: 1.1;
+}
+
+.lb-my-rank-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.lb-my-rank-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.lb-my-rank-meta {
+  font-size: 12px;
+  color: #7d96b8;
+  font-weight: 600;
+}
+
+.lb-my-rank-xp {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.lb-xp-label {
+  font-size: 11px;
+  color: #4a6a9a;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.lb-xp-val {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--gold);
+}
+
+.lb-my-rank-bar-wrap {
+  height: 6px;
+  background: #163668;
+  border-radius: 3px;
+  overflow: hidden;
+  width: 100%;
+  max-width: 320px;
+}
+.lb-my-rank-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon), var(--cyan));
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.lb-my-rank-missions {
+  display: flex;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.lb-stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #060e22;
+  border: 2px solid #163668;
+  border-radius: 6px;
+  padding: 10px 18px;
+  min-width: 70px;
+}
+.lb-stat-val {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 24px;
+  font-weight: 900;
+  color: #fff;
+}
+.lb-stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #4a6a9a;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
