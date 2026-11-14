@@ -2,6 +2,8 @@ import Phaser from "phaser";
 import { BootScene } from "../scenes/BootScene";
 import { PreloadScene } from "../scenes/PreloadScene";
 import { WorkshopScene } from "../scenes/WorkshopScene";
+import { LaunchScene } from "../scenes/LaunchScene";
+import { OrbitScene } from "../scenes/OrbitScene";
 
 export interface GameConfigOptions {
   parent?: HTMLElement | string;
@@ -24,7 +26,7 @@ export const SPACE_THEME_BACKGROUND = "#050713";
  * - Responsive Scale Manager (`Phaser.Scale.FIT` centered)
  * - Crisp pixel-art-friendly rendering (`pixelArt: true`, `antialias: false`, `roundPixels: true`)
  * - Deep space theme background
- * - Registration of BootScene, PreloadScene, and WorkshopScene
+ * - Registration of BootScene, PreloadScene, WorkshopScene, LaunchScene, and OrbitScene
  * - No unnecessary physics or third-party plugins
  */
 export function createGameConfig(options: GameConfigOptions = {}): Phaser.Types.Core.GameConfig {
@@ -54,7 +56,7 @@ export function createGameConfig(options: GameConfigOptions = {}): Phaser.Types.
       width,
       height,
     },
-    scene: scenes ?? [BootScene, PreloadScene, WorkshopScene],
+    scene: scenes ?? [BootScene, PreloadScene, WorkshopScene, LaunchScene, OrbitScene],
   };
 }
 

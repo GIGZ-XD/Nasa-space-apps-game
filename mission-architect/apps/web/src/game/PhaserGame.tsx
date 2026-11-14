@@ -18,6 +18,8 @@ export interface PhaserGameProps {
   style?: React.CSSProperties;
   /** Optional scenes override for advanced testing or multi-phase integration */
   scenes?: Phaser.Types.Scenes.SceneType[];
+  /** Optional initial scene key to switch to after boot (e.g. 'LaunchScene' or 'OrbitScene') */
+  initialScene?: string;
   /** Callback invoked once Phaser.Game has booted and is ready */
   onGameReady?: (game: Phaser.Game) => void;
   /** Callback invoked after Phaser.Game has been destroyed during unmount */
@@ -41,6 +43,7 @@ export const PhaserGame: React.FC<PhaserGameProps> = memo(function PhaserGame({
   className,
   style,
   scenes,
+  initialScene,
   onGameReady,
   onGameDestroyed,
 }) {
@@ -50,6 +53,7 @@ export const PhaserGame: React.FC<PhaserGameProps> = memo(function PhaserGame({
   // Maintain stable callback references so changing handlers does not re-trigger mount
   const onGameReadyRef = useRef(onGameReady);
   const onGameDestroyedRef = useRef(onGameDestroyed);
+  const initialSceneRef = useRef(initialScene);
 
   useEffect(() => {
     onGameReadyRef.current = onGameReady;
@@ -58,6 +62,10 @@ export const PhaserGame: React.FC<PhaserGameProps> = memo(function PhaserGame({
   useEffect(() => {
     onGameDestroyedRef.current = onGameDestroyed;
   }, [onGameDestroyed]);
+
+  useEffect(() => {
+    initialSceneRef.current = initialScene;
+  }, [initialScene]);
 
   useEffect(() => {
     // Avoid accessing browser-only APIs during SSR
@@ -84,17 +92,28 @@ export const PhaserGame: React.FC<PhaserGameProps> = memo(function PhaserGame({
     const game = new Phaser.Game(config);
     gameRef.current = game;
 
-    // Notify caller when Phaser has finished its boot and readiness sequence
-    if (game.isBooted) {
-      if (isCurrentMount && onGameReadyRef.current) {
+    const handleReady = () => {
+      if (!isCurrentMount || gameRef.current !== game) return;
+
+      // If an initial scene override was requested, switch to it
+      if (initialSceneRef.current) {
+        try {
+          game.scene.start(initialSceneRef.current);
+        } catch (err) {
+          console.warn(`[PhaserGame] Could not start initialScene '${initialSceneRef.current}':`, err);
+        }
+      }
+
+      if (onGameReadyRef.current) {
         onGameReadyRef.current(game);
       }
+    };
+
+    // Notify caller when Phaser has finished its boot and readiness sequence
+    if (game.isBooted) {
+      handleReady();
     } else {
-      game.events?.once("ready", () => {
-        if (isCurrentMount && gameRef.current === game && onGameReadyRef.current) {
-          onGameReadyRef.current(game);
-        }
-      });
+      game.events?.once("ready", handleReady);
     }
 
     // Comprehensive lifecycle cleanup on component unmount
@@ -108,9 +127,6 @@ export const PhaserGame: React.FC<PhaserGameProps> = memo(function PhaserGame({
         // Initiate Phaser destruction and canvas removal
         activeGame.destroy(true);
 
-        // Handle asynchronous destruction edge case:
-        // If the game was already booted, synchronously execute runDestroy so that
-        // immediate remounts (such as in React 18 StrictMode) do not encounter a lingering loop.
         const internalGame = activeGame as unknown as {
           isBooted?: boolean;
           pendingDestroy?: boolean;
@@ -121,10 +137,9 @@ export const PhaserGame: React.FC<PhaserGameProps> = memo(function PhaserGame({
           try {
             internalGame.runDestroy();
           } catch {
-            // Safe fallback if internal state was partially torn down
+            // Safe fallback
           }
         } else if (!internalGame.isBooted) {
-          // If unmounted before boot finishes, ensure destruction runs upon boot
           activeGame.events?.once("boot", () => {
             try {
               activeGame.destroy(true);

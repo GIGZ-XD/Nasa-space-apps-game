@@ -4,7 +4,8 @@ import { WorkshopScene } from "./WorkshopScene";
 /**
  * PreloadScene
  * Asset-loading stage for the Mission Architect game.
- * Loads external game assets and transitions to WorkshopScene.
+ * Loads external game assets and transitions to the target initial scene
+ * (defaults to WorkshopScene, or reads from game.registry 'initialScene').
  * Handles missing optional assets gracefully via loaderror listener.
  */
 export class PreloadScene extends Phaser.Scene {
@@ -55,7 +56,14 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   create(): void {
-    // Transition to the WorkshopScene
-    this.scene.start(WorkshopScene.KEY);
+    // Check if a specific initialScene was requested via PhaserGame props (stored in registry)
+    const targetScene = (this.registry.get("initialScene") as string) || WorkshopScene.KEY;
+
+    // Verify scene exists in manager; fallback gracefully to WorkshopScene if invalid
+    if (targetScene && targetScene !== PreloadScene.KEY && this.scene.manager.getScene(targetScene)) {
+      this.scene.start(targetScene);
+    } else {
+      this.scene.start(WorkshopScene.KEY);
+    }
   }
 }
