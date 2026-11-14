@@ -1,0 +1,61 @@
+{
+  "id": "design-incompatible-launcher",
+  "name": "Eyes on Earth — Sun-Sync Reach Failure",
+  "missionId": "earth-observation-01",
+  "description": "Failing test fixture: orbit and launcher incompatibility. The spacecraft design pairs a Sun-Synchronous Orbit (sso-600) with Launcher Alpha (launch-a), which only supports low-inclination low Earth orbit (leo-500). All internal spacecraft subsystem constraints pass, isolating the trajectory delivery failure.",
+  "status": "EXPECTED_FAIL_INCOMPATIBLE_LAUNCHER",
+  "selectedComponentIds": [
+    "bus-small",
+    "solar-std",
+    "battery-std",
+    "xband-hga",
+    "obc-std",
+    "adcs-std",
+    "camera-optical",
+    "sso-600",
+    "launch-a"
+  ],
+  "subsystemBreakdown": {
+    "structure": "bus-small",
+    "power": "solar-std",
+    "battery": "battery-std",
+    "communications": "xband-hga",
+    "computer": "obc-std",
+    "adcs": "adcs-std",
+    "instruments": ["camera-optical"],
+    "orbit": "sso-600",
+    "launcher": "launch-a"
+  },
+  "metrics": {
+    "totalMassKg": 30.5,
+    "payloadCapacityKg": 50.0,
+    "massMarginKg": 19.5,
+    "powerDrawW": 62.0,
+    "powerOutputW": 80.0,
+    "powerReserveRequiredW": 68.2,
+    "powerMarginW": 11.8,
+    "batteryCapacityWh": 180.0,
+    "eclipseDemandWh": 33.1,
+    "batteryMarginWh": 146.9,
+    "dataRateDownlinkMbps": 8.0,
+    "dataRateRequiredMbps": 1.2,
+    "totalCostUsd": 305000,
+    "budgetUsd": 500000,
+    "costMarginUsd": 195000
+  },
+  "expectedFeasibility": {
+    "FC-1_completeness": "PASS",
+    "FC-2_mass": "PASS",
+    "FC-3_power": "PASS",
+    "FC-4_battery": "PASS",
+    "FC-5_communications": "PASS",
+    "FC-6_orbitLauncherCompatibility": "FAIL",
+    "FC-7_budget": "PASS",
+    "overallFeasibility": "FAIL"
+  },
+  "expectedScore": {
+    "status": "FEASIBILITY_BLOCKED",
+    "note": "Feasibility fails at FC-6 (Orbit and launcher compatibility). The launch vehicle does not possess the upper-stage performance or guidance capabilities to inject the satellite into a retrograde sun-synchronous inclination."
+  },
+  "failureExplanation": "The player selected Sun-Synchronous Orbit (sso-600), but chose Launcher Alpha (launch-a). According to the launcher specification, Launcher Alpha only supports Low Earth Orbit (leo-500) due to thrust and delta-V limitations. To fix this mission, the player must either change the orbit to Low Earth Orbit (leo-500) or upgrade to Launcher Beta (launch-b), which is certified for both LEO and SSO trajectories."
+}

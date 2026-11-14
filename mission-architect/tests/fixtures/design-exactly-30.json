@@ -1,0 +1,84 @@
+{
+  "id": "design-exactly-30",
+  "name": "Eyes on Earth — Boundary Score Benchmark",
+  "missionId": "earth-observation-01",
+  "description": "Boundary test fixture: target exactly 30.0% overall score. Tests the threshold boundary rule where a score of exactly 30.0% passes the score threshold alone. Documents the mathematical conditions required to hit 30.0% alongside the specific backend blocker regarding discrete versus continuous scoring.",
+  "status": "PROVISIONAL_BOUNDARY_CASE",
+  "selectedComponentIds": [
+    "bus-reinforced",
+    "solar-std",
+    "battery-std",
+    "uhf-patch",
+    "obc-std",
+    "adcs-std",
+    "camera-optical",
+    "sso-600",
+    "launch-a"
+  ],
+  "subsystemBreakdown": {
+    "structure": "bus-reinforced",
+    "power": "solar-std",
+    "battery": "battery-std",
+    "communications": "uhf-patch",
+    "computer": "obc-std",
+    "adcs": "adcs-std",
+    "instruments": ["camera-optical"],
+    "orbit": "sso-600",
+    "launcher": "launch-a"
+  },
+  "metrics": {
+    "totalMassKg": 47.5,
+    "payloadCapacityKg": 50.0,
+    "massMarginKg": 2.5,
+    "powerDrawW": 50.0,
+    "powerOutputW": 80.0,
+    "powerReserveRequiredW": 55.0,
+    "powerMarginW": 25.0,
+    "batteryCapacityWh": 180.0,
+    "eclipseDemandWh": 26.7,
+    "batteryMarginWh": 153.3,
+    "dataRateDownlinkMbps": 0.5,
+    "dataRateRequiredMbps": 1.2,
+    "totalCostUsd": 322000,
+    "budgetUsd": 500000,
+    "costMarginUsd": 178000
+  },
+  "expectedFeasibility": {
+    "FC-1_completeness": "PASS",
+    "FC-2_mass": "PASS",
+    "FC-3_power": "PASS",
+    "FC-4_battery": "PASS",
+    "FC-5_communications": "FAIL",
+    "FC-6_orbitLauncherCompatibility": "FAIL",
+    "FC-7_budget": "PASS",
+    "overallFeasibility": "FAIL"
+  },
+  "expectedScore": {
+    "status": "PROVISIONAL_PENDING_VINEETH",
+    "targetScore": 30.0,
+    "theoreticalCategoryScores": {
+      "structure": 50.0,
+      "instruments": 40.0,
+      "power": 40.0,
+      "communications": 40.0,
+      "orbit": 0.0,
+      "launcher": 0.0
+    },
+    "weightedOverallScore": 30.0,
+    "scoreThresholdPassed": true,
+    "rewardTier": "Partial",
+    "rewardPercentage": 30
+  },
+  "scoreCalculationDetails": {
+    "formula": "OverallScore = sum(weight_i * CategoryScore_i) / 100",
+    "structureContribution": "20% weight * 50.0 (bus-reinforced heavily penalised for 2-yr LEO/SSO mission) = 10.00",
+    "instrumentContribution": "25% weight * 40.0 (optical camera attenuated by comms/orbit delivery mismatch) = 10.00",
+    "powerContribution": "15% weight * 40.0 (penalised for excessive mass/capacity mismatch) = 6.00",
+    "communicationsContribution": "10% weight * 40.0 (uhf-patch base suitability) = 4.00",
+    "orbitContribution": "15% weight * 0.0 (unreachable orbit trajectory zeroes orbit score) = 0.00",
+    "launcherContribution": "15% weight * 0.0 (incompatible launcher assignment zeroes launcher score) = 0.00",
+    "totalWeightedScore": "10.00 + 10.00 + 6.00 + 4.00 + 0.00 + 0.00 = 30.00%",
+    "passFailVerdict": "Score is exactly 30.00% -> PASSES the score threshold (>= 30%). However, feasibility FAILS due to orbit/launcher incompatibility (FC-6) and telemetry deficit (FC-5)."
+  },
+  "blockerDocumentation": "BLOCKER: Vineeth has not yet implemented continuous mathematical penalty functions in scoring.service.ts. Under the current discrete lookup table in component-suitability.json, individual component base ratings fall into fixed values (40, 50, 70, 75, 80, 85, 90, 95). A fully feasible spacecraft using those discrete values mathematically cannot score below 68.75%. To achieve an exact 30.00% score on a fully feasible design, the backend developer must specify continuous degradation curves (e.g. fractional scaling based on margin ratios). Without those confirmed curves, an exact 30.00% can only be demonstrated by applying trajectory/comms zeroing as modeled above."
+}

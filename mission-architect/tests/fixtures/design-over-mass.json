@@ -1,0 +1,61 @@
+{
+  "id": "design-over-mass",
+  "name": "Eyes on Earth — Overweight Armored Probe",
+  "missionId": "earth-observation-01",
+  "description": "Failing test fixture: excessive spacecraft mass. The spacecraft configuration isolates a clean mass violation where all other constraints (power, communications, budget, and orbit compatibility) pass, but total assembled mass exceeds Launcher Alpha's 50 kg payload capacity.",
+  "status": "EXPECTED_FAIL_MASS",
+  "selectedComponentIds": [
+    "bus-reinforced",
+    "solar-std",
+    "battery-high",
+    "xband-hga",
+    "obc-std",
+    "adcs-prec",
+    "camera-optical",
+    "leo-500",
+    "launch-a"
+  ],
+  "subsystemBreakdown": {
+    "structure": "bus-reinforced",
+    "power": "solar-std",
+    "battery": "battery-high",
+    "communications": "xband-hga",
+    "computer": "obc-std",
+    "adcs": "adcs-prec",
+    "instruments": ["camera-optical"],
+    "orbit": "leo-500",
+    "launcher": "launch-a"
+  },
+  "metrics": {
+    "totalMassKg": 55.0,
+    "payloadCapacityKg": 50.0,
+    "massMarginKg": -5.0,
+    "powerDrawW": 70.0,
+    "powerOutputW": 80.0,
+    "powerReserveRequiredW": 77.0,
+    "powerMarginW": 3.0,
+    "batteryCapacityWh": 320.0,
+    "eclipseDemandWh": 35.0,
+    "batteryMarginWh": 285.0,
+    "dataRateDownlinkMbps": 8.0,
+    "dataRateRequiredMbps": 1.2,
+    "totalCostUsd": 415000,
+    "budgetUsd": 500000,
+    "costMarginUsd": 85000
+  },
+  "expectedFeasibility": {
+    "FC-1_completeness": "PASS",
+    "FC-2_mass": "FAIL",
+    "FC-3_power": "PASS",
+    "FC-4_battery": "PASS",
+    "FC-5_communications": "PASS",
+    "FC-6_orbitLauncherCompatibility": "PASS",
+    "FC-7_budget": "PASS",
+    "overallFeasibility": "FAIL"
+  },
+  "expectedScore": {
+    "status": "FEASIBILITY_BLOCKED",
+    "note": "Feasibility fails at FC-2 (Mass compliance). Regardless of individual suitability scores, the spacecraft cannot be lifted into orbit by the selected launch vehicle."
+  },
+  "failureExplanation": "The total spacecraft mass of 55.0 kg exceeds Launcher Alpha's maximum payload capacity of 50.0 kg by 5.0 kg (+10% overload). The primary contributor to the mass overload is the Reinforced Satellite Bus (28.0 kg). To resolve this failure, the player must either select a lighter structure (e.g. Small Satellite Bus at 8.0 kg) or upgrade to a more powerful launch vehicle (Launcher Beta with 150 kg payload capacity)."
+}

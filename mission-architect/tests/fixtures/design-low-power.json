@@ -1,0 +1,61 @@
+{
+  "id": "design-low-power",
+  "name": "Eyes on Earth — Underpowered Thermal Surveyor",
+  "missionId": "earth-observation-01",
+  "description": "Failing test fixture: insufficient electrical power. The spacecraft couples energy-intensive high-performance components (Thermal Infrared Imager, Precision ADCS, Advanced OBC, and X-Band HGA) with an entry-level Standard Solar Array (80 W), producing an acute power shortfall during sunlit orbital operations.",
+  "status": "EXPECTED_FAIL_POWER",
+  "selectedComponentIds": [
+    "bus-small",
+    "solar-std",
+    "battery-std",
+    "xband-hga",
+    "obc-adv",
+    "adcs-prec",
+    "camera-ir",
+    "leo-500",
+    "launch-a"
+  ],
+  "subsystemBreakdown": {
+    "structure": "bus-small",
+    "power": "solar-std",
+    "battery": "battery-std",
+    "communications": "xband-hga",
+    "computer": "obc-adv",
+    "adcs": "adcs-prec",
+    "instruments": ["camera-ir"],
+    "orbit": "leo-500",
+    "launcher": "launch-a"
+  },
+  "metrics": {
+    "totalMassKg": 35.5,
+    "payloadCapacityKg": 50.0,
+    "massMarginKg": 14.5,
+    "powerDrawW": 91.0,
+    "powerOutputW": 80.0,
+    "powerReserveRequiredW": 100.1,
+    "powerMarginW": -20.1,
+    "batteryCapacityWh": 180.0,
+    "eclipseDemandWh": 45.5,
+    "batteryMarginWh": 134.5,
+    "dataRateDownlinkMbps": 8.0,
+    "dataRateRequiredMbps": 2.8,
+    "totalCostUsd": 406000,
+    "budgetUsd": 500000,
+    "costMarginUsd": 94000
+  },
+  "expectedFeasibility": {
+    "FC-1_completeness": "PASS",
+    "FC-2_mass": "PASS",
+    "FC-3_power": "FAIL",
+    "FC-4_battery": "PASS",
+    "FC-5_communications": "PASS",
+    "FC-6_orbitLauncherCompatibility": "PASS",
+    "FC-7_budget": "PASS",
+    "overallFeasibility": "FAIL"
+  },
+  "expectedScore": {
+    "status": "FEASIBILITY_BLOCKED",
+    "note": "Feasibility fails at FC-3 (Power compliance). The spacecraft suffers brownouts during normal daytime operations."
+  },
+  "failureExplanation": "The total power draw of all active subsystems is 91.0 W (X-Band HGA: 25 W, Advanced OBC: 20 W, Precision ADCS: 18 W, Thermal Infrared Imager: 28 W). With the mandatory 1.1 safety reserve factor, the spacecraft requires at least 100.1 W of power generation in sunlight. The Standard Solar Array generates only 80.0 W, leaving a 20.1 W deficit (-20% shortfall). To resolve this failure, the player must upgrade to the High-Efficiency Solar Array (140.0 W) or swap out power-hungry components for lower-power alternatives."
+}

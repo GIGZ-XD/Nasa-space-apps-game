@@ -1,0 +1,72 @@
+{
+  "id": "design-alternative",
+  "name": "Eyes on Earth — Sun-Sync Sentinel",
+  "missionId": "earth-observation-01",
+  "description": "Valid alternative high-capability spacecraft design. Demonstrates meaningful trade-offs: achieves superior scientific data quality and systematic global coverage via a Sun-Synchronous Orbit and Multispectral Imager at the expense of higher resource expenditure, remaining strictly within the $500,000 budget.",
+  "status": "VERIFIED_VIABLE",
+  "selectedComponentIds": [
+    "bus-small",
+    "solar-heff",
+    "battery-high",
+    "xband-hga",
+    "obc-std",
+    "adcs-std",
+    "camera-multispectral",
+    "sso-600",
+    "launch-b"
+  ],
+  "subsystemBreakdown": {
+    "structure": "bus-small",
+    "power": "solar-heff",
+    "battery": "battery-high",
+    "communications": "xband-hga",
+    "computer": "obc-std",
+    "adcs": "adcs-std",
+    "instruments": ["camera-multispectral"],
+    "orbit": "sso-600",
+    "launcher": "launch-b"
+  },
+  "metrics": {
+    "totalMassKg": 37.5,
+    "payloadCapacityKg": 150,
+    "massMarginKg": 112.5,
+    "powerDrawW": 69,
+    "powerOutputW": 140,
+    "powerReserveRequiredW": 75.9,
+    "powerMarginW": 64.1,
+    "batteryCapacityWh": 320,
+    "eclipseDemandWh": 36.8,
+    "batteryMarginWh": 283.2,
+    "dataRateDownlinkMbps": 8.0,
+    "dataRateRequiredMbps": 3.5,
+    "totalCostUsd": 486000,
+    "budgetUsd": 500000,
+    "costMarginUsd": 14000
+  },
+  "expectedFeasibility": {
+    "FC-1_completeness": "PASS",
+    "FC-2_mass": "PASS",
+    "FC-3_power": "PASS",
+    "FC-4_battery": "PASS",
+    "FC-5_communications": "PASS",
+    "FC-6_orbitLauncherCompatibility": "PASS",
+    "FC-7_budget": "PASS",
+    "overallFeasibility": "PASS"
+  },
+  "expectedScore": {
+    "status": "PROVISIONAL_PENDING_VINEETH",
+    "categoryScores": {
+      "structure": 85,
+      "instruments": 90,
+      "power": 90,
+      "communications": 90,
+      "orbit": 95,
+      "launcher": 70
+    },
+    "weightedOverallScore": 86.75,
+    "scoreThresholdPassed": true,
+    "rewardTier": "Silver",
+    "rewardPercentage": 85
+  },
+  "designRationale": "Demonstrates that the game rewards diverse valid engineering trade-offs. By retaining the lightweight Small Satellite Bus ($25,000), the player saves sufficient funds to afford Launcher Beta ($230,000) and reach Sun-Synchronous Orbit (SSO-600). The Multispectral Imager (3.5 Mbps, 22 W) provides higher scientific yield than the basic optical camera, while the High-Efficiency Solar Array (140 W) and High-Capacity Battery Pack (320 Wh) easily sustain the increased electrical demand."
+}

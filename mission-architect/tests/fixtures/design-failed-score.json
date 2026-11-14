@@ -1,0 +1,82 @@
+{
+  "id": "design-failed-score",
+  "name": "Eyes on Earth — Severe Subsystem Mismatch",
+  "missionId": "earth-observation-01",
+  "description": "Failing test fixture: below-30% overall score. The spacecraft combines mismatched subsystems that trigger severe suitability penalties across multiple categories (standard ADCS unable to point Thermal IR sensor, UHF antenna unable to downlink sensor data, and Launcher Alpha unable to achieve the target Sun-Synchronous trajectory), driving the weighted score well below the 30% threshold.",
+  "status": "EXPECTED_FAIL_SCORE",
+  "selectedComponentIds": [
+    "bus-reinforced",
+    "solar-std",
+    "battery-std",
+    "uhf-patch",
+    "obc-std",
+    "adcs-std",
+    "camera-ir",
+    "sso-600",
+    "launch-a"
+  ],
+  "subsystemBreakdown": {
+    "structure": "bus-reinforced",
+    "power": "solar-std",
+    "battery": "battery-std",
+    "communications": "uhf-patch",
+    "computer": "obc-std",
+    "adcs": "adcs-std",
+    "instruments": ["camera-ir"],
+    "orbit": "sso-600",
+    "launcher": "launch-a"
+  },
+  "metrics": {
+    "totalMassKg": 50.5,
+    "payloadCapacityKg": 50.0,
+    "massMarginKg": -0.5,
+    "powerDrawW": 63.0,
+    "powerOutputW": 80.0,
+    "powerReserveRequiredW": 69.3,
+    "powerMarginW": 10.7,
+    "batteryCapacityWh": 180.0,
+    "eclipseDemandWh": 33.6,
+    "batteryMarginWh": 146.4,
+    "dataRateDownlinkMbps": 0.5,
+    "dataRateRequiredMbps": 2.8,
+    "totalCostUsd": 372000,
+    "budgetUsd": 500000,
+    "costMarginUsd": 128000
+  },
+  "expectedFeasibility": {
+    "FC-1_completeness": "PASS",
+    "FC-2_mass": "FAIL",
+    "FC-3_power": "PASS",
+    "FC-4_battery": "PASS",
+    "FC-5_communications": "FAIL",
+    "FC-6_orbitLauncherCompatibility": "FAIL",
+    "FC-7_budget": "PASS",
+    "overallFeasibility": "FAIL"
+  },
+  "expectedScore": {
+    "status": "PROVISIONAL_PENDING_VINEETH",
+    "categoryScores": {
+      "structure": 48.3,
+      "instruments": 20.0,
+      "power": 72.5,
+      "communications": 0.0,
+      "orbit": 0.0,
+      "launcher": 0.0
+    },
+    "weightedOverallScore": 25.54,
+    "scoreThresholdPassed": false,
+    "rewardTier": "Fail",
+    "rewardPercentage": 0
+  },
+  "scoreCalculationDetails": {
+    "structureContribution": "20% weight * 48.3 (bus-reinforced 50, obc-std 75, adcs-std 20) = 9.67",
+    "instrumentContribution": "25% weight * 20.0 (camera-ir degraded to 20 due to standard ADCS tumbling) = 5.00",
+    "powerContribution": "15% weight * 72.5 (solar-std 75, battery-std 70) = 10.87",
+    "communicationsContribution": "10% weight * 0.0 (uhf-patch cannot downlink 2.8 Mbps data -> 0 score) = 0.00",
+    "orbitContribution": "15% weight * 0.0 (launch vehicle cannot reach SSO-600 -> 0 score) = 0.00",
+    "launcherContribution": "15% weight * 0.0 (incompatible orbit delivery -> 0 score) = 0.00",
+    "totalWeightedScore": "9.67 + 5.00 + 10.87 + 0.00 + 0.00 + 0.00 = 25.54%",
+    "passFailVerdict": "25.54% is strictly below the 30.0% passing threshold -> FAILS score threshold."
+  },
+  "failureExplanation": "This design illustrates a compounding engineering breakdown. The player paired a Thermal Infrared Imager with a Standard ADCS (which lacks reaction wheels to keep the sensor steady, ruining image sharpness), a UHF antenna (producing an 82% telemetry bottleneck), and Launcher Alpha (which cannot reach Sun-Synchronous Orbit). The resulting penalties pull the mission score down to 25.54%, failing the 30% score requirement."
+}

@@ -1,0 +1,72 @@
+{
+  "id": "design-good",
+  "name": "Eyes on Earth — Baseline Explorer",
+  "missionId": "earth-observation-01",
+  "description": "Known-good baseline spacecraft design for the Eyes on Earth mission. Perfectly balances physical constraints, power generation, data downlink, and cost while using standard reliable components.",
+  "status": "VERIFIED_VIABLE",
+  "selectedComponentIds": [
+    "bus-small",
+    "solar-std",
+    "battery-std",
+    "xband-hga",
+    "obc-std",
+    "adcs-std",
+    "camera-optical",
+    "leo-500",
+    "launch-a"
+  ],
+  "subsystemBreakdown": {
+    "structure": "bus-small",
+    "power": "solar-std",
+    "battery": "battery-std",
+    "communications": "xband-hga",
+    "computer": "obc-std",
+    "adcs": "adcs-std",
+    "instruments": ["camera-optical"],
+    "orbit": "leo-500",
+    "launcher": "launch-a"
+  },
+  "metrics": {
+    "totalMassKg": 30.5,
+    "payloadCapacityKg": 50,
+    "massMarginKg": 19.5,
+    "powerDrawW": 62,
+    "powerOutputW": 80,
+    "powerReserveRequiredW": 68.2,
+    "powerMarginW": 11.8,
+    "batteryCapacityWh": 180,
+    "eclipseDemandWh": 31.0,
+    "batteryMarginWh": 149.0,
+    "dataRateDownlinkMbps": 8.0,
+    "dataRateRequiredMbps": 1.2,
+    "totalCostUsd": 305000,
+    "budgetUsd": 500000,
+    "costMarginUsd": 195000
+  },
+  "expectedFeasibility": {
+    "FC-1_completeness": "PASS",
+    "FC-2_mass": "PASS",
+    "FC-3_power": "PASS",
+    "FC-4_battery": "PASS",
+    "FC-5_communications": "PASS",
+    "FC-6_orbitLauncherCompatibility": "PASS",
+    "FC-7_budget": "PASS",
+    "overallFeasibility": "PASS"
+  },
+  "expectedScore": {
+    "status": "PROVISIONAL_PENDING_VINEETH",
+    "categoryScores": {
+      "structure": 85,
+      "instruments": 70,
+      "power": 72.5,
+      "communications": 90,
+      "orbit": 75,
+      "launcher": 80
+    },
+    "weightedOverallScore": 78.6,
+    "scoreThresholdPassed": true,
+    "rewardTier": "Silver",
+    "rewardPercentage": 85
+  },
+  "designRationale": "Uses the compact Small Satellite Bus and Standard Solar Array to keep mass and cost low. Paired with the X-Band High-Gain Antenna to guarantee high-throughput image telemetry to Earth ground stations. Standard ADCS provides sufficient 3-axis pointing stability for visible-spectrum optical imaging from a 500 km circular LEO orbit."
+}
