@@ -82,3 +82,16 @@ New error: `SCORING_NOT_CONFIGURED` (503) if the mission has no scoring config o
 - `resources.dataRateMbps` is now antenna (communications) capacity only (bug fix: it previously also summed instrument rates).
 - Scoring now uses Tanishka's suitability table and weights (structure 20 incl. computer+ADCS, instruments 25, power 15 incl. battery, comms 10, orbit 15, launcher 15). Extras: standard ADCS is capped at 20 when the IR imager is selected; multi-instrument combination bonuses (capped at 100).
 - Finance is provisional: base reward = mission budget, operations cost = 0 (UNCONFIRMED). Evaluate for `earth-observation-01` now returns real results instead of 503.
+
+## Integration 4: feasibility check IDs vs Tanishka's FC numbers (for result-screen badges)
+| API `id` | Her label | Meaning |
+|---|---|---|
+| `mandatory` | FC-1 completeness | all mandatory categories present |
+| `mass` | FC-2 mass | spacecraft mass <= launcher capacity |
+| `power` | FC-3 power | output >= draw x 1.1 |
+| `battery` | FC-4 battery | battery covers the orbit's eclipse |
+| `comms` | FC-5 communications | antenna rate >= instruments' required rate |
+| `orbit-launcher` | FC-6 orbit/launcher | launcher can reach the orbit |
+| `budget` | FC-7 budget | total cost <= mission budget |
+| `orbit-allowed` | (no FC number) | orbit is in the mission's `allowedOrbitIds` |
+The API returns 8 checks (her docs say 7). Each check has `passed` and a plain-language `message` suitable for display.
