@@ -1,8 +1,16 @@
 import { Router } from "express";
+import { rateLimit } from "express-rate-limit";
 import { z } from "zod";
 import { authService } from "../services/auth.service";
 
 export const authRoutes = Router();
+const loginRateLimit = rateLimit({
+  windowMs: 60_000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many login attempts. Please try again later." },
+});
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -27,7 +35,7 @@ authRoutes.post("/register", (req, res, next) => {
 });
 
 // POST /api/auth/login
-authRoutes.post("/login", (req, res, next) => {
+authRoutes.post("/login", loginRateLimit, (req, res, next) => {
   try {
     const input = loginSchema.parse(req.body);
     const result = authService.login(input.username, input.password);
