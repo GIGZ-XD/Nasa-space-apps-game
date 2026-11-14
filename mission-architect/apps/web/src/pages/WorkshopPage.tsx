@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ComponentCatalogue } from "../features/component-catalogue/ComponentCatalogue";
+import { BuilderWorkspace } from "../features/spacecraft-builder/BuilderWorkspace";
 import { ResourceDashboard } from "../features/resource-management/ResourceDashboard";
 import { useResourceBudget } from "../features/resource-management/useResourceBudget";
 import styles from "./WorkshopPage.module.css";
@@ -10,7 +10,6 @@ export function WorkshopPage() {
 
   const { feasibility, warnings } = resourceReport;
   const criticalCount = warnings.filter((w) => w.severity === "CRITICAL").length;
-  const warningCount = warnings.filter((w) => w.severity === "WARNING").length;
 
   return (
     <div className={styles.workshopShell}>
@@ -29,7 +28,7 @@ export function WorkshopPage() {
             className={`${styles.navTab} ${activeView === "builder" ? styles.navTabActive : ""}`}
             onClick={() => setActiveView("builder")}
           >
-            🛰️ Spacecraft Builder
+            🛰️ Spacecraft Visual Builder
           </button>
 
           <button
@@ -59,7 +58,7 @@ export function WorkshopPage() {
       {/* Main View Display */}
       <div className={styles.viewContent}>
         {activeView === "builder" ? (
-          <ComponentCatalogue onSwitchToResources={() => setActiveView("resources")} />
+          <BuilderWorkspace onSwitchToResources={() => setActiveView("resources")} />
         ) : (
           <ResourceDashboard onSwitchToCatalogue={() => setActiveView("builder")} />
         )}

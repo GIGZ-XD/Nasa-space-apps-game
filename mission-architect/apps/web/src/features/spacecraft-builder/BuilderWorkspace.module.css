@@ -1,0 +1,132 @@
+/* ============================================================
+   Builder Workspace — Unified Visual Assembly Workspace Styles
+   ============================================================ */
+
+.workspaceShell {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 50px);
+  background: #050c1a;
+  color: #d8e8ff;
+}
+
+/* Header bar */
+.workspaceHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 28px;
+  background: #071326;
+  border-bottom: 1px solid #142845;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.titleArea {
+  display: flex;
+  flex-direction: column;
+}
+
+.workspaceTitle {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #7ecfff;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.spacecraftTag {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #a4cbf5;
+  background: #0d274d;
+  border: 1px solid #234c80;
+  padding: 3px 10px;
+  border-radius: 14px;
+}
+
+.workspaceSubtitle {
+  font-size: 0.78rem;
+  color: #658bb0;
+  margin: 4px 0 0;
+  letter-spacing: 0.03em;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.resourceNavBtn {
+  background: #0e2a52;
+  border: 1px solid #285b9e;
+  color: #8cc8ff;
+  padding: 8px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.resourceNavBtn:hover {
+  background: #19447d;
+  color: #ffffff;
+  border-color: #4387e6;
+  box-shadow: 0 0 10px rgba(67, 135, 230, 0.3);
+}
+
+/* Main Split Layout */
+.workspaceLayout {
+  display: grid;
+  grid-template-columns: minmax(380px, 460px) 1fr;
+  flex: 1;
+  gap: 0;
+}
+
+@media (max-width: 1100px) {
+  .workspaceLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Left Assembly Stage */
+.assemblyStage {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 24px;
+  background: #040d1e;
+  border-right: 1px solid #142845;
+  overflow-y: auto;
+  max-height: calc(100vh - 120px);
+}
+
+@media (max-width: 1100px) {
+  .assemblyStage {
+    border-right: none;
+    border-bottom: 1px solid #142845;
+    max-height: none;
+  }
+}
+
+/* Right Catalogue Stage */
+.catalogueStage {
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(100vh - 120px);
+}
+
+@media (max-width: 1100px) {
+  .catalogueStage {
+    max-height: none;
+  }
+}

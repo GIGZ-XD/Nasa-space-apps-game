@@ -1,0 +1,189 @@
+/* ============================================================
+   Readiness Summary — Space-Themed Scoped Styles
+   ============================================================ */
+
+.summaryContainer {
+  background: #08162d;
+  border: 1px solid #162f52;
+  border-radius: 8px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.summaryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.titleIcon {
+  font-size: 1.3rem;
+}
+
+.summaryTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #cbe3ff;
+  margin: 0;
+}
+
+.statusBadge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.badgeIncomplete {
+  background: rgba(0, 210, 211, 0.12);
+  color: #00d2d3;
+  border: 1px solid rgba(0, 210, 211, 0.4);
+}
+
+.badgeReview {
+  background: rgba(255, 165, 2, 0.15);
+  color: #ffa502;
+  border: 1px solid rgba(255, 165, 2, 0.4);
+}
+
+.badgeSubmission {
+  background: rgba(46, 213, 115, 0.15);
+  color: #2ed573;
+  border: 1px solid rgba(46, 213, 115, 0.4);
+}
+
+/* Status Cards */
+.statusBanner {
+  padding: 12px 14px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.bannerIncomplete {
+  background: rgba(0, 210, 211, 0.08);
+  border: 1px solid rgba(0, 210, 211, 0.3);
+  color: #a0ecff;
+}
+
+.bannerReview {
+  background: rgba(255, 165, 2, 0.08);
+  border: 1px solid rgba(255, 165, 2, 0.3);
+  color: #ffd285;
+}
+
+.bannerSubmission {
+  background: rgba(46, 213, 115, 0.1);
+  border: 1px solid rgba(46, 213, 115, 0.35);
+  color: #a6f5c8;
+}
+
+/* Checklist */
+.checklistSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checklistTitle {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #79a2cf;
+}
+
+.checklistGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.checklistItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #050f20;
+  border: 1px solid #142a4a;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 0.74rem;
+  color: #9cbddf;
+}
+
+.checkMet {
+  color: #d8e8ff;
+  border-color: #23588e;
+}
+
+.checkMet .checkIcon {
+  color: #2ed573;
+}
+
+.checkMissing .checkIcon {
+  color: #55799e;
+}
+
+.checkIcon {
+  font-weight: bold;
+}
+
+/* Verification Split Matrix */
+.verificationMatrix {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  background: #050e1e;
+  border: 1px solid #11243e;
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.matrixItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.matrixLabel {
+  font-size: 0.65rem;
+  color: #6388b0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.matrixStatus {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* Next Actions Box */
+.actionBox {
+  background: rgba(13, 37, 71, 0.5);
+  border-left: 3px solid #3f86e0;
+  padding: 10px 12px;
+  border-radius: 0 4px 4px 0;
+  font-size: 0.74rem;
+  color: #bedaff;
+  line-height: 1.4;
+}
+
+.actionTitle {
+  font-weight: 700;
+  color: #7ecfff;
+  margin-bottom: 2px;
+}
