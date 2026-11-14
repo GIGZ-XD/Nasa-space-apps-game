@@ -1,5 +1,6 @@
 import type { ErrorRequestHandler, RequestHandler } from "express";
 import { ZodError } from "zod";
+import { DesignValidationError } from "../services/resource.service";
 
 export class HttpError extends Error {
   constructor(public status: number, public code: string, message: string) { super(message); }
@@ -12,6 +13,9 @@ export const notFound: RequestHandler = (req, res) => {
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   if (err instanceof ZodError) {
     return res.status(400).json({ error: { code: "VALIDATION_ERROR", message: "Invalid request", details: err.issues } });
+  }
+  if (err instanceof DesignValidationError) {
+    return res.status(400).json({ error: { code: "INVALID_DESIGN", message: err.message, details: err.problems } });
   }
   if (err instanceof HttpError) {
     return res.status(err.status).json({ error: { code: err.code, message: err.message } });

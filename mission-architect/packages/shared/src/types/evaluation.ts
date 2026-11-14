@@ -1,3 +1,5 @@
+import type { ResourceTotals } from "./resources";
+
 export type MissionStatus = "success" | "failed";
 
 export interface FeasibilityCheck {
@@ -22,7 +24,7 @@ export interface Evaluation {
   feasible: boolean;
   feasibilityChecks: FeasibilityCheck[];
   categoryScores: CategoryScore[];
-  resources: { massKg: number; powerDrawW: number; powerOutputW: number; costUsd: number };
+  resources: ResourceTotals;
   finance: { rewardUsd: number; totalCostUsd: number; profitUsd: number };
   feedback: string[];
   /** True while the backend still returns placeholder values (Phase 1). */

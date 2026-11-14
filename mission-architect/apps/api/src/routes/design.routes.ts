@@ -2,12 +2,14 @@ import { Router } from "express";
 import { designSchema } from "../validators/schemas";
 import { evaluateDesign, getDesign, saveDesign } from "../services/evaluation.service";
 import { HttpError } from "../middleware/error.middleware";
-import { missions } from "../data/mock";
+import { getMission } from "../services/mission.service";
+import { resolveDesign } from "../services/resource.service";
 export const designRoutes = Router();
 
 designRoutes.post("/", (req, res) => {
   const input = designSchema.parse(req.body);
-  if (!missions.some((m) => m.id === input.missionId)) throw new HttpError(404, "MISSION_NOT_FOUND", "Unknown mission");
+  if (!getMission(input.missionId)) throw new HttpError(404, "MISSION_NOT_FOUND", "Unknown mission");
+  resolveDesign(input);
   res.status(201).json({ design: saveDesign(input) });
 });
 

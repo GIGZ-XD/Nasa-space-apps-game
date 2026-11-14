@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { components } from "../data/mock";
+import { listComponents } from "../services/component.service";
 export const componentRoutes = Router();
 componentRoutes.get("/", (req, res) => {
   const { category } = req.query;
-  res.json({ components: typeof category === "string" ? components.filter((c) => c.category === category) : components });
+  res.json({ components: listComponents(typeof category === "string" ? category : undefined) });
 });

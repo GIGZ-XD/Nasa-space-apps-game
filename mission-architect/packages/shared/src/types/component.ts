@@ -21,5 +21,7 @@ export interface Component {
   capacityWh?: number;
   dataRateMbps?: number;
   payloadCapacityKg?: number;
+  /** Launchers only: orbit IDs this launcher can reach. */
+  supportedOrbitIds?: string[];
   costUsd: number;
 }

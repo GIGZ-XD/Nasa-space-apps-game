@@ -32,3 +32,9 @@ curl -XPOST localhost:4000/api/designs/<designId>/evaluate
 ```
 ## Known limits (Phase 1)
 Evaluation returns fixed placeholder values (`mock: true`, score 75). Missions/components are placeholder data. Storage is in-memory. Orbit/launcher IDs are not yet validated against the catalogue (Phase 2).
+
+## Phase 2 additions (additive, non-breaking)
+- `Evaluation.resources` is now real, server-calculated: `{massKg, powerDrawW, powerOutputW, batteryWh, dataRateMbps, launcherCapacityKg, costUsd}`. Mass/power cover spacecraft parts only; cost also includes orbit + launcher. Score/finance are still mock.
+- New error `INVALID_DESIGN` (400) with `details: string[]` for: unknown component/orbit/launcher IDs, orbit or launcher listed in `componentIds`, wrong-category orbitId/launchVehicleId, or more than one part in a category (instruments may repeat). POST /api/designs now returns it.
+- Launchers carry `supportedOrbitIds` (not yet enforced; Phase 3).
+- Known sample: ids `bus-basic, solar-std, battery-std, comms-basic, computer-std, adcs-basic, inst-optical`, orbit `orbit-leo`, launcher `launch-a` -> mass 85 kg, draw 73 W, output 120 W, battery 200 Wh, 2 Mbps, cost 330,000 USD.

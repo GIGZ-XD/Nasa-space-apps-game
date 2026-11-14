@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { DesignInput, Evaluation, Spacecraft } from "@mission-architect/shared";
+import { calculateResources } from "./resource.service";
 
 const designs = new Map<string, Spacecraft>();
 const results = new Map<string, Evaluation>();
@@ -19,7 +20,7 @@ export function evaluateDesign(d: Spacecraft): Evaluation {
     status: "success", score: 75, feasible: true,
     feasibilityChecks: [{ id: "mock", passed: true, message: "Mock check (Phase 1)" }],
     categoryScores: [{ category: "instruments", score: 75, weight: 100 }],
-    resources: { massKg: 0, powerDrawW: 0, powerOutputW: 0, costUsd: 0 },
+    resources: calculateResources(d).totals,
     finance: { rewardUsd: 0, totalCostUsd: 0, profitUsd: 0 },
     feedback: ["Placeholder evaluation. Real scoring is not implemented yet."],
     mock: true,

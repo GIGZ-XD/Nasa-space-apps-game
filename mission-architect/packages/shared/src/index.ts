@@ -3,3 +3,4 @@ export * from "./types/component";
 export * from "./types/spacecraft";
 export * from "./types/evaluation";
 
+export * from "./types/resources";
