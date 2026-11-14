@@ -4,12 +4,15 @@ import { MISSIONS } from "../data/missions";
 import { HomePage } from "../pages/HomePage";
 import { MissionSelectPage } from "../pages/MissionSelectPage";
 import { MissionBriefPage } from "../pages/MissionBriefPage";
+import { MarketPage } from "../pages/MarketPage";
 import { DevHarness } from "./DevHarness";
 
-type Screen = "home" | "select" | "brief" | "workshop";
+type Screen = "home" | "select" | "brief" | "workshop" | "market";
 
 export function App() {
-  const [screen, setScreen] = useState<Screen>(() => (new URLSearchParams(window.location.search).get("screen") as Screen) || "home");
+  const [screen, setScreen] = useState<Screen>(
+    () => (new URLSearchParams(window.location.search).get("screen") as Screen) || "home"
+  );
   const [missionId, setMissionId] = useState(4);
 
   if (new URLSearchParams(window.location.search).has("dev")) return <DevHarness />;
@@ -17,12 +20,29 @@ export function App() {
   const go = (s: string) => setScreen(s as Screen);
   const mission = MISSIONS.find((m) => m.id === missionId) ?? MISSIONS[0];
 
-  if (screen === "select") return <MissionSelectPage go={go} open={(id) => { setMissionId(id); setScreen("brief"); }} />;
-  if (screen === "brief") return <MissionBriefPage mission={mission} go={go} start={() => setScreen("workshop")} />;
+  if (screen === "market") return <MarketPage go={go} />;
+  if (screen === "select")
+    return (
+      <MissionSelectPage
+        go={go}
+        open={(id) => {
+          setMissionId(id);
+          setScreen("brief");
+        }}
+      />
+    );
+  if (screen === "brief")
+    return <MissionBriefPage mission={mission} go={go} start={() => setScreen("workshop")} />;
   if (screen === "workshop")
     return (
       <div style={{ position: "fixed", inset: 0, background: "#030611" }}>
-        <button className="overlay-back" onClick={() => setScreen("brief")} style={{ padding: "6px 12px", cursor: "pointer" }}>← Back to brief</button>
+        <button
+          className="overlay-back"
+          onClick={() => setScreen("brief")}
+          style={{ padding: "6px 12px", cursor: "pointer" }}
+        >
+          ← Back to brief
+        </button>
         <PhaserGame initialScene="WorkshopScene" />
       </div>
     );
