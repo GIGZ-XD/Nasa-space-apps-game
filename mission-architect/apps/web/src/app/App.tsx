@@ -1,224 +1,30 @@
 import { useState } from "react";
-import { PhaserGame, MissionOutcomeStatus } from "../game";
+import { PhaserGame } from "../game";
+import { MISSIONS } from "../data/missions";
+import { HomePage } from "../pages/HomePage";
+import { MissionSelectPage } from "../pages/MissionSelectPage";
+import { MissionBriefPage } from "../pages/MissionBriefPage";
+import { DevHarness } from "./DevHarness";
+
+type Screen = "home" | "select" | "brief" | "workshop";
 
 export function App() {
-  const [isGameMounted, setIsGameMounted] = useState(true);
-  const [activeScene, setActiveScene] = useState<string>("WorkshopScene");
-  const [missionOutcome, setMissionOutcome] = useState<MissionOutcomeStatus>("pending");
+  const [screen, setScreen] = useState<Screen>(() => (new URLSearchParams(window.location.search).get("screen") as Screen) || "home");
+  const [missionId, setMissionId] = useState(4);
 
-  return (
-    <main
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
-        backgroundColor: "#030611",
-        color: "#eceff1",
-        fontFamily: "system-ui, -apple-system, sans-serif",
-        margin: 0,
-        padding: "1rem",
-        boxSizing: "border-box",
-      }}
-    >
-      <header
-        style={{
-          width: "100%",
-          maxWidth: "1280px",
-          display: "flex",
-          flexWrap: "wrap",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: "0.75rem",
-          marginBottom: "0.75rem",
-        }}
-      >
-        <div>
-          <h1 style={{ margin: 0, fontSize: "1.25rem", color: "#00e5ff" }}>
-            Mission Architect — Phase 4: Mission Outcome &amp; Orbit Simulation
-          </h1>
-          <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.85rem", color: "#94a3b8" }}>
-            Active Scene: <span style={{ color: "#38bdf8", fontWeight: "bold" }}>{activeScene}</span> | Outcome:{" "}
-            <span
-              style={{
-                color:
-                  missionOutcome === "success"
-                    ? "#22c55e"
-                    : missionOutcome === "failure"
-                    ? "#ef4444"
-                    : "#f59e0b",
-                fontWeight: "bold",
-                textTransform: "uppercase",
-              }}
-            >
-              {missionOutcome}
-            </span>{" "}
-            {missionOutcome === "pending" && (
-              <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
-                (Nominal Orbit — click &quot;Simulate Success&quot; or &quot;Simulate Failure&quot; to test)
-              </span>
-            )}
-          </p>
-        </div>
+  if (new URLSearchParams(window.location.search).has("dev")) return <DevHarness />;
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-          {/* Scene Selectors */}
-          <button
-            onClick={() => {
-              setActiveScene("WorkshopScene");
-              setMissionOutcome("pending");
-            }}
-            style={{
-              background: activeScene === "WorkshopScene" ? "#0284c7" : "#1e293b",
-              color: "#ffffff",
-              border: "1px solid #38bdf8",
-              borderRadius: "4px",
-              padding: "0.4rem 0.75rem",
-              cursor: "pointer",
-              fontSize: "0.8rem",
-            }}
-          >
-            1. Workshop
-          </button>
-          <button
-            onClick={() => {
-              setActiveScene("LaunchScene");
-              setMissionOutcome("pending");
-            }}
-            style={{
-              background: activeScene === "LaunchScene" ? "#d97706" : "#1e293b",
-              color: "#ffffff",
-              border: "1px solid #f59e0b",
-              borderRadius: "4px",
-              padding: "0.4rem 0.75rem",
-              cursor: "pointer",
-              fontSize: "0.8rem",
-            }}
-          >
-            2. Launchpad
-          </button>
-          <button
-            onClick={() => setActiveScene("OrbitScene")}
-            style={{
-              background: activeScene === "OrbitScene" ? "#16a34a" : "#1e293b",
-              color: "#ffffff",
-              border: "1px solid #22c55e",
-              borderRadius: "4px",
-              padding: "0.4rem 0.75rem",
-              cursor: "pointer",
-              fontSize: "0.8rem",
-            }}
-          >
-            3. Orbit Scene
-          </button>
+  const go = (s: string) => setScreen(s as Screen);
+  const mission = MISSIONS.find((m) => m.id === missionId) ?? MISSIONS[0];
 
-          {/* Outcome Simulation Triggers */}
-          <button
-            onClick={() => {
-              setActiveScene("OrbitScene");
-              setMissionOutcome("success");
-            }}
-            style={{
-              background: missionOutcome === "success" ? "#15803d" : "#064e3b",
-              color: "#86efac",
-              border: "1px solid #22c55e",
-              borderRadius: "4px",
-              padding: "0.4rem 0.75rem",
-              cursor: "pointer",
-              fontWeight: "bold",
-              fontSize: "0.8rem",
-            }}
-          >
-            Simulate Success
-          </button>
-          <button
-            onClick={() => {
-              setActiveScene("OrbitScene");
-              setMissionOutcome("failure");
-            }}
-            style={{
-              background: missionOutcome === "failure" ? "#991b1b" : "#450a0a",
-              color: "#fca5a5",
-              border: "1px solid #ef4444",
-              borderRadius: "4px",
-              padding: "0.4rem 0.75rem",
-              cursor: "pointer",
-              fontWeight: "bold",
-              fontSize: "0.8rem",
-            }}
-          >
-            Simulate Failure
-          </button>
-          <button
-            onClick={() => setMissionOutcome("pending")}
-            style={{
-              background: "#334155",
-              color: "#cbd5e1",
-              border: "1px solid #64748b",
-              borderRadius: "4px",
-              padding: "0.4rem 0.75rem",
-              cursor: "pointer",
-              fontSize: "0.8rem",
-            }}
-          >
-            Reset
-          </button>
-
-          {/* Mount / Unmount Toggle */}
-          <button
-            onClick={() => setIsGameMounted((prev) => !prev)}
-            style={{
-              background: isGameMounted ? "#b91c1c" : "#0369a1",
-              color: "#ffffff",
-              border: "none",
-              borderRadius: "4px",
-              padding: "0.4rem 0.75rem",
-              cursor: "pointer",
-              fontSize: "0.8rem",
-              fontWeight: "bold",
-            }}
-          >
-            {isGameMounted ? "Unmount" : "Mount"}
-          </button>
-        </div>
-      </header>
-
-      <section
-        style={{
-          width: "100%",
-          maxWidth: "1280px",
-          height: "720px",
-          maxHeight: "80vh",
-          borderRadius: "8px",
-          overflow: "hidden",
-          border: "1px solid #1a233a",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        {isGameMounted ? (
-          <PhaserGame
-            key={activeScene}
-            initialScene={activeScene}
-            missionOutcome={missionOutcome}
-            onGameReady={(game) => {
-              game.events.on("outcome:success:rendered", () => setMissionOutcome("success"));
-              game.events.on("outcome:failure:rendered", () => setMissionOutcome("failure"));
-              game.events.on("mission:outcome", (payload: { status: MissionOutcomeStatus }) => {
-                if (payload && payload.status) {
-                  setMissionOutcome(payload.status);
-                }
-              });
-            }}
-          />
-        ) : (
-          <div style={{ color: "#78909c", fontFamily: "monospace" }}>
-            Game unmounted. Phaser instance destroyed and canvas cleanly removed.
-          </div>
-        )}
-      </section>
-    </main>
-  );
+  if (screen === "select") return <MissionSelectPage go={go} open={(id) => { setMissionId(id); setScreen("brief"); }} />;
+  if (screen === "brief") return <MissionBriefPage mission={mission} go={go} start={() => setScreen("workshop")} />;
+  if (screen === "workshop")
+    return (
+      <div style={{ position: "fixed", inset: 0, background: "#030611" }}>
+        <button className="overlay-back" onClick={() => setScreen("brief")} style={{ padding: "6px 12px", cursor: "pointer" }}>← Back to brief</button>
+        <PhaserGame initialScene="WorkshopScene" />
+      </div>
+    );
+  return <HomePage go={go} />;
 }
