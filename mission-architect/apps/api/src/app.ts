@@ -7,6 +7,7 @@ import { missionRoutes } from "./routes/mission.routes";
 import { resultRoutes } from "./routes/result.routes";
 
 export const app = express();
+app.disable("x-powered-by");
 app.use(cors({ origin: process.env.WEB_ORIGIN ?? true }));
 app.use(express.json({ limit: "100kb" }));
 

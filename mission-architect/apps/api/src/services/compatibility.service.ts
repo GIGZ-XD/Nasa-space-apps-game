@@ -11,7 +11,7 @@ export function assertValidConfig(c: MissionScoringConfig): void {
 
 /** Suitability 0..100 of one component for this mission. Unlisted = 0 (unsuitable). */
 export const suitabilityOf = (c: MissionScoringConfig, componentId: string): number =>
-  c.suitability[componentId] ?? 0;
+  Object.hasOwn(c.suitability, componentId) ? c.suitability[componentId] : 0;
 
 /**
  * Performance of one part category: the best suitability among selected parts

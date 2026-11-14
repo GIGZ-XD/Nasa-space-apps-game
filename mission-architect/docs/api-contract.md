@@ -60,3 +60,9 @@ New error: `SCORING_NOT_CONFIGURED` (503) if the mission has no scoring config o
 - `profitUsd = rewardUsd - totalCostUsd`; negative = a loss and is valid.
 - `mock` is now always `false`. New error `FINANCE_NOT_CONFIGURED` (503) if the mission has no finance config (empty until base reward / operations cost are agreed).
 - `GET /api/results/:id` returns the stored evaluation (`{evaluation}`); storage is in-memory, so results are lost on server restart. Budget overrun is not enforced; it only shows as a loss.
+
+## Phase 5 additions
+- New error `PAYLOAD_TOO_LARGE` (413) for bodies over 100 kb.
+- Stricter validation: IDs are trimmed, 1-64 chars; `componentIds` max 30; `name` trimmed 1-80.
+- Bare `null`/string/number bodies return `BAD_JSON`.
+- **Contract frozen for the demo** apart from coordinated changes. Final list of error codes: `docs/api-documentation.md`.
