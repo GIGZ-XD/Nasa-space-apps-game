@@ -1,4 +1,5 @@
-export function App() {
-  return <main>Mission Architect</main>;
-}
+import { WorkshopPage } from "../pages/WorkshopPage";
 
+export function App() {
+  return <WorkshopPage />;
+}

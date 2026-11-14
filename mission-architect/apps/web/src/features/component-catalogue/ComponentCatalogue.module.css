@@ -1,0 +1,895 @@
+/* ============================================================
+   Component Catalogue — Space-themed scoped styles
+   ============================================================ */
+
+/* ---- Page shell ---- */
+.catalogue {
+  min-height: 100vh;
+  background: #050c1a;
+  color: #d8e8ff;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Header ---- */
+.header {
+  padding: 24px 32px 0;
+  border-bottom: 1px solid #1a2d4a;
+}
+
+.headerTop {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7ecfff;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 0.8rem;
+  color: #4a6a8a;
+  letter-spacing: 0.05em;
+}
+
+/* ---- Header Controls (Search & Sort) ---- */
+.headerControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.searchWrapper {
+  position: relative;
+  flex: 1;
+  min-width: 240px;
+  max-width: 480px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 32px 8px 12px;
+  background: #091a32;
+  border: 1px solid #1a385e;
+  border-radius: 6px;
+  color: #d8e8ff;
+  font-size: 0.8rem;
+  outline: none;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+.searchInput::placeholder {
+  color: #4a6c90;
+}
+
+.searchInput:focus {
+  border-color: #3f86e0;
+  box-shadow: 0 0 0 2px rgba(63, 134, 224, 0.2);
+  background: #0b203e;
+}
+
+.searchClearBtn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #4a6c90;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  transition: color 0.12s ease;
+}
+
+.searchClearBtn:hover {
+  color: #cc5050;
+}
+
+.sortSelect {
+  padding: 8px 12px;
+  background: #091a32;
+  border: 1px solid #1a385e;
+  border-radius: 6px;
+  color: #8bbce8;
+  font-size: 0.76rem;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sortSelect:focus {
+  border-color: #3f86e0;
+}
+
+.componentCountBadge {
+  font-size: 0.72rem;
+  color: #557c9e;
+  letter-spacing: 0.04em;
+  margin-left: auto;
+}
+
+/* ---- Tip Banner ---- */
+.tipBanner {
+  background: #081628;
+  border: 1px solid #173254;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.75rem;
+  color: #79a6cc;
+}
+
+.tipText {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---- Empty Search State ---- */
+.emptySearch {
+  text-align: center;
+  padding: 48px 24px;
+  background: #091629;
+  border: 1px dashed #1a385e;
+  border-radius: 8px;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.emptySearchTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #7ecfff;
+  margin: 0;
+}
+
+.emptySearchDesc {
+  font-size: 0.8rem;
+  color: #557b9f;
+  margin: 0;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+.resetSearchBtn {
+  padding: 8px 16px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 6px;
+  background: #113460;
+  border: 1px solid #3f86e0;
+  color: #e2f1ff;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.resetSearchBtn:hover {
+  background: #194680;
+}
+
+/* ---- Sidebar Mission Parameters ---- */
+.paramGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.paramLabel {
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #557b9f;
+  margin: 0;
+}
+
+.paramSelect {
+  width: 100%;
+  padding: 8px 10px;
+  background: #0a1828;
+  border: 1px solid #1a385e;
+  border-radius: 6px;
+  color: #a4cefa;
+  font-size: 0.75rem;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  box-sizing: border-box;
+}
+
+.paramSelect:focus {
+  border-color: #3f86e0;
+}
+
+.paramInfo {
+  font-size: 0.65rem;
+  color: #4a6c90;
+  line-height: 1.3;
+}
+
+/* ---- Spacecraft Name Editor ---- */
+.nameEditRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nameInput {
+  flex: 1;
+  background: #091a32;
+  border: 1px solid #1a385e;
+  border-radius: 4px;
+  padding: 4px 8px;
+  color: #7ecfff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  outline: none;
+}
+
+.nameInput:focus {
+  border-color: #3f86e0;
+}
+
+.nameEditBtn {
+  background: none;
+  border: 1px solid #1a385e;
+  border-radius: 4px;
+  color: #557b9f;
+  padding: 3px 6px;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+
+.nameEditBtn:hover {
+  color: #7ecfff;
+  border-color: #3f86e0;
+}
+
+/* ---- Flight Ready Celebration Badge ---- */
+.flightReadyBadge {
+  background: #072a18;
+  border: 1px solid #175230;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #38d37c;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ---- Category tabs ---- */
+.tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 0;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  flex-shrink: 0;
+  padding: 8px 18px;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  background: transparent;
+  color: #4a6a8a;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  position: relative;
+  bottom: -1px;
+}
+
+.tab:hover {
+  color: #9fd8ff;
+  background: #0d1e35;
+}
+
+.tabActive {
+  background: #0d1e35;
+  color: #7ecfff;
+  border-color: #1a2d4a;
+  border-bottom-color: #0d1e35;
+}
+
+/* ---- Main body ---- */
+.body {
+  display: flex;
+  flex: 1;
+  gap: 0;
+}
+
+/* ---- Component grid ---- */
+.gridWrapper {
+  flex: 1;
+  padding: 24px 32px;
+  background: #0d1e35;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.categoryLabel {
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #3a5a7a;
+  margin-bottom: 14px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #152030;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+/* ---- Component card ---- */
+.card {
+  background: #0a1828;
+  border: 1px solid #1a2d4a;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  user-select: none;
+}
+
+.card:hover {
+  border-color: #2a5080;
+  background: #0d1f33;
+  transform: translateY(-1px);
+}
+
+/* Added state */
+.cardAdded {
+  border-color: #1a6a3a;
+  background: #061a0e;
+}
+
+.cardAdded:hover {
+  border-color: #22884a;
+  background: #082014;
+}
+
+/* Selected/highlighted state (instance selected for detail) */
+.cardHighlighted {
+  border-color: #2a7fff;
+  background: #061830;
+  box-shadow: 0 0 0 1px #2a7fff40;
+}
+
+/* Compared card state */
+.cardCompared {
+  border-color: #3b74bd;
+  box-shadow: 0 0 0 1px #3b74bd50;
+}
+
+/* ---- Card elements ---- */
+.cardBadge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.badgeLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compareToggleBtn {
+  background: #08192f;
+  border: 1px solid #1c3658;
+  border-radius: 4px;
+  color: #5d88b4;
+  font-size: 0.62rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.compareToggleBtn:hover {
+  background: #112a4d;
+  color: #9eccfa;
+  border-color: #2e5585;
+}
+
+.compareToggleBtnActive {
+  background: #133966;
+  color: #7ecfff;
+  border-color: #3c7fc9;
+  font-weight: 700;
+}
+
+.categoryIcon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.categoryTag {
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: #12294a;
+  color: #4a90c0;
+}
+
+.cardAdded .categoryTag {
+  background: #0d2d18;
+  color: #3aaa6a;
+}
+
+.cardName {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #c4dfff;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.cardAdded .cardName {
+  color: #90dba0;
+}
+
+.cardDesc {
+  font-size: 0.75rem;
+  color: #4a6a8a;
+  line-height: 1.5;
+  margin: 0;
+  flex: 1;
+}
+
+/* ---- Card stats row ---- */
+.cardStats {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.statLabel {
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #34506a;
+}
+
+.statValue {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #7ea8cc;
+  font-variant-numeric: tabular-nums;
+}
+
+.statValueGen {
+  color: #4acc88;
+}
+
+.statValueCost {
+  color: #d4a84a;
+}
+
+/* ---- Card footer action ---- */
+.cardFooter {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.addBtn {
+  flex: 1;
+  padding: 7px 12px;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 700;
+  border: 1px solid #2a5080;
+  border-radius: 5px;
+  background: transparent;
+  color: #5aacee;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.addBtn:hover {
+  background: #132840;
+  color: #8fd0ff;
+  border-color: #3a70a0;
+}
+
+.addBtn:active {
+  background: #0e1f30;
+}
+
+.removeBtn {
+  flex: 1;
+  padding: 7px 12px;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 700;
+  border: 1px solid #1a4a2a;
+  border-radius: 5px;
+  background: #071812;
+  color: #3aaa6a;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.removeBtn:hover {
+  background: #0e2a1a;
+  color: #60d090;
+  border-color: #2a6a3a;
+}
+
+.addedBadge {
+  font-size: 0.65rem;
+  color: #3aaa6a;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ---- Sidebar: design summary ---- */
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: #080f1c;
+  border-left: 1px solid #1a2d4a;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.sidebarTitle {
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #3a5a7a;
+  margin: 0 0 4px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #152030;
+}
+
+.designName {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #7ecfff;
+  word-break: break-word;
+}
+
+.selectedList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.selectedItem {
+  background: #0a1828;
+  border: 1px solid #1a2d4a;
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color 0.1s;
+}
+
+.selectedItem:hover {
+  border-color: #2a5080;
+}
+
+.selectedItemActive {
+  border-color: #2a7fff;
+}
+
+.selectedItemName {
+  font-size: 0.75rem;
+  color: #90c0e0;
+  line-height: 1.3;
+  flex: 1;
+}
+
+.selectedItemCategory {
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #3a6a8a;
+  margin-top: 2px;
+}
+
+.removeItemBtn {
+  background: none;
+  border: none;
+  color: #3a5a6a;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 2px;
+  flex-shrink: 0;
+  transition: color 0.1s;
+}
+
+.removeItemBtn:hover {
+  color: #cc4444;
+}
+
+.emptyState {
+  color: #2a4a6a;
+  font-size: 0.75rem;
+  text-align: center;
+  padding: 24px 0;
+  line-height: 1.6;
+}
+
+/* ---- Completeness bar ---- */
+.completenessSection {
+  border-top: 1px solid #152030;
+  padding-top: 14px;
+}
+
+.completenessLabel {
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #3a5a7a;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.completenessBar {
+  height: 4px;
+  background: #0d1e35;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.completenessFill {
+  height: 100%;
+  background: linear-gradient(90deg, #2a5080, #3aaa88);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.completenessChecklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.checkItem {
+  font-size: 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #2a4a6a;
+}
+
+.checkItem.met {
+  color: #3aaa6a;
+}
+
+.checkDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #1a2d4a;
+  flex-shrink: 0;
+}
+
+.checkItem.met .checkDot {
+  background: #3aaa6a;
+}
+
+/* ---- Reset button ---- */
+.resetBtn {
+  margin-top: auto;
+  padding: 9px 16px;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 700;
+  border: 1px solid #2a1a1a;
+  border-radius: 5px;
+  background: transparent;
+  color: #6a3030;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.resetBtn:hover {
+  background: #1a0808;
+  color: #cc5050;
+  border-color: #4a2020;
+}
+
+/* ---- Detail open card state ---- */
+.cardDetailOpen {
+  border-color: #3a7fff;
+  box-shadow: 0 0 0 1px #3a7fff50;
+}
+
+/* ---- Detail panel backdrop (mobile) ---- */
+.detailBackdrop {
+  display: none;
+}
+
+@media (max-width: 540px) {
+  .detailBackdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 99;
+  }
+}
+
+/* ---- Floating Comparison Trigger Dock ---- */
+.floatingBar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #08162a;
+  border: 1px solid #29538a;
+  border-radius: 30px;
+  padding: 8px 18px 8px 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 0 0 16px rgba(63, 134, 224, 0.3);
+  z-index: 90;
+  animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { transform: translate(-50%, 20px); opacity: 0; }
+  to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+.floatingBarInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #d6e8fa;
+  font-weight: 600;
+}
+
+.floatingBarBadge {
+  background: #113663;
+  color: #7ecfff;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.floatingBarActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.openCompareBtn {
+  background: linear-gradient(135deg, #1b5394 0%, #176dbd 100%);
+  border: 1px solid #4391e6;
+  border-radius: 20px;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 7px 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(27, 83, 148, 0.4);
+}
+
+.openCompareBtn:hover {
+  background: linear-gradient(135deg, #2468b8 0%, #2083e0 100%);
+  box-shadow: 0 4px 12px rgba(36, 104, 184, 0.6);
+}
+
+.clearCompareBtn {
+  background: transparent;
+  border: 1px solid #233e60;
+  border-radius: 20px;
+  color: #7195be;
+  font-size: 0.72rem;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.clearCompareBtn:hover {
+  background: #12243d;
+  color: #e2effd;
+  border-color: #3b6090;
+}
+
+@media (max-width: 640px) {
+  .floatingBar {
+    width: 92%;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 16px;
+  }
+}
+
+/* ---- Stars background texture ---- */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
