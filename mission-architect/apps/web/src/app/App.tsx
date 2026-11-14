@@ -4,12 +4,13 @@ import { MISSIONS } from "../data/missions";
 import { HomePage } from "../pages/HomePage";
 import { MissionSelectPage } from "../pages/MissionSelectPage";
 import { MissionBriefPage } from "../pages/MissionBriefPage";
+import { MarketPage } from "../pages/MarketPage";
 import { LoginPage } from "../pages/LoginPage";
 import { DevHarness } from "./DevHarness";
 import { useAuthStore } from "../stores/authStore";
 import { Screen as StageScreen } from "../components/layout/ui";
 
-type Screen = "home" | "select" | "brief" | "workshop" | "login" | "signup";
+type Screen = "home" | "select" | "brief" | "workshop" | "market" | "login" | "signup";
 
 export function App() {
   const { isAuthenticated, isInitialized, checkSession } = useAuthStore();
@@ -22,8 +23,7 @@ export function App() {
     const p = window.location.pathname.toLowerCase();
     if (p === "/signup" || p === "/register") return "signup";
     const s = new URLSearchParams(window.location.search).get("screen") as Screen;
-    if (s === "signup") return "signup";
-    // By default, start at login
+    if (s === "signup" || s === "market") return s;
     return "login";
   });
   const [missionId, setMissionId] = useState(4);
@@ -39,7 +39,6 @@ export function App() {
     }
   };
 
-  // 1. While checking stored session on app boot
   if (!isInitialized) {
     return (
       <StageScreen>
@@ -85,7 +84,6 @@ export function App() {
     );
   }
 
-  // 2. If NOT authenticated, enforce login or signup page as the gateway
   if (!isAuthenticated) {
     if (screen === "signup") {
       return <LoginPage go={go} initialMode="register" />;
@@ -93,9 +91,11 @@ export function App() {
     return <LoginPage go={go} initialMode="login" />;
   }
 
-  // 3. Authenticated: routing
   const mission = MISSIONS.find((m) => m.id === missionId) ?? MISSIONS[0];
 
+  if (screen === "market") {
+    return <MarketPage go={go} />;
+  }
   if (screen === "login") {
     return <LoginPage go={go} initialMode="login" />;
   }
