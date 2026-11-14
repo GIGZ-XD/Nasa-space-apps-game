@@ -39,3 +39,15 @@ Evaluation returns fixed placeholder values (`mock: true`, score 75). Missions/c
 - Launchers carry `supportedOrbitIds` (not yet enforced; Phase 3).
 - Known sample totals (test fixture IDs, NOT the real catalogue): `bus-basic, solar-std, battery-std, comms-basic, computer-std, adcs-basic, inst-a` + orbit `orbit-x` + launcher `launch-x` -> mass 85 kg, draw 73 W, output 120 W, battery 200 Wh, 2 Mbps, cost 330,000 USD. Fixture lives in `tests/fixtures/catalogue.ts`. Real sample totals will be published once the real catalogue is loaded.
 - Placeholder data was removed: until real data is loaded, `GET /api/missions` and `GET /api/components` return empty lists and `POST /api/designs` returns `MISSION_NOT_FOUND`.
+
+## Phase 3 additions (evaluation is now real; finance still placeholder)
+`POST /api/designs/:id/evaluate` now returns server-calculated:
+- `score` (0-100, 2 decimals), `categoryScores[{category,score,weight}]` (weights sum to 100).
+- `feasibilityChecks[{id,passed,message}]` — ids: `mandatory`, `mass`, `power`, `orbit-launcher`. All checks always run and are all returned.
+- `feasible` = every check passed. `status` = `"success"` only if `feasible` AND score >= 30; otherwise `"failed"`.
+- `feedback: string[]` — actionable text (failed checks, weak categories, threshold). No hidden answer keys.
+- `finance` is still zeros and `mock: true` until Phase 4.
+
+Rules: score < 30 fails the score threshold; exactly 30 passes it (threshold applied to the score rounded to 2 decimals). Feasibility is independent of score: a score of 30 with a failed check is `"failed"`. Per scoring category, performance = mean over its part-categories of the best suitability among selected parts (0 if none selected, so extra weaker instruments never hurt).
+
+New error: `SCORING_NOT_CONFIGURED` (503) if the mission has no scoring config on the server. This is the case right now: the private data files are empty.

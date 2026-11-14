@@ -12,9 +12,15 @@ export const fixtureComponents: Component[] = [
   { id: "adcs-basic", category: "adcs", name: "ADCS", description: "t", massKg: 4, powerDrawW: 8, costUsd: 18_000 },
   { id: "inst-a", category: "instrument", name: "Instrument A", description: "t", massKg: 15, powerDrawW: 40, costUsd: 60_000 },
   { id: "inst-b", category: "instrument", name: "Instrument B", description: "t", massKg: 22, powerDrawW: 55, costUsd: 90_000 },
+  { id: "orbit-y", category: "orbit", name: "Orbit Y", description: "t", costUsd: 5_000 },
   { id: "orbit-x", category: "orbit", name: "Orbit X", description: "t", costUsd: 0 },
   { id: "launch-x", category: "launcher", name: "Launcher X", description: "t", payloadCapacityKg: 150, costUsd: 150_000, supportedOrbitIds: ["orbit-x"] },
 ];
 
 const byId = new Map(fixtureComponents.map((c) => [c.id, c]));
 export const fixtureCatalogue: ComponentLookup = { findById: (id) => byId.get(id) };
+
+/** Catalogue with per-component field overrides (e.g. a weaker launcher). */
+export const withOverrides = (o: Record<string, Partial<Component>>): ComponentLookup => ({
+  findById: (id) => { const c = byId.get(id); return c ? { ...c, ...(o[id] ?? {}) } : undefined; },
+});
