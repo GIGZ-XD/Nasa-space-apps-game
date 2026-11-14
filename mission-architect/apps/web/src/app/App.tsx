@@ -53,7 +53,12 @@ export function App() {
               }}
             >
               {missionOutcome}
-            </span>
+            </span>{" "}
+            {missionOutcome === "pending" && (
+              <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
+                (Nominal Orbit — click &quot;Simulate Success&quot; or &quot;Simulate Failure&quot; to test)
+              </span>
+            )}
           </p>
         </div>
 
@@ -198,6 +203,15 @@ export function App() {
             key={activeScene}
             initialScene={activeScene}
             missionOutcome={missionOutcome}
+            onGameReady={(game) => {
+              game.events.on("outcome:success:rendered", () => setMissionOutcome("success"));
+              game.events.on("outcome:failure:rendered", () => setMissionOutcome("failure"));
+              game.events.on("mission:outcome", (payload: { status: MissionOutcomeStatus }) => {
+                if (payload && payload.status) {
+                  setMissionOutcome(payload.status);
+                }
+              });
+            }}
           />
         ) : (
           <div style={{ color: "#78909c", fontFamily: "monospace" }}>

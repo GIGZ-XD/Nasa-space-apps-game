@@ -12,6 +12,8 @@ export interface GameConfigOptions {
   scenes?: Phaser.Types.Scenes.SceneType[];
   scaleMode?: Phaser.Scale.ScaleModes;
   autoCenter?: Phaser.Scale.Center;
+  initialScene?: string;
+  missionOutcome?: string;
 }
 
 export const DEFAULT_GAME_WIDTH = 1280;
@@ -37,6 +39,8 @@ export function createGameConfig(options: GameConfigOptions = {}): Phaser.Types.
     scenes,
     scaleMode = Phaser.Scale.FIT,
     autoCenter = Phaser.Scale.CENTER_BOTH,
+    initialScene,
+    missionOutcome,
   } = options;
 
   return {
@@ -55,6 +59,16 @@ export function createGameConfig(options: GameConfigOptions = {}): Phaser.Types.
       autoCenter,
       width,
       height,
+    },
+    callbacks: {
+      preBoot: (game: Phaser.Game) => {
+        if (initialScene) {
+          game.registry.set("initialScene", initialScene);
+        }
+        if (missionOutcome) {
+          game.registry.set("missionOutcome", missionOutcome);
+        }
+      },
     },
     scene: scenes ?? [BootScene, PreloadScene, WorkshopScene, LaunchScene, OrbitScene],
   };
