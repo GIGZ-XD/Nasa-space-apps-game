@@ -1,0 +1,783 @@
+/* ============================================================
+   Resource Management Dashboard — Space-Themed Scoped Styles
+   ============================================================ */
+
+.dashboardContainer {
+  min-height: 100vh;
+  background: #050c1a;
+  color: #d8e8ff;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Top Header ---- */
+.dashboardHeader {
+  padding: 24px 32px 16px;
+  background: #071326;
+  border-bottom: 1px solid #142845;
+}
+
+.dashboardHeaderTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.mainTitle {
+  font-size: 1.55rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #7ecfff;
+  margin: 0;
+}
+
+.spacecraftNameTag {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #a4cbf5;
+  background: #0d274d;
+  border: 1px solid #234c80;
+  padding: 4px 10px;
+  border-radius: 14px;
+  letter-spacing: 0.04em;
+}
+
+.mainSubtitle {
+  font-size: 0.82rem;
+  color: #658bb0;
+  margin: 4px 0 0;
+  letter-spacing: 0.03em;
+}
+
+.navSwitchBtn {
+  background: #0e2a52;
+  border: 1px solid #285b9e;
+  color: #8cc8ff;
+  padding: 9px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navSwitchBtn:hover {
+  background: #19447d;
+  color: #ffffff;
+  border-color: #4387e6;
+  box-shadow: 0 0 10px rgba(67, 135, 230, 0.3);
+}
+
+/* ---- Feasibility Assessment Banner ---- */
+.feasibilityBanner {
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-top: 6px;
+  border: 1px solid transparent;
+  transition: all 0.25s ease;
+}
+
+.feasibilitySuccess {
+  background: linear-gradient(135deg, rgba(46, 213, 115, 0.12), rgba(8, 44, 25, 0.3));
+  border-color: #2ed573;
+}
+
+.feasibilityWarning {
+  background: linear-gradient(135deg, rgba(255, 165, 2, 0.12), rgba(56, 36, 4, 0.3));
+  border-color: #ffa502;
+}
+
+.feasibilityDanger {
+  background: linear-gradient(135deg, rgba(255, 71, 87, 0.14), rgba(58, 12, 17, 0.35));
+  border-color: #ff4757;
+}
+
+.feasibilityInfo {
+  background: linear-gradient(135deg, rgba(0, 210, 211, 0.1), rgba(6, 38, 56, 0.3));
+  border-color: #00d2d3;
+}
+
+.feasibilityHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.feasibilityTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+}
+
+.feasibilityIcon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.feasibilityStatusLabel {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.feasibilitySuccess .feasibilityStatusLabel {
+  color: #2ed573;
+}
+
+.feasibilityWarning .feasibilityStatusLabel {
+  color: #ffa502;
+}
+
+.feasibilityDanger .feasibilityStatusLabel {
+  color: #ff4757;
+}
+
+.feasibilityInfo .feasibilityStatusLabel {
+  color: #00d2d3;
+}
+
+.feasibilitySummaryText {
+  font-size: 0.82rem;
+  color: #d8e8ff;
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+.feasibilityScoreWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.feasibilityScoreNumber {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.feasibilityScoreLabel {
+  font-size: 0.68rem;
+  color: #8eb1d4;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Quick Metrics Strip */
+.quickMetricsStrip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.quickMetricPill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(4, 15, 33, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.74rem;
+}
+
+.quickMetricPillLabel {
+  color: #7a9ec4;
+  font-weight: 500;
+}
+
+/* ---- Dashboard Grid Layout ---- */
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: minmax(520px, 1.5fr) minmax(340px, 1fr);
+  gap: 20px;
+  padding: 24px 32px 48px;
+  align-items: start;
+}
+
+@media (max-width: 1040px) {
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.budgetsColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sidebarColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ---- Resource Cards ---- */
+.resourceCard,
+.warningsCard {
+  background: #08162d;
+  border: 1px solid #162f52;
+  border-radius: 8px;
+  padding: 20px 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.cardTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cardIcon {
+  font-size: 1.4rem;
+}
+
+.cardTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #cbe3ff;
+  margin: 0;
+}
+
+.cardSubtitle {
+  font-size: 0.72rem;
+  color: #6385a8;
+  display: block;
+  margin-top: 2px;
+}
+
+/* Badges */
+.statusBadge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.statusSuccess {
+  background: rgba(46, 213, 115, 0.15);
+  color: #2ed573;
+  border: 1px solid rgba(46, 213, 115, 0.4);
+}
+
+.statusWarning {
+  background: rgba(255, 165, 2, 0.15);
+  color: #ffa502;
+  border: 1px solid rgba(255, 165, 2, 0.4);
+}
+
+.statusDanger {
+  background: rgba(255, 71, 87, 0.15);
+  color: #ff4757;
+  border: 1px solid rgba(255, 71, 87, 0.4);
+}
+
+.statusInfo {
+  background: rgba(0, 210, 211, 0.15);
+  color: #00d2d3;
+  border: 1px solid rgba(0, 210, 211, 0.4);
+}
+
+/* Text Highlights */
+.textSuccess {
+  color: #2ed573 !important;
+}
+
+.textWarning {
+  color: #ffa502 !important;
+}
+
+.textDanger {
+  color: #ff4757 !important;
+}
+
+.textCyan {
+  color: #00d2d3 !important;
+}
+
+/* Metrics Grid */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.metricItem {
+  background: #050f20;
+  border: 1px solid #142a4a;
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.metricLabel {
+  font-size: 0.68rem;
+  color: #6d93bc;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.metricValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.metricUnit {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #799fc7;
+}
+
+.metricHint {
+  font-size: 0.65rem;
+  color: #55779c;
+  margin-top: 4px;
+}
+
+.metricMuted {
+  color: #4d6682;
+  font-size: 0.95rem;
+}
+
+/* Capacity Progress Bars */
+.capacitySection {
+  margin-bottom: 16px;
+}
+
+.capacityLabelRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.74rem;
+  color: #8eb1d4;
+  margin-bottom: 6px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background: #050e1e;
+  border: 1px solid #142947;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.fillSuccess {
+  background: #2ed573;
+  box-shadow: 0 0 6px rgba(46, 213, 115, 0.5);
+}
+
+.fillWarning {
+  background: #ffa502;
+  box-shadow: 0 0 6px rgba(255, 165, 2, 0.5);
+}
+
+.fillDanger {
+  background: #ff4757;
+  box-shadow: 0 0 6px rgba(255, 71, 87, 0.5);
+}
+
+/* Callouts */
+.calloutDanger,
+.calloutWarning,
+.calloutInfo,
+.calloutSuccess {
+  font-size: 0.76rem;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 14px;
+  line-height: 1.45;
+}
+
+.calloutDanger {
+  background: rgba(255, 71, 87, 0.12);
+  border: 1px solid rgba(255, 71, 87, 0.35);
+  color: #ff9da6;
+}
+
+.calloutWarning {
+  background: rgba(255, 165, 2, 0.12);
+  border: 1px solid rgba(255, 165, 2, 0.35);
+  color: #ffd079;
+}
+
+.calloutInfo {
+  background: rgba(0, 210, 211, 0.12);
+  border: 1px solid rgba(0, 210, 211, 0.35);
+  color: #92ffff;
+}
+
+.calloutSuccess {
+  background: rgba(46, 213, 115, 0.12);
+  border: 1px solid rgba(46, 213, 115, 0.35);
+  color: #a4f5c6;
+}
+
+.statusDescription {
+  font-size: 0.78rem;
+  color: #9bbcdb;
+  margin: 0 0 16px;
+  line-height: 1.4;
+}
+
+/* Category Breakdown Bars */
+.breakdownSection {
+  background: #061122;
+  border: 1px solid #11233d;
+  border-radius: 6px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.breakdownHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.sectionSubtitle {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8cb6df;
+}
+
+.categoryBars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.categoryRow {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.categoryInfo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+}
+
+.categoryName {
+  color: #c0d8f2;
+}
+
+.catCount {
+  color: #5d7e9f;
+}
+
+.categoryValues {
+  color: #799ec2;
+}
+
+.miniBar {
+  width: 100%;
+  height: 4px;
+  background: #030811;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.miniBarFill {
+  height: 100%;
+  background: #3988e3;
+}
+
+.miniFillSuccess {
+  background: #2ed573;
+}
+
+.miniFillWarning {
+  background: #ffa502;
+}
+
+/* Collapsible Component Table */
+.collapsibleWrapper {
+  margin-top: 10px;
+}
+
+.collapseToggle {
+  background: none;
+  border: none;
+  color: #6c9cd4;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 0;
+  text-align: left;
+  transition: color 0.15s ease;
+}
+
+.collapseToggle:hover {
+  color: #a7d0ff;
+}
+
+.componentTableWrapper {
+  margin-top: 8px;
+  background: #040c1a;
+  border: 1px solid #112542;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+}
+
+.dataTable th {
+  background: #07152b;
+  color: #749bc3;
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid #142a4a;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.dataTable td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #0b1a30;
+  color: #cde3fa;
+}
+
+.dataTable tr:last-child td {
+  border-bottom: none;
+}
+
+.componentTableName {
+  font-weight: 500;
+}
+
+.tableCategoryBadge {
+  background: #0e2444;
+  color: #88b4e0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+}
+
+.tableNumber {
+  color: #7ecfff;
+  font-family: monospace;
+}
+
+.emptyTable {
+  text-align: center;
+  color: #55779c;
+  padding: 16px;
+}
+
+/* Bottlenecks List */
+.bottleneckList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bottleneckItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #050f20;
+  border: 1px solid #142b4b;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.74rem;
+}
+
+.bottleneckInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bottleneckName {
+  color: #cbe3ff;
+  font-weight: 500;
+}
+
+.bottleneckCat {
+  font-size: 0.65rem;
+  background: #0c1e36;
+  color: #6f95be;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.bottleneckValue {
+  color: #ffa502;
+  font-weight: 600;
+}
+
+.emptyNotice {
+  font-size: 0.74rem;
+  color: #5a7b9e;
+  margin: 4px 0 0;
+}
+
+/* ---- Engineering Warnings Panel ---- */
+.warningCountBadge {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.warningGroupsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.warningGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.groupHeaderDanger,
+.groupHeaderWarning,
+.groupHeaderInfo {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.groupHeaderDanger {
+  color: #ff4757;
+}
+
+.groupHeaderWarning {
+  color: #ffa502;
+}
+
+.groupHeaderInfo {
+  color: #00d2d3;
+}
+
+.warningCardsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.warningItemDanger,
+.warningItemWarning,
+.warningItemInfo {
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.warningItemDanger {
+  background: rgba(255, 71, 87, 0.08);
+  border: 1px solid rgba(255, 71, 87, 0.3);
+}
+
+.warningItemWarning {
+  background: rgba(255, 165, 2, 0.08);
+  border: 1px solid rgba(255, 165, 2, 0.3);
+}
+
+.warningItemInfo {
+  background: rgba(0, 210, 211, 0.06);
+  border: 1px solid rgba(0, 210, 211, 0.25);
+}
+
+.warningItemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.warningItemTitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.warningCategoryTag {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #a1c6eb;
+}
+
+.warningItemMessage {
+  font-size: 0.75rem;
+  color: #c7dcf5;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.warningRecommendation {
+  font-size: 0.73rem;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 8px 10px;
+  border-radius: 4px;
+  color: #a4f5c6;
+  border-left: 3px solid #2ed573;
+  line-height: 1.35;
+}
+
+.recommendationIcon {
+  font-weight: 700;
+  color: #2ed573;
+}

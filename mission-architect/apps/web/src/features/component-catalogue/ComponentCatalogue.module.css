@@ -893,3 +893,120 @@
   0%, 100% { opacity: 0.4; }
   50% { opacity: 1; }
 }
+
+/* ---- Resource Summary Widget in Sidebar ---- */
+.resourceSummaryBox {
+  margin-top: 14px;
+  background: #061122;
+  border: 1px solid #162a4a;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.resourceSummaryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #8bb2dc;
+  margin-bottom: 8px;
+}
+
+.feasibilityMiniBadge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  letter-spacing: 0.04em;
+}
+
+.badgeFeasible {
+  background: rgba(46, 213, 115, 0.15);
+  color: #2ed573;
+  border: 1px solid rgba(46, 213, 115, 0.4);
+}
+
+.badgeMarginal {
+  background: rgba(255, 165, 2, 0.15);
+  color: #ffa502;
+  border: 1px solid rgba(255, 165, 2, 0.4);
+}
+
+.badgeViolation {
+  background: rgba(255, 71, 87, 0.15);
+  color: #ff4757;
+  border: 1px solid rgba(255, 71, 87, 0.4);
+}
+
+.badgeIncomplete {
+  background: rgba(0, 210, 211, 0.12);
+  color: #00d2d3;
+  border: 1px solid rgba(0, 210, 211, 0.4);
+}
+
+.resourceSummaryGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.resourceSummaryItem {
+  display: flex;
+  flex-direction: column;
+  background: #040c1a;
+  border: 1px solid #0f2038;
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+
+.summaryItemLabel {
+  font-size: 0.62rem;
+  color: #6385a8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.summaryItemValue {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #e2effd;
+}
+
+.summaryItemSub {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: #6f95be;
+}
+
+.valSuccess {
+  color: #2ed573 !important;
+}
+
+.valDanger {
+  color: #ff4757 !important;
+}
+
+.viewResourcesBtn {
+  width: 100%;
+  background: #0a2142;
+  border: 1px solid #1e4577;
+  color: #8dc2fa;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 7px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.viewResourcesBtn:hover {
+  background: #133566;
+  color: #ffffff;
+  border-color: #3574c4;
+}
+

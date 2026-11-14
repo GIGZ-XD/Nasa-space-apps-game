@@ -9,6 +9,7 @@ import {
 import { ComponentCard } from "./ComponentCard";
 import { ComponentDetailPanel } from "./ComponentDetailPanel";
 import { ComponentComparisonModal } from "./ComponentComparisonModal";
+import { useResourceBudget } from "../resource-management/useResourceBudget";
 import {
   useSpacecraftStore,
   selectSelectedComponents,
@@ -55,7 +56,12 @@ type SortOption =
   | "cost-desc"
   | "power-gen";
 
-export function ComponentCatalogue() {
+export interface ComponentCatalogueProps {
+  onSwitchToResources?: () => void;
+}
+
+export function ComponentCatalogue({ onSwitchToResources }: ComponentCatalogueProps = {}) {
+  const resourceReport = useResourceBudget();
   const [activeCategory, setActiveCategory] = useState<"all" | ComponentCategory>("all");
   const [detailComponentId, setDetailComponentId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -622,6 +628,82 @@ export function ComponentCatalogue() {
               <div className={styles.flightReadyBadge}>
                 <span>🚀 Spacecraft Flight Ready!</span>
               </div>
+            )}
+          </div>
+
+          {/* Live Resource Snapshot Widget */}
+          <div className={styles.resourceSummaryBox} aria-label="Physical resource status">
+            <div className={styles.resourceSummaryHeader}>
+              <span>Resource Snapshot</span>
+              <span
+                className={`${styles.feasibilityMiniBadge} ${
+                  resourceReport.feasibility.status === "FEASIBLE"
+                    ? styles.badgeFeasible
+                    : resourceReport.feasibility.status === "MARGINAL"
+                    ? styles.badgeMarginal
+                    : resourceReport.feasibility.status === "VIOLATION"
+                    ? styles.badgeViolation
+                    : styles.badgeIncomplete
+                }`}
+              >
+                {resourceReport.feasibility.status}
+              </span>
+            </div>
+
+            <div className={styles.resourceSummaryGrid}>
+              <div className={styles.resourceSummaryItem}>
+                <span className={styles.summaryItemLabel}>Mass</span>
+                <span className={styles.summaryItemValue}>
+                  {resourceReport.mass.totalMassKg} kg
+                  {resourceReport.mass.applicableCapacityKg !== null && (
+                    <span className={styles.summaryItemSub}>
+                      {" "}/ {resourceReport.mass.applicableCapacityKg}
+                    </span>
+                  )}
+                </span>
+              </div>
+
+              <div className={styles.resourceSummaryItem}>
+                <span className={styles.summaryItemLabel}>Net Power</span>
+                <span
+                  className={`${styles.summaryItemValue} ${
+                    resourceReport.power.netPowerWatts >= 0 ? styles.valSuccess : styles.valDanger
+                  }`}
+                >
+                  {resourceReport.power.netPowerWatts >= 0 ? "+" : ""}
+                  {resourceReport.power.netPowerWatts} W
+                </span>
+              </div>
+
+              <div className={styles.resourceSummaryItem}>
+                <span className={styles.summaryItemLabel}>Thermal</span>
+                <span
+                  className={`${styles.summaryItemValue} ${
+                    resourceReport.thermal.thermalMarginWatts >= 0 ? styles.valSuccess : styles.valDanger
+                  }`}
+                >
+                  {resourceReport.thermal.thermalMarginWatts >= 0 ? "+" : ""}
+                  {resourceReport.thermal.thermalMarginWatts} W
+                </span>
+              </div>
+
+              <div className={styles.resourceSummaryItem}>
+                <span className={styles.summaryItemLabel}>Battery</span>
+                <span className={styles.summaryItemValue}>
+                  {resourceReport.power.totalBatteryCapacityWh} Wh
+                </span>
+              </div>
+            </div>
+
+            {onSwitchToResources && (
+              <button
+                type="button"
+                className={styles.viewResourcesBtn}
+                onClick={onSwitchToResources}
+                aria-label="Open Full Resource Management Dashboard"
+              >
+                📊 Open Resource Dashboard →
+              </button>
             )}
           </div>
 
