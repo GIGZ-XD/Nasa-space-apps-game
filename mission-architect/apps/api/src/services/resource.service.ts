@@ -1,18 +1,23 @@
 import type { Component, DesignInput, ResourceBreakdown, ResourceTotals } from "@mission-architect/shared";
 import { componentRepository } from "../repositories/component.repository";
 
+/** Anything that can look up a component by ID. Defaults to the real repository; tests inject a fixture. */
+export interface ComponentLookup { findById(id: string): Component | undefined }
+
+type DesignRefs = Pick<DesignInput, "componentIds" | "orbitId" | "launchVehicleId">;
+
 export class DesignValidationError extends Error {
   constructor(public problems: string[]) { super(problems.join("; ")); }
 }
 
 /** Resolve and validate IDs. Throws DesignValidationError listing every problem. */
-export function resolveDesign(input: Pick<DesignInput, "componentIds" | "orbitId" | "launchVehicleId">) {
+export function resolveDesign(input: DesignRefs, catalogue: ComponentLookup = componentRepository) {
   const problems: string[] = [];
   const parts: Component[] = [];
   const seen = new Map<string, string>();
 
   for (const id of input.componentIds) {
-    const c = componentRepository.findById(id);
+    const c = catalogue.findById(id);
     if (!c) { problems.push(`Unknown component "${id}"`); continue; }
     if (c.category === "orbit" || c.category === "launcher") {
       problems.push(`"${id}" is an ${c.category}; set it via ${c.category === "orbit" ? "orbitId" : "launchVehicleId"}, not componentIds`);
@@ -27,11 +32,11 @@ export function resolveDesign(input: Pick<DesignInput, "componentIds" | "orbitId
     parts.push(c);
   }
 
-  const orbit = componentRepository.findById(input.orbitId);
+  const orbit = catalogue.findById(input.orbitId);
   if (!orbit) problems.push(`Unknown orbit "${input.orbitId}"`);
   else if (orbit.category !== "orbit") problems.push(`"${input.orbitId}" is not an orbit`);
 
-  const launcher = componentRepository.findById(input.launchVehicleId);
+  const launcher = catalogue.findById(input.launchVehicleId);
   if (!launcher) problems.push(`Unknown launch vehicle "${input.launchVehicleId}"`);
   else if (launcher.category !== "launcher") problems.push(`"${input.launchVehicleId}" is not a launch vehicle`);
 
@@ -42,8 +47,8 @@ export function resolveDesign(input: Pick<DesignInput, "componentIds" | "orbitId
 const n = (v: number | undefined) => v ?? 0;
 
 /** Deterministic totals. Mass/power cover spacecraft parts only (the launcher is not payload). Cost includes orbit and launcher. */
-export function calculateResources(input: Pick<DesignInput, "componentIds" | "orbitId" | "launchVehicleId">): ResourceBreakdown {
-  const { parts, orbit, launcher } = resolveDesign(input);
+export function calculateResources(input: DesignRefs, catalogue: ComponentLookup = componentRepository): ResourceBreakdown {
+  const { parts, orbit, launcher } = resolveDesign(input, catalogue);
   const lines = parts.map((c) => ({
     componentId: c.id, category: c.category,
     massKg: n(c.massKg), powerDrawW: n(c.powerDrawW), powerOutputW: n(c.powerOutputW), costUsd: c.costUsd,
