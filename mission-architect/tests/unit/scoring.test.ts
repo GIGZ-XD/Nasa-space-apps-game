@@ -126,3 +126,23 @@ test("feasibility: orbit not allowed for the mission (when rules list allowed or
   assert.equal(ev({}, { ...fixtureConfig, rules: { ...fixtureConfig.rules, allowedOrbitIds: ["orbit-x"] } }).feasible, true);
   assert.equal(ev().feasibilityChecks.some((x) => x.id === "orbit-allowed"), false); // omitted when not configured
 });
+
+test("feasibility: battery must cover the orbit's eclipse (only when the orbit defines eclipseMinutes)", () => {
+  // draw 73 W x 5 h = 365 Wh needed, battery is 200 Wh
+  const long = ev({}, fixtureConfig, withOverrides({ "orbit-x": { eclipseMinutes: 300 } }));
+  assert.equal(long.feasibilityChecks.find((c) => c.id === "battery")!.passed, false);
+  // 73 W x 2 h = 146 Wh <= 200 Wh
+  const short = ev({}, fixtureConfig, withOverrides({ "orbit-x": { eclipseMinutes: 120 } }));
+  assert.equal(short.feasibilityChecks.find((c) => c.id === "battery")!.passed, true);
+  assert.equal(ev().feasibilityChecks.some((c) => c.id === "battery"), false);
+});
+
+test("feasibility: comms must clear instrument data; budget is a hard check when configured", () => {
+  const needy = ev({}, fixtureConfig, withOverrides({ "inst-a": { dataRateMbps: 5 } })); // antenna is 2 Mbps
+  assert.equal(needy.feasibilityChecks.find((c) => c.id === "comms")!.passed, false);
+  const cfg = { ...fixtureConfig, rules: { ...fixtureConfig.rules, budgetUsd: 300_000 } };
+  const over = ev({}, cfg); // total cost 330,000
+  assert.equal(over.feasibilityChecks.find((c) => c.id === "budget")!.passed, false);
+  assert.equal(over.status, "failed");
+  assert.equal(ev({}, { ...fixtureConfig, rules: { ...fixtureConfig.rules, budgetUsd: 330_000 } }).feasible, true);
+});

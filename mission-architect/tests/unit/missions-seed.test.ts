@@ -21,7 +21,7 @@ test("mandatory categories are all valid and include orbit and launcher", () => 
 
 test("server-side rules are derived from the mission seed", () => {
   assert.deepEqual(missionRules["earth-observation-01"], {
-    mandatoryCategories: eo.mandatoryCategories, powerReserveFactor: 1.1, allowedOrbitIds: ["leo-500", "sso-600"],
+    mandatoryCategories: eo.mandatoryCategories, powerReserveFactor: 1.1, allowedOrbitIds: ["leo-500", "sso-600"], budgetUsd: 500_000,
   });
 });
 

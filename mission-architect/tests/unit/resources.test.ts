@@ -49,3 +49,8 @@ test("design with missing categories still totals (completeness is a Phase 3 fea
   assert.equal(t.massKg, 40);
   assert.equal(t.powerOutputW, 0);
 });
+
+test("dataRateMbps total is antenna capacity only, not instrument required rates", () => {
+  const withRate = { findById: (id: string) => { const c = cat.findById(id); return id === "inst-a" ? { ...c!, dataRateMbps: 9 } : c; } };
+  assert.equal(calculateResources(sample, withRate).totals.dataRateMbps, 2);
+});

@@ -1,0 +1,194 @@
+[
+  {
+    "id": "bus-small",
+    "category": "structure",
+    "name": "Small Satellite Bus",
+    "description": "A compact, lightweight aluminium chassis designed for small Earth-observation satellites. Provides structural integrity through launch and standard mounting points for all subsystems. Best choice for lightweight missions within tight budgets.",
+    "massKg": 8,
+    "costUsd": 25000
+  },
+  {
+    "id": "bus-medium",
+    "category": "structure",
+    "name": "Medium Satellite Bus",
+    "description": "A larger, more robust bus that can accommodate heavier instruments and additional subsystems. The extra structural mass increases launch costs but opens up more capable payload configurations. Good choice when science instruments are heavy or numerous.",
+    "massKg": 18,
+    "costUsd": 55000
+  },
+  {
+    "id": "bus-reinforced",
+    "category": "structure",
+    "name": "Reinforced Satellite Bus",
+    "description": "A heavily shielded, radiation-hardened bus designed for long-duration missions and demanding orbital environments. The heaviest and most expensive structural option, but provides the greatest protection for sensitive components over a multi-year mission lifetime.",
+    "massKg": 28,
+    "costUsd": 90000
+  },
+
+  {
+    "id": "solar-std",
+    "category": "power",
+    "name": "Standard Solar Array",
+    "description": "A pair of deployable silicon photovoltaic panels. Reliable and affordable, producing enough power for a basic satellite configuration in low Earth orbit. Good match for missions with modest instrument power demands.",
+    "massKg": 7,
+    "powerOutputW": 80,
+    "costUsd": 18000
+  },
+  {
+    "id": "solar-heff",
+    "category": "power",
+    "name": "High-Efficiency Solar Array",
+    "description": "Triple-junction gallium arsenide panels that convert sunlight to electricity more efficiently than standard silicon. Generates significantly more power for a modest mass increase. Recommended when multiple instruments or a high-gain antenna are selected. Costs considerably more than the standard array.",
+    "massKg": 9,
+    "powerOutputW": 140,
+    "costUsd": 42000
+  },
+
+  {
+    "id": "battery-std",
+    "category": "battery",
+    "name": "Standard Li-Ion Battery",
+    "description": "A lithium-ion battery pack sized for a small satellite. Stores enough energy to keep all basic subsystems running through the eclipse period of a low Earth orbit. Adequate for configurations with a single low-power instrument.",
+    "massKg": 4,
+    "capacityWh": 180,
+    "costUsd": 12000
+  },
+  {
+    "id": "battery-high",
+    "category": "battery",
+    "name": "High-Capacity Battery Pack",
+    "description": "A larger lithium-ion pack providing extended eclipse endurance. Needed when power-hungry instruments must keep running through shadow, when total power draw is high, or when the orbit has longer eclipse periods such as sun-synchronous orbit. Heavier and more expensive than the standard pack.",
+    "massKg": 7,
+    "capacityWh": 320,
+    "costUsd": 24000
+  },
+
+  {
+    "id": "uhf-patch",
+    "category": "communications",
+    "name": "UHF Patch Antenna",
+    "description": "A simple, low-power UHF radio link. Sufficient for transmitting housekeeping telemetry and low-volume science data during ground-station contact windows. The low data rate means only modest instruments (such as a basic optical camera) can keep their data buffers cleared. Not suitable for high-resolution imagery or multiple instruments.",
+    "massKg": 2,
+    "powerDrawW": 8,
+    "dataRateMbps": 0.5,
+    "costUsd": 15000
+  },
+  {
+    "id": "xband-hga",
+    "category": "communications",
+    "name": "X-Band High-Gain Antenna",
+    "description": "A directional high-gain antenna operating in the X-band frequency range. Delivers high data rates, making it suitable for transmitting large volumes of imagery or multispectral data within short ground-contact windows. Heavier and more power-hungry than the UHF patch, and significantly more expensive, but essential for data-intensive instruments.",
+    "massKg": 5,
+    "powerDrawW": 25,
+    "dataRateMbps": 8,
+    "costUsd": 48000
+  },
+
+  {
+    "id": "obc-std",
+    "category": "computer",
+    "name": "Standard On-Board Computer",
+    "description": "A radiation-tolerant processor that handles command execution, data storage and housekeeping. Adequate for missions with one or two instruments generating modest data volumes. Lower power draw and cost than the advanced option.",
+    "massKg": 1.5,
+    "powerDrawW": 12,
+    "costUsd": 20000
+  },
+  {
+    "id": "obc-adv",
+    "category": "computer",
+    "name": "Advanced On-Board Computer",
+    "description": "A higher-performance, radiation-hardened processor capable of on-board image processing and faster data handling. Recommended when multiple high-data-rate instruments are selected, or when the mission requires autonomous on-board scheduling. Draws more power and costs approximately twice as much as the standard computer.",
+    "massKg": 2,
+    "powerDrawW": 20,
+    "costUsd": 38000
+  },
+
+  {
+    "id": "adcs-std",
+    "category": "adcs",
+    "name": "Standard ADCS",
+    "description": "A three-axis attitude control system using magnetorquers and a star tracker. Provides sufficient pointing accuracy for wide-area Earth observation using optical and multispectral cameras. Lower power draw and cost than the precision option, but cannot achieve the fine pointing accuracy required by thermal infrared instruments.",
+    "massKg": 2,
+    "powerDrawW": 10,
+    "costUsd": 22000
+  },
+  {
+    "id": "adcs-prec",
+    "category": "adcs",
+    "name": "Precision ADCS",
+    "description": "An enhanced attitude control system with reaction wheels and a high-accuracy star tracker. Required for instruments that demand fine pointing — in particular the thermal infrared imager, where small misalignments significantly degrade image quality. Heavier, more power-hungry and more expensive than the standard ADCS, but unlocks the highest-performance science instruments.",
+    "massKg": 3.5,
+    "powerDrawW": 18,
+    "costUsd": 55000
+  },
+
+  {
+    "id": "camera-optical",
+    "category": "instrument",
+    "name": "Optical Imaging Camera",
+    "description": "A visible-light camera that photographs Earth's surface in natural colour. Ideal for monitoring land use, urban development, cloud cover and large-scale environmental changes. Produces a moderate volume of downlink data. Compatible with the standard ADCS and standard communications antenna.",
+    "massKg": 3,
+    "powerDrawW": 15,
+    "dataRateMbps": 1.2,
+    "costUsd": 40000
+  },
+  {
+    "id": "camera-multispectral",
+    "category": "instrument",
+    "name": "Multispectral Imager",
+    "description": "Captures imagery across multiple wavelength bands including visible, near-infrared and short-wave infrared. Enables analysis of vegetation health, water quality, soil moisture and crop stress. Produces larger data volumes than a standard optical camera — requires the X-band high-gain antenna to clear the data buffer within a contact window.",
+    "massKg": 5,
+    "powerDrawW": 22,
+    "dataRateMbps": 3.5,
+    "costUsd": 75000
+  },
+  {
+    "id": "camera-ir",
+    "category": "instrument",
+    "name": "Thermal Infrared Imager",
+    "description": "Measures heat emitted from Earth's surface. Used to detect urban heat islands, monitor volcanic activity, track wildfires and study sea surface temperatures. Requires precise pointing — pair with the Precision ADCS for usable results. High data volume and high power draw make this the most demanding instrument option.",
+    "massKg": 6,
+    "powerDrawW": 28,
+    "dataRateMbps": 2.8,
+    "costUsd": 90000
+  },
+
+  {
+    "id": "leo-500",
+    "category": "orbit",
+    "name": "Low Earth Orbit — 500 km",
+    "description": "A circular orbit at 500 km altitude with a moderate inclination. The satellite completes approximately 15 orbits per day, giving frequent revisit opportunities over mid-latitude regions. Eclipse periods are short. The entry-level orbit for Earth observation — both launchers support it.",
+    "eclipseMinutes": 30,
+    "contactWindowMinutesPerOrbit": 8,
+    "costUsd": 0
+  },
+  {
+    "id": "sso-600",
+    "category": "orbit",
+    "name": "Sun-Synchronous Orbit — 600 km",
+    "description": "A near-polar orbit at 600 km altitude synchronised with the Sun. The satellite always crosses the equator at the same local solar time each day, providing consistent lighting conditions for photography and enabling systematic global coverage. Eclipse periods are slightly longer than LEO-500. Requires Launcher Beta.",
+    "eclipseMinutes": 32,
+    "contactWindowMinutesPerOrbit": 7,
+    "costUsd": 0
+  },
+
+  {
+    "id": "launch-a",
+    "category": "launcher",
+    "name": "Launcher Alpha",
+    "description": "A small, low-cost launch vehicle designed for lightweight satellites to low Earth orbit. The most affordable launcher option but limited to LEO-500. Cannot reach sun-synchronous orbit. Best matched to configurations using the small satellite bus and a single lightweight instrument.",
+    "massKg": 0,
+    "payloadCapacityKg": 50,
+    "supportedOrbitIds": ["leo-500"],
+    "costUsd": 120000
+  },
+  {
+    "id": "launch-b",
+    "category": "launcher",
+    "name": "Launcher Beta",
+    "description": "A medium-class launch vehicle capable of reaching both low Earth orbit and sun-synchronous orbit. Carries heavier payloads and supports a wider range of inclinations, including polar and SSO trajectories. Significantly more expensive than Launcher Alpha but required for the sun-synchronous orbit or heavier spacecraft configurations.",
+    "massKg": 0,
+    "payloadCapacityKg": 150,
+    "supportedOrbitIds": ["leo-500", "sso-600"],
+    "costUsd": 230000
+  }
+]

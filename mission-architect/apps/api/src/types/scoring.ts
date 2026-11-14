@@ -16,6 +16,8 @@ export interface MissionRules {
   powerReserveFactor: number;
   /** If set, the selected orbit must be in this list. */
   allowedOrbitIds?: string[];
+  /** If set, total cost (parts + orbit + launcher) must not exceed this (hard feasibility check). */
+  budgetUsd?: number;
 }
 
 export interface MissionScoringConfig {
@@ -24,4 +26,8 @@ export interface MissionScoringConfig {
   categories: ScoringCategoryDef[];
   /** componentId -> 0..100. Unlisted components score 0 (UNCONFIRMED policy). */
   suitability: Record<string, number>;
+  /** componentId -> (other selected componentId -> suitability cap). e.g. standard ADCS drops to 20 with the IR imager. */
+  conditionalSuitability?: Record<string, Record<string, number>>;
+  /** Sorted instrument IDs joined by "+" -> bonus points (instrument score = min(100, best + bonus)). */
+  combinationBonus?: Record<string, number>;
 }

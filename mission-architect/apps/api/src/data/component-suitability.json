@@ -1,0 +1,244 @@
+{
+  "_metadata": {
+    "purpose": "Server-side only. Component suitability scores and scoring guidance for mission earth-observation-01. Never expose via any public API route or include in any frontend build.",
+    "owner": "Tanishka (P5) — coordinate changes with Vineeth before implementation",
+    "status": "PROVISIONAL — all suitability scores and weights require Vineeth confirmation before hard-coding in scoring.service.ts",
+    "lastUpdated": "2026-11-14",
+    "consumedBy": ["scoring.service.ts", "evaluation.service.ts"]
+  },
+
+  "missionId": "earth-observation-01",
+
+  "_convention_dataRateMbps": "On instrument components, dataRateMbps represents the MINIMUM downlink data rate the communications system must sustain during a contact window to clear the instrument's data buffer within that window. It is NOT the instrument's continuous generation rate. The backend FC-5 check is: comms.dataRateMbps >= sum(instrument.dataRateMbps for all selected instruments).",
+
+  "categoryWeights": {
+    "_status": "PROVISIONAL — Vineeth must confirm before implementing in scoring.service.ts",
+    "_note": "All weights must sum to 100",
+    "structure": 20,
+    "instruments": 25,
+    "power": 15,
+    "communications": 10,
+    "orbit": 15,
+    "launcher": 15
+  },
+
+  "rewardTiers": {
+    "_status": "PROVISIONAL — Vineeth must confirm",
+    "tiers": [
+      { "minScore": 90, "maxScore": 100, "label": "Gold",    "rewardPercent": 100 },
+      { "minScore": 70, "maxScore": 89,  "label": "Silver",  "rewardPercent": 85  },
+      { "minScore": 50, "maxScore": 69,  "label": "Bronze",  "rewardPercent": 60  },
+      { "minScore": 30, "maxScore": 49,  "label": "Partial", "rewardPercent": 30  },
+      { "minScore": 0,  "maxScore": 29,  "label": "Fail",    "rewardPercent": 0   }
+    ],
+    "passThreshold": 30
+  },
+
+  "orbitProperties": {
+    "_status": "PROVISIONAL — Vineeth to confirm eclipse and contact window figures before implementing FC-4 and FC-5",
+    "_note": "eclipseMinutes and contactWindowMinutesPerOrbit are also embedded in components.json orbit entries for reference. The authoritative source for backend calculation is this file.",
+    "leo-500": {
+      "eclipseMinutes": 30,
+      "contactWindowMinutesPerOrbit": 8,
+      "orbitPeriodMinutes": 95,
+      "coverageNote": "Mid-latitude coverage, frequent revisit, short eclipse. Good general-purpose EO orbit."
+    },
+    "sso-600": {
+      "eclipseMinutes": 32,
+      "contactWindowMinutesPerOrbit": 7,
+      "orbitPeriodMinutes": 97,
+      "coverageNote": "Near-polar, consistent local solar time crossing. Best for systematic global imaging. Slightly longer eclipse than LEO-500."
+    }
+  },
+
+  "componentSuitability": {
+    "_status": "PROVISIONAL — Vineeth must confirm suitability score approach (lookup table vs formula) before implementing",
+    "_scoringNote": "Suitability scores range 0–100 within their category weight. A score of 100 means ideal match for the mission. Alternative components that meet requirements should not score 0 — partial credit is intentional. The backend should use these as guidance, not hard thresholds.",
+
+    "structure": {
+      "_weightRef": "categoryWeights.structure = 20",
+      "_scoringApproach": "Score based on how well the bus mass is matched to total payload mass. Undersized bus for heavy payload = lower score. Oversized bus for light payload = moderate penalty for excess mass.",
+      "bus-small":      { "suitabilityScore": 85, "note": "Ideal for lightweight configurations. Loses points only if total payload exceeds 25 kg." },
+      "bus-medium":     { "suitabilityScore": 70, "note": "Good for medium-mass missions. Slight penalty for adding unnecessary mass in lightweight builds." },
+      "bus-reinforced": { "suitabilityScore": 50, "note": "Overkill for 2-year EO mission. High mass penalty. Appropriate for missions exceeding 3 years — not this mission's scope." }
+    },
+
+    "power": {
+      "_weightRef": "categoryWeights.power = 15 (shared with battery via power category score)",
+      "_scoringApproach": "Score based on power headroom ratio: (powerOutputW / (totalDrawW * powerReserveFactor)). Score 100 at ratio 1.3–1.8. Penalty for ratio below 1.1 (too tight) or above 2.5 (gross overprovisioning).",
+      "solar-std":  { "suitabilityScore": 75, "note": "Adequate for low-draw configurations. Score rises if total draw is below 55 W." },
+      "solar-heff": { "suitabilityScore": 90, "note": "Provides comfortable headroom for most configurations. Loses points only in very lightweight low-draw builds where it is overprovisioned." }
+    },
+
+    "battery": {
+      "_weightRef": "Included in power category score",
+      "_scoringApproach": "Score based on battery coverage ratio: capacityWh / (totalDrawW * eclipseMinutes / 60). Score 100 at ratio 2.0–4.0. Penalty for ratio below 1.2 (too thin) or above 8.0 (overprovisioned).",
+      "battery-std":  { "suitabilityScore": 70, "note": "Sufficient for LEO-500 eclipse with low total draw (<45 W). May fail FC-4 if draw is higher." },
+      "battery-high": { "suitabilityScore": 90, "note": "Comfortable for all configurations and both orbits. Slight overprovisioning penalty in minimal builds." }
+    },
+
+    "communications": {
+      "_weightRef": "categoryWeights.communications = 10",
+      "_scoringApproach": "Score based on data rate match: comms.dataRateMbps vs sum(instrument.dataRateMbps). Score 100 when ratio is 2.0–6.0 (comfortable headroom). Penalty for ratio below 1.0 (fails FC-5) or above 15 (gross overprovisioning for a single low-data instrument).",
+      "uhf-patch": {
+        "suitabilityScore": 40,
+        "note": "Passes FC-5 only with camera-optical (1.2 Mbps required, 0.5 Mbps available — FAILS FC-5 unless contact window interpretation differs). Cannot support multispectral or IR instruments. Very low score when paired with any instrument other than camera-optical, and even then FC-5 is marginal. Recommend backend treats this as a fail for all instruments. See _convention_dataRateMbps.",
+        "fc5Warning": "uhf-patch (0.5 Mbps) CANNOT meet the dataRateMbps requirement of any current instrument (minimum 1.2 Mbps for camera-optical). This is by design — it creates a meaningful penalty for mismatched selection. Vineeth: confirm whether to treat as FC-5 hard fail or score-only penalty."
+      },
+      "xband-hga": { "suitabilityScore": 90, "note": "Comfortably covers all instruments including multispectral (3.5 Mbps) and IR (2.8 Mbps). Small penalty only in extreme overprovisioning vs a single optical camera." }
+    },
+
+    "computer": {
+      "_weightRef": "Included in structure category score",
+      "_scoringApproach": "Score based on data volume handled per orbit. Standard OBC adequate for single instruments; advanced OBC recommended for multiple instruments.",
+      "obc-std": { "suitabilityScore": 75, "note": "Adequate for single-instrument missions. Score lower when two instruments are selected." },
+      "obc-adv": { "suitabilityScore": 90, "note": "Recommended for multi-instrument missions. Minor overprovisioning penalty for single-instrument builds." }
+    },
+
+    "adcs": {
+      "_weightRef": "Included in structure category score",
+      "_scoringApproach": "Score based on pointing requirement of selected instruments. Standard ADCS is insufficient for camera-ir — this causes a mandatory score reduction. Precision ADCS enables full marks for all instrument combinations.",
+      "adcs-std":  {
+        "suitabilityScore": 70,
+        "note": "Adequate for camera-optical and camera-multispectral. Score drops to 20 when camera-ir is selected — the infrared imager requires precision pointing.",
+        "instrumentPenalty": { "camera-ir": 20 }
+      },
+      "adcs-prec": { "suitabilityScore": 95, "note": "Appropriate for all instrument types including camera-ir. Minor overprovisioning penalty if only camera-optical is selected." }
+    },
+
+    "instrument": {
+      "_weightRef": "categoryWeights.instruments = 25",
+      "_scoringApproach": "Score based on data quality and mission coverage. All three instruments are valid for Earth observation. Higher data rate and multi-band capability score higher. Multiple instrument combinations score higher than single instruments, up to a cap. Vineeth to confirm cap and combination bonus.",
+      "camera-optical":       { "suitabilityScore": 70, "note": "Valid EO instrument. Good baseline score. Well-matched to standard components." },
+      "camera-multispectral": { "suitabilityScore": 90, "note": "High-value EO instrument with multi-band capability. Strong science score. Requires X-band comms." },
+      "camera-ir":            { "suitabilityScore": 85, "note": "Specialist thermal instrument. High science value for fire/heat monitoring. Requires Precision ADCS and X-band comms. High mass and power draw." },
+      "_combinationBonus": {
+        "_status": "PROVISIONAL — Vineeth to confirm whether combination bonus is implemented",
+        "optical+multispectral":        { "bonusPoints": 10, "note": "Broad EO coverage across visible and multi-spectral bands." },
+        "optical+ir":                   { "bonusPoints": 8,  "note": "Covers visible + thermal — complementary capabilities." },
+        "multispectral+ir":             { "bonusPoints": 12, "note": "Best scientific combination for Earth monitoring missions." },
+        "optical+multispectral+ir":     { "bonusPoints": 15, "note": "Full suite — maximum science return. High mass/power/cost." }
+      }
+    },
+
+    "orbit": {
+      "_weightRef": "categoryWeights.orbit = 15",
+      "_scoringApproach": "Rule-based score. Both orbits are valid (both are in allowedOrbitIds). SSO scores higher for systematic imaging missions because consistent solar illumination improves data quality and comparability. Any orbit outside allowedOrbitIds scores 0.",
+      "leo-500": { "suitabilityScore": 75, "note": "Valid EO orbit. Good revisit rate and short eclipse. Slight score penalty vs SSO for imaging consistency." },
+      "sso-600": { "suitabilityScore": 95, "note": "Preferred orbit for systematic Earth observation. Consistent solar illumination. Slight mass/power cost from longer eclipse." }
+    },
+
+    "launcher": {
+      "_weightRef": "categoryWeights.launcher = 15",
+      "_scoringApproach": "Score based on payload utilisation efficiency: (totalSpacecraftMassKg / launcher.payloadCapacityKg). Score 100 at ratio 0.5–0.8 (well-matched). Penalty for ratio below 0.2 (severe underuse) or above 0.95 (marginal, risky). Also, selecting a launcher that cannot reach the chosen orbit scores 0 (FC-6 failure).",
+      "launch-a": { "suitabilityScore": 80, "note": "Well-matched for lightweight configurations on LEO-500. Cannot reach SSO — scores 0 if SSO is selected." },
+      "launch-b": { "suitabilityScore": 70, "note": "Appropriate for heavier spacecraft or SSO missions. Efficiency penalty in lightweight builds where launch-a would suffice." }
+    }
+  },
+
+  "referenceViableDesigns": {
+    "_note": "These are confirmed hand-verified designs. Use to test backend feasibility and scoring implementation. See also docs/data-dictionary.md Section 7.",
+
+    "minimal-leo": {
+      "label": "Minimal viable — LEO-500 with X-band",
+      "components": {
+        "structure":      "bus-small",
+        "power":          "solar-std",
+        "battery":        "battery-std",
+        "communications": "xband-hga",
+        "computer":       "obc-std",
+        "adcs":           "adcs-std",
+        "instrument":     ["camera-optical"],
+        "orbit":          "leo-500",
+        "launcher":       "launch-a"
+      },
+      "totals": {
+        "massKg":         30.5,
+        "powerDrawW":     62,
+        "powerOutputW":   80,
+        "powerCheckW":    68.2,
+        "capacityWh":     180,
+        "eclipseDrawWh":  31,
+        "totalCostUsd":   305000
+      },
+      "feasibilityChecks": {
+        "FC-1_completeness": "PASS — all 9 categories present",
+        "FC-2_mass":         "PASS — 30.5 kg <= 50 kg (launch-a capacity)",
+        "FC-3_power":        "PASS — 80 W >= 62 W * 1.1 = 68.2 W",
+        "FC-4_battery":      "PASS — 180 Wh >= 62 W * 0.5 hr = 31 Wh",
+        "FC-5_comms":        "PASS — 8 Mbps >= 1.2 Mbps (camera-optical requirement)",
+        "FC-6_orbit":        "PASS — launch-a supports leo-500",
+        "FC-7_budget":       "PASS — $305,000 <= $500,000"
+      },
+      "status": "VERIFIED"
+    },
+
+    "balanced-sso": {
+      "label": "Balanced — SSO-600 with multispectral",
+      "components": {
+        "structure":      "bus-medium",
+        "power":          "solar-heff",
+        "battery":        "battery-high",
+        "communications": "xband-hga",
+        "computer":       "obc-adv",
+        "adcs":           "adcs-std",
+        "instrument":     ["camera-multispectral"],
+        "orbit":          "sso-600",
+        "launcher":       "launch-b"
+      },
+      "totals": {
+        "massKg":         44,
+        "powerDrawW":     85,
+        "powerOutputW":   140,
+        "powerCheckW":    93.5,
+        "capacityWh":     320,
+        "eclipseDrawWh":  45.3,
+        "totalCostUsd":   502000
+      },
+      "feasibilityChecks": {
+        "FC-1_completeness": "PASS — all 9 categories present",
+        "FC-2_mass":         "PASS — 44 kg <= 150 kg (launch-b capacity)",
+        "FC-3_power":        "PASS — 140 W >= 85 W * 1.1 = 93.5 W",
+        "FC-4_battery":      "PASS — 320 Wh >= 85 W * (32/60) hr = 45.3 Wh",
+        "FC-5_comms":        "PASS — 8 Mbps >= 3.5 Mbps (multispectral requirement)",
+        "FC-6_orbit":        "PASS — launch-b supports sso-600",
+        "FC-7_budget":       "MARGINAL — $502,000 > $500,000 by $2,000. FAILS FC-7 if budget is a hard block. PROVISIONAL pending Vineeth decision on FC-7 rule."
+      },
+      "status": "PROVISIONAL — FC-7 outcome depends on Vineeth budget-block decision. Swap bus-medium for bus-small to bring cost to $472,000 for a clean pass."
+    },
+
+    "high-performance-sso": {
+      "label": "High performance — SSO-600 with IR imager",
+      "components": {
+        "structure":      "bus-medium",
+        "power":          "solar-heff",
+        "battery":        "battery-high",
+        "communications": "xband-hga",
+        "computer":       "obc-adv",
+        "adcs":           "adcs-prec",
+        "instrument":     ["camera-ir"],
+        "orbit":          "sso-600",
+        "launcher":       "launch-b"
+      },
+      "totals": {
+        "massKg":         49.5,
+        "powerDrawW":     99,
+        "powerOutputW":   140,
+        "powerCheckW":    108.9,
+        "capacityWh":     320,
+        "eclipseDrawWh":  52.8,
+        "totalCostUsd":   562000
+      },
+      "feasibilityChecks": {
+        "FC-1_completeness": "PASS — all 9 categories present",
+        "FC-2_mass":         "PASS — 49.5 kg <= 150 kg (launch-b capacity)",
+        "FC-3_power":        "PASS — 140 W >= 99 W * 1.1 = 108.9 W",
+        "FC-4_battery":      "PASS — 320 Wh >= 99 W * (32/60) hr = 52.8 Wh",
+        "FC-5_comms":        "PASS — 8 Mbps >= 2.8 Mbps (camera-ir requirement)",
+        "FC-6_orbit":        "PASS — launch-b supports sso-600",
+        "FC-7_budget":       "FAIL — $562,000 > $500,000. This design exceeds budget. Use as a scoring example for over-budget configurations, not as a viable MVP demo design."
+      },
+      "status": "PROVISIONAL — Intentionally over-budget. Documents what a high-performance build looks like and why budget trade-offs matter. Good for educational feedback."
+    }
+  }
+}

@@ -27,6 +27,26 @@ export function checkFeasibility(
         ? `${launcher.name} can reach ${orbit.name}.`
         : `${launcher.name} cannot reach ${orbit.name}.` },
   ];
+  // Battery must carry the whole draw through the orbit's eclipse (only when the orbit defines eclipseMinutes).
+  if (orbit.eclipseMinutes !== undefined) {
+    const needWh = round(totals.powerDrawW * orbit.eclipseMinutes / 60);
+    const ok = totals.batteryWh >= needWh;
+    checks.push({ id: "battery", passed: ok,
+      message: ok ? `Battery ${totals.batteryWh} Wh covers the ${needWh} Wh needed through the ${orbit.eclipseMinutes}-minute eclipse.`
+        : `Battery ${totals.batteryWh} Wh is below the ${needWh} Wh needed to run through the ${orbit.eclipseMinutes}-minute eclipse.` });
+  }
+  // Downlink rate must cover the instruments' minimum required rate (Tanishka's dataRateMbps convention).
+  const needMbps = round(parts.filter((p) => p.category === "instrument").reduce((a, p) => a + (p.dataRateMbps ?? 0), 0));
+  const commsOk = totals.dataRateMbps >= needMbps;
+  checks.push({ id: "comms", passed: commsOk,
+    message: commsOk ? `Antenna ${totals.dataRateMbps} Mbps covers the instruments' ${needMbps} Mbps.`
+      : `Antenna ${totals.dataRateMbps} Mbps cannot clear the instruments' ${needMbps} Mbps data.` });
+  if (rules.budgetUsd !== undefined) {
+    const ok = totals.costUsd <= rules.budgetUsd;
+    checks.push({ id: "budget", passed: ok,
+      message: ok ? `Total cost ${totals.costUsd} USD is within the ${rules.budgetUsd} USD budget.`
+        : `Total cost ${totals.costUsd} USD exceeds the ${rules.budgetUsd} USD budget by ${totals.costUsd - rules.budgetUsd} USD.` });
+  }
   if (rules.allowedOrbitIds) {
     const ok = rules.allowedOrbitIds.includes(orbit.id);
     checks.push({ id: "orbit-allowed", passed: ok,

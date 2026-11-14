@@ -72,3 +72,13 @@ New error: `SCORING_NOT_CONFIGURED` (503) if the mission has no scoring config o
 - New feasibility check `orbit-allowed` (id) when a mission lists `allowedOrbitIds`.
 - Frontend can use `mandatoryCategories` for completeness hints and `allowedOrbitIds` to filter orbits.
 - Evaluate for this mission still returns 503 until components, scoring weights/suitability and finance config are integrated.
+
+## Integration 2 (Tanishka Phase 2: components + private scoring data)
+- `GET /api/components` now serves the real 20-part catalogue (`apps/api/src/data/components.json`): 3 structure, 2 power, 2 battery, 2 comms, 2 computer, 2 adcs, 3 instruments, orbits `leo-500` / `sso-600`, launchers `launch-a` / `launch-b`. Orbits also carry `eclipseMinutes` and `contactWindowMinutesPerOrbit`.
+- Feasibility checks (ids) now: `mandatory`, `mass`, `power`, `orbit-launcher`, `battery`, `comms`, `budget`, `orbit-allowed`. Each is only added when its data exists (`battery` needs the orbit's `eclipseMinutes`, `budget` needs the mission budget, `orbit-allowed` needs `allowedOrbitIds`).
+  - `battery`: `batteryWh >= powerDrawW x eclipseMinutes / 60`.
+  - `comms`: antenna `dataRateMbps >= sum of selected instruments' dataRateMbps` (instrument `dataRateMbps` = REQUIRED downlink rate).
+  - `budget` (HARD): parts + orbit + launcher cost <= mission `budgetUsd`.
+- `resources.dataRateMbps` is now antenna (communications) capacity only (bug fix: it previously also summed instrument rates).
+- Scoring now uses Tanishka's suitability table and weights (structure 20 incl. computer+ADCS, instruments 25, power 15 incl. battery, comms 10, orbit 15, launcher 15). Extras: standard ADCS is capped at 20 when the IR imager is selected; multi-instrument combination bonuses (capped at 100).
+- Finance is provisional: base reward = mission budget, operations cost = 0 (UNCONFIRMED). Evaluate for `earth-observation-01` now returns real results instead of 503.

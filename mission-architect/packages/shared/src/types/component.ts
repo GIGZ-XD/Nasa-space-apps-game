@@ -23,5 +23,9 @@ export interface Component {
   payloadCapacityKg?: number;
   /** Launchers only: orbit IDs this launcher can reach. */
   supportedOrbitIds?: string[];
+  /** Orbits only: minutes in Earth's shadow per orbit (battery must cover this). */
+  eclipseMinutes?: number;
+  /** Orbits only: ground-contact minutes per orbit. */
+  contactWindowMinutesPerOrbit?: number;
   costUsd: number;
 }

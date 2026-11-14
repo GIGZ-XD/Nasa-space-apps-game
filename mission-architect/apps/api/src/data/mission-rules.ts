@@ -7,5 +7,6 @@ export const missionRules: Record<string, MissionRules> = Object.fromEntries(
     mandatoryCategories: m.mandatoryCategories,
     powerReserveFactor: m.powerReserveFactor,
     allowedOrbitIds: m.allowedOrbitIds,
+    budgetUsd: m.budgetUsd,
   }]),
 );

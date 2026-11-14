@@ -1,3 +1,6 @@
-// PRIVATE, server-only. missionId -> componentId -> suitability 0..100.
-// Intentionally empty until the team agrees values (Tanishka P2). Never serve this file.
-export const componentSuitability: Record<string, Record<string, number>> = {};
+import { scoringData } from "./scoring-weights";
+
+// PRIVATE, server-only. missionId -> componentId -> suitability 0..100. Never serve this.
+export const componentSuitability: Record<string, Record<string, number>> = { [scoringData.missionId]: scoringData.suitability };
+export const conditionalSuitability = { [scoringData.missionId]: scoringData.conditionalSuitability };
+export const combinationBonus = { [scoringData.missionId]: scoringData.combinationBonus };

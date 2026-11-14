@@ -1,15 +1,21 @@
-import { componentSuitability } from "../data/component-suitability";
+import { combinationBonus, componentSuitability, conditionalSuitability } from "../data/component-suitability";
 import { missionRules } from "../data/mission-rules";
 import { scoringWeights } from "../data/scoring-weights";
 import type { MissionScoringConfig } from "../types/scoring";
 
+const own = <T>(o: Record<string, T>, k: string): T | undefined => (Object.hasOwn(o, k) ? o[k] : undefined);
+
 /** Assemble private scoring config for a mission, or undefined if not configured. */
 export const scoringConfigRepository = {
   findByMissionId(missionId: string): MissionScoringConfig | undefined {
-    if (!Object.hasOwn(missionRules, missionId) || !Object.hasOwn(scoringWeights, missionId)) return undefined;
-    const rules = missionRules[missionId];
-    const categories = scoringWeights[missionId];
+    const rules = own(missionRules, missionId);
+    const categories = own(scoringWeights, missionId);
     if (!rules || !categories) return undefined;
-    return { missionId, rules, categories, suitability: Object.hasOwn(componentSuitability, missionId) ? componentSuitability[missionId] : {} };
+    return {
+      missionId, rules, categories,
+      suitability: own(componentSuitability, missionId) ?? {},
+      conditionalSuitability: own(conditionalSuitability, missionId),
+      combinationBonus: own(combinationBonus, missionId),
+    };
   },
 };

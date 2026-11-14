@@ -31,8 +31,10 @@ No secrets are committed. `.env.example` has placeholders only.
 5. Finance: reward tier x base reward, minus total cost. Failed missions earn no reward but pay costs; negative profit is valid.
 6. The evaluation is stored in memory and returned by `GET /api/results/:id`.
 
-## Private server data (never served; currently EMPTY)
-`apps/api/src/data/`: `mock.ts` (public missions + components), `scoring-weights.ts`, `component-suitability.ts`, `mission-rules.ts`, `finance-config.ts`. Until a mission has entries in all of these, `evaluate` returns 503 (`SCORING_NOT_CONFIGURED` / `FINANCE_NOT_CONFIGURED`). Integration tests inject fixtures from `tests/fixtures/`.
+## Server data (`apps/api/src/data/`)
+Public, loaded and validated at startup (bad data stops the server): `missions.json`, `components.json` (Tanishka). Private, never served: `component-suitability.json` (suitability scores, weights, instrument rules). `mission-rules.ts` and `finance-config.ts` are derived from the missions (base reward = budget, operations cost = 0, both PROVISIONAL). A mission with no entry returns 503 on evaluate (`SCORING_NOT_CONFIGURED` / `FINANCE_NOT_CONFIGURED`). Tests inject fixtures from `tests/fixtures/`.
+
+Feasibility checks: `mandatory`, `mass`, `power`, `orbit-launcher`, `battery`, `comms`, `budget` (hard), `orbit-allowed`.
 
 ## Error codes
 | HTTP | code | Meaning |
@@ -50,4 +52,4 @@ Shape: `{ "error": { "code", "message", "details?" } }`.
 Build: `npm install`. Start: `npm start --workspace apps/api`. Set `PORT` (Render sets it) and `WEB_ORIGIN` to the deployed web URL. `tsx` is a runtime dependency, so no build step. Storage is in-memory: designs/results reset on every restart/deploy.
 
 ## Known limitations
-In-memory storage (no Prisma/PostgreSQL), no authentication or ownership checks, no budget enforcement, no rate limiting, real mission/scoring/finance data pending.
+In-memory storage (no Prisma/PostgreSQL), no authentication or ownership checks, no budget enforcement, no rate limiting, finance values (base reward, operations cost) provisional.

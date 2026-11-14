@@ -59,7 +59,8 @@ export function calculateResources(input: DesignRefs, catalogue: ComponentLookup
     powerDrawW: sum((c) => n(c.powerDrawW)),
     powerOutputW: sum((c) => n(c.powerOutputW)),
     batteryWh: sum((c) => n(c.capacityWh)),
-    dataRateMbps: sum((c) => n(c.dataRateMbps)),
+    // Downlink capacity = communications parts only (an instrument's dataRateMbps is a REQUIRED rate, not capacity).
+    dataRateMbps: parts.filter((c) => c.category === "communications").reduce((a, c) => a + n(c.dataRateMbps), 0),
     launcherCapacityKg: n(launcher.payloadCapacityKg),
     costUsd: sum((c) => c.costUsd) + orbit.costUsd + launcher.costUsd,
   };

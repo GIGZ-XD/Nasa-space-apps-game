@@ -7,9 +7,13 @@ import { financeConfigs } from "../../apps/api/src/data/finance-config";
 import { missionRules } from "../../apps/api/src/data/mission-rules";
 import { componentSuitability } from "../../apps/api/src/data/component-suitability";
 import { scoringWeights } from "../../apps/api/src/data/scoring-weights";
-import { fixtureComponents } from "../fixtures/catalogue";
+import { fixtureComponents as rawFixture } from "../fixtures/catalogue";
 import { fixtureFinance } from "../fixtures/finance";
 import { fixtureConfig, goodDesign } from "../fixtures/scoring";
+
+// Fixture IDs are prefixed "t-" so they never collide with the real catalogue.
+const t = (id: string) => `t-${id}`;
+const fixtureComponents = rawFixture.map((c) => ({ ...c, id: t(c.id), supportedOrbitIds: c.supportedOrbitIds?.map(t) }));
 
 let server: ReturnType<typeof app.listen>;
 let base = "";
@@ -19,10 +23,10 @@ before(() => {
   components.push(...fixtureComponents);
   for (const id of ["test-mission", "bare-mission"])
     missions.push({ id, name: id, objective: "t", difficulty: "easy", budgetUsd: 500_000, requirements: [],
-      mandatoryCategories: fixtureConfig.rules.mandatoryCategories, powerReserveFactor: 1.1, allowedOrbitIds: ["orbit-x"], lifetimeMonths: 12 });
+      mandatoryCategories: fixtureConfig.rules.mandatoryCategories, powerReserveFactor: 1.1, allowedOrbitIds: [t("orbit-x")], lifetimeMonths: 12 });
   missionRules["test-mission"] = fixtureConfig.rules;
   scoringWeights["test-mission"] = fixtureConfig.categories;
-  componentSuitability["test-mission"] = fixtureConfig.suitability;
+  componentSuitability["test-mission"] = Object.fromEntries(Object.entries(fixtureConfig.suitability).map(([k, v]) => [t(k), v]));
   financeConfigs["test-mission"] = fixtureFinance;
   server = app.listen(0);
   base = `http://localhost:${(server.address() as AddressInfo).port}`;
@@ -31,7 +35,7 @@ after(() => server.close());
 
 const post = (path: string, body: unknown, raw = false) =>
   fetch(base + path, { method: "POST", headers: { "content-type": "application/json" }, body: raw ? (body as string) : JSON.stringify(body) });
-const valid = { missionId: "test-mission", componentIds: goodDesign.componentIds, orbitId: "orbit-x", launchVehicleId: "launch-x" };
+const valid = { missionId: "test-mission", componentIds: goodDesign.componentIds.map(t), orbitId: t("orbit-x"), launchVehicleId: t("launch-x") };
 const errCode = async (r: Response) => ((await r.json()) as any).error.code;
 
 test("health", async () => {
@@ -76,7 +80,7 @@ test("evaluating twice is deterministic with distinct result IDs", async () => {
 });
 
 test("incomplete design is accepted and evaluates as failed with reasons", async () => {
-  const d = ((await (await post("/api/designs", { ...valid, componentIds: ["bus-basic"] })).json()) as any).design;
+  const d = ((await (await post("/api/designs", { ...valid, componentIds: [t("bus-basic")] })).json()) as any).design;
   const e = ((await (await post(`/api/designs/${d.id}/evaluate`, {})).json()) as any).evaluation;
   assert.equal(e.status, "failed");
   assert.equal(e.feasibilityChecks.find((c: any) => c.id === "mandatory").passed, false);
@@ -126,9 +130,9 @@ test("unknown IDs and bad selections -> 400 INVALID_DESIGN", async () => {
   const cases = [
     { ...valid, componentIds: ["ghost"] },
     { ...valid, orbitId: "ghost" },
-    { ...valid, componentIds: ["orbit-x"] },
-    { ...valid, orbitId: "launch-x" },
-    { ...valid, componentIds: ["bus-basic", "bus-reinforced"] },
+    { ...valid, componentIds: [t("orbit-x")] },
+    { ...valid, orbitId: t("launch-x") },
+    { ...valid, componentIds: [t("bus-basic"), t("bus-reinforced")] },
   ];
   for (const c of cases) {
     const r = await post("/api/designs", c);
@@ -172,4 +176,23 @@ test("real mission: saving a design with unknown parts is INVALID_DESIGN (not MI
   const r = await post("/api/designs", { ...valid, missionId: "earth-observation-01", componentIds: ["ghost"] });
   assert.equal(r.status, 400);
   assert.equal(await errCode(r), "INVALID_DESIGN");
+});
+
+test("REAL DATA end-to-end: Tanishka's minimal-leo design over HTTP", async () => {
+  const design = { missionId: "earth-observation-01",
+    componentIds: ["bus-small", "solar-std", "battery-std", "xband-hga", "obc-std", "adcs-std", "camera-optical"],
+    orbitId: "leo-500", launchVehicleId: "launch-a" };
+  const d = ((await (await post("/api/designs", design)).json()) as any).design;
+  const e = ((await (await post(`/api/designs/${d.id}/evaluate`, {})).json()) as any).evaluation;
+  assert.equal(e.status, "success");
+  assert.equal(e.score, 75.96);
+  assert.equal(e.feasibilityChecks.length, 8);
+  assert.equal(e.finance.profitUsd, 120_000);
+  assert.deepEqual(e.resources, { massKg: 30.5, powerDrawW: 62, powerOutputW: 80, batteryWh: 180, dataRateMbps: 8, launcherCapacityKg: 50, costUsd: 305_000 });
+});
+
+test("REAL DATA: the public catalogue lists 20 parts and never leaks scores", async () => {
+  const text = await (await fetch(base + "/api/components?category=instrument")).text();
+  assert.equal((JSON.parse(text) as any).components.length >= 3, true);
+  for (const secret of ["suitabilityScore", "bonusPoints", "instrumentPenalty", "categoryWeights"]) assert.ok(!text.includes(secret));
 });
