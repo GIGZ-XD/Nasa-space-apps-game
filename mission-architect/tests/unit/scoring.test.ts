@@ -4,10 +4,11 @@ import { assertValidConfig } from "../../apps/api/src/services/compatibility.ser
 import { buildEvaluation } from "../../apps/api/src/services/evaluation.service";
 import { scoreDesign } from "../../apps/api/src/services/scoring.service";
 import { fixtureCatalogue as cat, fixtureComponents, withOverrides } from "../fixtures/catalogue";
+import { fixtureFinance } from "../fixtures/finance";
 import { fixtureConfig, goodDesign, withConfig } from "../fixtures/scoring";
 
 const ev = (over: Partial<typeof goodDesign> = {}, config = fixtureConfig, catalogue = cat) =>
-  buildEvaluation({ ...goodDesign, ...over }, { config, catalogue });
+  buildEvaluation({ ...goodDesign, ...over }, { config, catalogue, finance: fixtureFinance });
 
 const oneCategory = (suit: number) => withConfig({ "bus-basic": suit },
   [{ id: "only", label: "Only", weight: 100, memberCategories: ["structure"] }]);
@@ -78,7 +79,7 @@ test("response never exposes private scoring data", () => {
 });
 
 test("no scoring config -> SCORING_NOT_CONFIGURED (503)", () => {
-  assert.throws(() => buildEvaluation({ ...goodDesign, missionId: "none" }, { catalogue: cat }),
+  assert.throws(() => buildEvaluation({ ...goodDesign, missionId: "none" }, { catalogue: cat, finance: fixtureFinance }),
     (e: any) => e.status === 503 && e.code === "SCORING_NOT_CONFIGURED");
 });
 

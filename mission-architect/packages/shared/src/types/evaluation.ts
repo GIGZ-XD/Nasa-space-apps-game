@@ -14,6 +14,16 @@ export interface CategoryScore {
   weight: number; // weights sum to 100
 }
 
+/** USD, whole dollars. profitUsd = rewardUsd - totalCostUsd and may be negative (a loss). */
+export interface Finance {
+  rewardUsd: number;
+  totalCostUsd: number;
+  profitUsd: number;
+  costBreakdown: { componentsUsd: number; orbitUsd: number; launchUsd: number; operationsUsd: number };
+  /** Fraction (0..1) of the base reward earned. 0 for any failed mission. */
+  rewardFraction: number;
+}
+
 export interface Evaluation {
   id: string;
   designId: string;
@@ -25,9 +35,9 @@ export interface Evaluation {
   feasibilityChecks: FeasibilityCheck[];
   categoryScores: CategoryScore[];
   resources: ResourceTotals;
-  finance: { rewardUsd: number; totalCostUsd: number; profitUsd: number };
+  finance: Finance;
   feedback: string[];
-  /** True while the backend still returns placeholder values (Phase 1). */
+  /** Always false now that scoring and finance are real. Kept for contract stability. */
   mock: boolean;
 }
 

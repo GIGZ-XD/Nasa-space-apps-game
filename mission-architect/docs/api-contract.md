@@ -51,3 +51,12 @@ Evaluation returns fixed placeholder values (`mock: true`, score 75). Missions/c
 Rules: score < 30 fails the score threshold; exactly 30 passes it (threshold applied to the score rounded to 2 decimals). Feasibility is independent of score: a score of 30 with a failed check is `"failed"`. Per scoring category, performance = mean over its part-categories of the best suitability among selected parts (0 if none selected, so extra weaker instruments never hurt).
 
 New error: `SCORING_NOT_CONFIGURED` (503) if the mission has no scoring config on the server. This is the case right now: the private data files are empty.
+
+## Phase 4 additions (finance is real)
+`evaluation.finance` = `{ rewardUsd, totalCostUsd, profitUsd, rewardFraction, costBreakdown:{componentsUsd, orbitUsd, launchUsd, operationsUsd} }` — whole USD.
+- `totalCostUsd` = parts + orbit + launcher + fixed mission-operations cost (server config).
+- `rewardUsd` = base reward x tier fraction. Illustrative tiers (UNCONFIRMED): score >=90 -> 1.0; >=70 -> 0.85; >=50 -> 0.6; >=30 -> 0.3; else 0.
+- **Failed-mission policy:** `status:"failed"` (infeasible OR score < 30) earns **no reward** but all costs still apply.
+- `profitUsd = rewardUsd - totalCostUsd`; negative = a loss and is valid.
+- `mock` is now always `false`. New error `FINANCE_NOT_CONFIGURED` (503) if the mission has no finance config (empty until base reward / operations cost are agreed).
+- `GET /api/results/:id` returns the stored evaluation (`{evaluation}`); storage is in-memory, so results are lost on server restart. Budget overrun is not enforced; it only shows as a loss.
