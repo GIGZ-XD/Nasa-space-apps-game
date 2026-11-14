@@ -37,3 +37,10 @@ export type { TransitionOptions } from "./systems/SceneTransition";
 
 export { LaunchAnimationController } from "./animations/launchAnimation";
 export type { LaunchAnimationConfig, LaunchAnimationCallbacks } from "./animations/launchAnimation";
+
+export { OutcomeAnimationController } from "./animations/outcomeAnimation";
+export type { OutcomeAnimationConfig } from "./animations/outcomeAnimation";
+
+// Outcome Types & Events
+export { OUTCOME_EVENTS } from "./types/outcome";
+export type { MissionOutcomeStatus, MissionOutcomePayload } from "./types/outcome";
