@@ -1,6 +1,7 @@
 {
   "name": "@mission-architect/shared",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts"
 }
-
