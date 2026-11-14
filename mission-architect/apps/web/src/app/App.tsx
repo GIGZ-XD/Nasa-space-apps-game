@@ -4,13 +4,14 @@ import { MISSIONS } from "../data/missions";
 import { HomePage } from "../pages/HomePage";
 import { MissionSelectPage } from "../pages/MissionSelectPage";
 import { MissionBriefPage } from "../pages/MissionBriefPage";
+import { LeaderboardPage } from "../pages/LeaderboardPage";
 import { MarketPage } from "../pages/MarketPage";
 import { LoginPage } from "../pages/LoginPage";
 import { DevHarness } from "./DevHarness";
 import { useAuthStore } from "../stores/authStore";
 import { Screen as StageScreen } from "../components/layout/ui";
 
-type Screen = "home" | "select" | "brief" | "workshop" | "market" | "login" | "signup";
+type Screen = "home" | "select" | "brief" | "workshop" | "leaderboard" | "market" | "login" | "signup";
 
 export function App() {
   const { isAuthenticated, isInitialized, checkSession } = useAuthStore();
@@ -93,15 +94,7 @@ export function App() {
 
   const mission = MISSIONS.find((m) => m.id === missionId) ?? MISSIONS[0];
 
-  if (screen === "market") {
-    return <MarketPage go={go} />;
-  }
-  if (screen === "login") {
-    return <LoginPage go={go} initialMode="login" />;
-  }
-  if (screen === "signup") {
-    return <LoginPage go={go} initialMode="register" />;
-  }
+  if (screen === "leaderboard") return <LeaderboardPage go={go} />;
   if (screen === "select") {
     return (
       <MissionSelectPage
@@ -135,6 +128,15 @@ export function App() {
         <PhaserGame initialScene="WorkshopScene" />
       </div>
     );
+  }
+  if (screen === "market") {
+    return <MarketPage go={go} />;
+  }
+  if (screen === "login") {
+    return <LoginPage go={go} initialMode="login" />;
+  }
+  if (screen === "signup") {
+    return <LoginPage go={go} initialMode="register" />;
   }
 
   return <HomePage go={go} />;

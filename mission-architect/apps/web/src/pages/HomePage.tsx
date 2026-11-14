@@ -66,7 +66,7 @@ export function HomePage({ go }: { go: (s: string) => void }) {
       </Panel>
 
       <Coins />
-      <Btn x={14} y={302} w={264} h={72} icon={<Img src="/assets/sprites/ui/trophy.jpg" size={50} />}>Leaderboard</Btn>
+      <Btn x={14} y={302} w={264} h={72} icon={<Img src="/assets/sprites/ui/trophy.jpg" size={50} />} onClick={() => go("leaderboard")}>Leaderboard</Btn>
       <Btn x={14} y={388} w={264} h={72} icon={<Img src="/assets/sprites/ui/book.jpg" size={50} />}>Tutorial</Btn>
       <img className="pix abs" src="/assets/sprites/ui/stella2.jpg" alt="STELLA" style={{ left: 1212, top: 172, width: 224, WebkitMaskImage: "radial-gradient(ellipse at 50% 50%,#000 70%,transparent 96%)", maskImage: "radial-gradient(ellipse at 50% 50%,#000 70%,transparent 96%)" }} />
       <Panel x={1176} y={392} w={262} h={136} className="bubble home-bubble">
