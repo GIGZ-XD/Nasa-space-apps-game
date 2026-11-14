@@ -1,5 +1,5 @@
 export * from "./types/mission";
 export * from "./types/component";
+export * from "./types/design";
 export * from "./types/spacecraft";
 export * from "./types/evaluation";
-
