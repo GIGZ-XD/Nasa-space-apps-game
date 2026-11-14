@@ -6,6 +6,7 @@ import {
   DEFAULT_GAME_HEIGHT,
   SPACE_THEME_BACKGROUND,
 } from "./config/gameConfig";
+import { MissionOutcomeStatus, OUTCOME_EVENTS } from "./types/outcome";
 
 export interface PhaserGameProps {
   /** Configurable canvas width in pixels or CSS string (default: 1280) */
@@ -20,6 +21,8 @@ export interface PhaserGameProps {
   scenes?: Phaser.Types.Scenes.SceneType[];
   /** Optional initial scene key to switch to after boot (e.g. 'LaunchScene' or 'OrbitScene') */
   initialScene?: string;
+  /** Optional mission outcome status driven authoritatively by React ('pending' | 'success' | 'failure') */
+  missionOutcome?: MissionOutcomeStatus;
   /** Callback invoked once Phaser.Game has booted and is ready */
   onGameReady?: (game: Phaser.Game) => void;
   /** Callback invoked after Phaser.Game has been destroyed during unmount */
@@ -44,6 +47,7 @@ export const PhaserGame: React.FC<PhaserGameProps> = memo(function PhaserGame({
   style,
   scenes,
   initialScene,
+  missionOutcome,
   onGameReady,
   onGameDestroyed,
 }) {
@@ -54,6 +58,7 @@ export const PhaserGame: React.FC<PhaserGameProps> = memo(function PhaserGame({
   const onGameReadyRef = useRef(onGameReady);
   const onGameDestroyedRef = useRef(onGameDestroyed);
   const initialSceneRef = useRef(initialScene);
+  const missionOutcomeRef = useRef(missionOutcome);
 
   useEffect(() => {
     onGameReadyRef.current = onGameReady;
@@ -66,6 +71,14 @@ export const PhaserGame: React.FC<PhaserGameProps> = memo(function PhaserGame({
   useEffect(() => {
     initialSceneRef.current = initialScene;
   }, [initialScene]);
+
+  useEffect(() => {
+    missionOutcomeRef.current = missionOutcome;
+    if (gameRef.current && missionOutcome) {
+      gameRef.current.registry.set("missionOutcome", missionOutcome);
+      gameRef.current.events?.emit(OUTCOME_EVENTS.SET_OUTCOME, { status: missionOutcome });
+    }
+  }, [missionOutcome]);
 
   useEffect(() => {
     // Avoid accessing browser-only APIs during SSR
@@ -92,13 +105,38 @@ export const PhaserGame: React.FC<PhaserGameProps> = memo(function PhaserGame({
     const game = new Phaser.Game(config);
     gameRef.current = game;
 
+    // Pre-populate registry before scenes boot
+    if (initialSceneRef.current) {
+      game.registry.set("initialScene", initialSceneRef.current);
+    }
+    if (missionOutcomeRef.current) {
+      game.registry.set("missionOutcome", missionOutcomeRef.current);
+    }
+
     const handleReady = () => {
       if (!isCurrentMount || gameRef.current !== game) return;
 
-      // If an initial scene override was requested, switch to it
+      // Register initial mission outcome in registry if provided
+      if (missionOutcomeRef.current) {
+        game.registry.set("missionOutcome", missionOutcomeRef.current);
+      }
+
+      // If an initial scene override was requested, switch to it and stop conflicting active scenes
       if (initialSceneRef.current) {
         try {
-          game.scene.start(initialSceneRef.current);
+          const activeScenes = game.scene.getScenes(true);
+          for (const s of activeScenes) {
+            if (
+              s.scene.key !== initialSceneRef.current &&
+              s.scene.key !== "BootScene" &&
+              s.scene.key !== "PreloadScene"
+            ) {
+              game.scene.stop(s.scene.key);
+            }
+          }
+          if (!game.scene.isActive(initialSceneRef.current)) {
+            game.scene.start(initialSceneRef.current);
+          }
         } catch (err) {
           console.warn(`[PhaserGame] Could not start initialScene '${initialSceneRef.current}':`, err);
         }
