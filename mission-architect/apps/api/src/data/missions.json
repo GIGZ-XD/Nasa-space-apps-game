@@ -1,0 +1,41 @@
+[
+  {
+    "id": "earth-observation-01",
+    "name": "Eyes on Earth",
+    "objective": "Design a viable Earth-observing satellite that can capture and transmit scientifically useful imagery or data about Earth's surface, atmosphere, or environment from orbit. The spacecraft must maintain continuous power through eclipse, relay data to the ground, and stay within mass and budget limits.",
+    "difficulty": "easy",
+    "budgetUsd": 500000,
+    "requirements": [
+      "Include one Structure component to form the spacecraft bus.",
+      "Include one Power component (solar panels) to generate electricity in sunlight.",
+      "Include one Battery component to sustain the spacecraft during orbital eclipse.",
+      "Include one Communications component to downlink science data to the ground.",
+      "Include one Computer component to manage on-board data processing and command handling.",
+      "Include one ADCS component to maintain the spacecraft's pointing direction toward Earth.",
+      "Include at least one Instrument component to collect Earth observation data.",
+      "Select one Orbit appropriate for Earth observation.",
+      "Select one Launcher compatible with the chosen orbit.",
+      "Total spacecraft mass must not exceed the selected launcher's payload capacity.",
+      "Solar panel power output must be at least 1.1 times the total power draw of all active components.",
+      "Total mission expenditure must not exceed the budget of $500,000.",
+      "The selected launcher must support the selected orbit."
+    ],
+    "mandatoryCategories": [
+      "structure",
+      "power",
+      "battery",
+      "communications",
+      "computer",
+      "adcs",
+      "instrument",
+      "orbit",
+      "launcher"
+    ],
+    "powerReserveFactor": 1.1,
+    "allowedOrbitIds": [
+      "leo-500",
+      "sso-600"
+    ],
+    "lifetimeMonths": 24
+  }
+]

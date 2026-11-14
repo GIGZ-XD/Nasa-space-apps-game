@@ -1,5 +1,7 @@
 import type { Component, Mission } from "@mission-architect/shared";
+import { loadMissions } from "./missions-loader";
 
-// Intentionally empty: waiting for Tanishka's mission seed and component/orbit/launcher data.
-export const missions: Mission[] = [];
+// Missions come from Tanishka's missions.json (validated at startup).
+export const missions: Mission[] = loadMissions();
+// Intentionally empty until Tanishka's components.json is integrated (Phase 2).
 export const components: Component[] = [];

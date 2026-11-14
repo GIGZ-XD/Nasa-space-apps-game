@@ -14,6 +14,8 @@ export interface MissionRules {
   mandatoryCategories: ComponentCategory[];
   /** Power output must be >= powerDraw * this factor (1.1 = 10% reserve). */
   powerReserveFactor: number;
+  /** If set, the selected orbit must be in this list. */
+  allowedOrbitIds?: string[];
 }
 
 export interface MissionScoringConfig {

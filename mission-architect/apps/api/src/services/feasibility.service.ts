@@ -11,7 +11,7 @@ export function checkFeasibility(
   const required = totals.powerDrawW * rules.powerReserveFactor;
   const supported = launcher.supportedOrbitIds;
 
-  return [
+  const checks: FeasibilityCheck[] = [
     { id: "mandatory", passed: missing.length === 0,
       message: missing.length ? `Missing required subsystems: ${missing.join(", ")}.` : "All required subsystems are present." },
     { id: "mass", passed: totals.massKg <= totals.launcherCapacityKg,
@@ -27,5 +27,11 @@ export function checkFeasibility(
         ? `${launcher.name} can reach ${orbit.name}.`
         : `${launcher.name} cannot reach ${orbit.name}.` },
   ];
+  if (rules.allowedOrbitIds) {
+    const ok = rules.allowedOrbitIds.includes(orbit.id);
+    checks.push({ id: "orbit-allowed", passed: ok,
+      message: ok ? `${orbit.name} is suitable for this mission.` : `${orbit.name} is not an allowed orbit for this mission.` });
+  }
+  return checks;
 }
 const round = (n: number) => Math.round(n * 100) / 100;

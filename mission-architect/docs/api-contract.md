@@ -66,3 +66,9 @@ New error: `SCORING_NOT_CONFIGURED` (503) if the mission has no scoring config o
 - Stricter validation: IDs are trimmed, 1-64 chars; `componentIds` max 30; `name` trimmed 1-80.
 - Bare `null`/string/number bodies return `BAD_JSON`.
 - **Contract frozen for the demo** apart from coordinated changes. Final list of error codes: `docs/api-documentation.md`.
+
+## Integration 1 (Tanishka Phase 1: mission seed)
+- `Mission` now has 4 more fields (all from `apps/api/src/data/missions.json`, validated at startup): `mandatoryCategories: ComponentCategory[]`, `powerReserveFactor: number`, `allowedOrbitIds: string[]`, `lifetimeMonths: number`. Returned by `GET /api/missions` and `/api/missions/:id`. Real mission: `earth-observation-01` ("Eyes on Earth", 500,000 USD, reserve 1.1, orbits `leo-500`, `sso-600`).
+- New feasibility check `orbit-allowed` (id) when a mission lists `allowedOrbitIds`.
+- Frontend can use `mandatoryCategories` for completeness hints and `allowedOrbitIds` to filter orbits.
+- Evaluate for this mission still returns 503 until components, scoring weights/suitability and finance config are integrated.

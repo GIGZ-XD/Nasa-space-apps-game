@@ -116,3 +116,13 @@ test("all feasibility problems are reported together", () => {
   assert.deepEqual(e.feasibilityChecks.filter((c) => !c.passed).map((c) => c.id), ["mandatory", "orbit-launcher"]);
   assert.ok(e.feedback.length >= 2);
 });
+
+test("feasibility: orbit not allowed for the mission (when rules list allowed orbits)", () => {
+  const cfg = { ...fixtureConfig, rules: { ...fixtureConfig.rules, allowedOrbitIds: ["orbit-y"] } };
+  const e = ev({}, cfg);
+  const c = e.feasibilityChecks.find((x) => x.id === "orbit-allowed")!;
+  assert.equal(c.passed, false);
+  assert.equal(e.status, "failed");
+  assert.equal(ev({}, { ...fixtureConfig, rules: { ...fixtureConfig.rules, allowedOrbitIds: ["orbit-x"] } }).feasible, true);
+  assert.equal(ev().feasibilityChecks.some((x) => x.id === "orbit-allowed"), false); // omitted when not configured
+});

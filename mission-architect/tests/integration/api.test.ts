@@ -18,7 +18,8 @@ before(() => {
   // Populate the (normally empty) server data with TEST-ONLY fixtures.
   components.push(...fixtureComponents);
   for (const id of ["test-mission", "bare-mission"])
-    missions.push({ id, name: id, objective: "t", difficulty: "easy", budgetUsd: 500_000, requirements: [] });
+    missions.push({ id, name: id, objective: "t", difficulty: "easy", budgetUsd: 500_000, requirements: [],
+      mandatoryCategories: fixtureConfig.rules.mandatoryCategories, powerReserveFactor: 1.1, allowedOrbitIds: ["orbit-x"], lifetimeMonths: 12 });
   missionRules["test-mission"] = fixtureConfig.rules;
   scoringWeights["test-mission"] = fixtureConfig.categories;
   componentSuitability["test-mission"] = fixtureConfig.suitability;
@@ -42,7 +43,7 @@ test("health", async () => {
 test("public endpoints never leak private scoring/finance data", async () => {
   const text = (await (await fetch(base + "/api/missions")).text()) + (await (await fetch(base + "/api/components")).text())
     + (await (await fetch(base + "/api/missions/test-mission")).text());
-  for (const secret of ["suitability", "memberCategories", "baseRewardUsd", "operationsCostUsd", "powerReserveFactor"])
+  for (const secret of ["suitability", "memberCategories", "baseRewardUsd", "operationsCostUsd"])
     assert.ok(!text.includes(secret), secret);
 });
 
@@ -156,4 +157,19 @@ test("mission without server config -> 503 SCORING_NOT_CONFIGURED", async () => 
   const r = await post(`/api/designs/${d.id}/evaluate`, {});
   assert.equal(r.status, 503);
   assert.equal(await errCode(r), "SCORING_NOT_CONFIGURED");
+});
+
+test("Tanishka's real mission is served with all agreed fields", async () => {
+  const j: any = await (await fetch(base + "/api/missions/earth-observation-01")).json();
+  assert.equal(j.mission.name, "Eyes on Earth");
+  assert.equal(j.mission.budgetUsd, 500_000);
+  assert.deepEqual(j.mission.allowedOrbitIds, ["leo-500", "sso-600"]);
+  assert.equal(j.mission.powerReserveFactor, 1.1);
+  assert.equal(j.mission.mandatoryCategories.length, 9);
+});
+
+test("real mission: saving a design with unknown parts is INVALID_DESIGN (not MISSION_NOT_FOUND)", async () => {
+  const r = await post("/api/designs", { ...valid, missionId: "earth-observation-01", componentIds: ["ghost"] });
+  assert.equal(r.status, 400);
+  assert.equal(await errCode(r), "INVALID_DESIGN");
 });
