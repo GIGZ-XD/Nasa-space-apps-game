@@ -77,6 +77,7 @@ export function HomePage({ go }: { go: (s: string) => void }) {
         </div>
       </Panel>
       <Btn x={12} y={724} w={290} h={82} icon={<Img src="/assets/sprites/ui/rocket.jpg" size={56} />} onClick={() => go("select")}>Missions</Btn>
+      <Btn x={1222} y={634} w={222} h={78} icon={<Img src="/assets/sprites/ui/gear.jpg" size={46} />} chevron={false} onClick={() => go("inventory")}>Inventory</Btn>
       <Btn x={1222} y={724} w={222} h={82} icon={<Img src="/assets/sprites/ui/market.jpg" size={50} />} chevron={false} onClick={() => go("market")}>Market</Btn>
     </Screen>
   );
