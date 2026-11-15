@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { MarketPart } from "../data/marketData";
+import type { MarketPart, MarketIntel } from "../data/marketData";
 
 export interface GameState {
   coins: number;
@@ -9,10 +9,13 @@ export interface GameState {
   level: number;
   playerName: string;
   ownedPartIds: string[];
+  ownedIntelIds: string[];
 
   // Actions
   buyPart: (part: MarketPart) => { success: boolean; reason?: string };
   isPartOwned: (partId: string) => boolean;
+  buyIntel: (intel: MarketIntel) => { success: boolean; reason?: string };
+  isIntelOwned: (intelId: string) => boolean;
   canAfford: (price: number) => boolean;
   addCoins: (amount: number) => void;
   addXp: (amount: number) => void;
@@ -40,10 +43,12 @@ export const useGameStore = create<GameState>()(
       level: 1,
       playerName: "Commander_01",
       ownedPartIds: [],
+      ownedIntelIds: [],
 
       buyPart: (part: MarketPart) => {
         const state = get();
-        if (state.ownedPartIds.includes(part.id)) {
+        const owned = state.ownedPartIds || [];
+        if (owned.includes(part.id)) {
           return { success: false, reason: "Already owned!" };
         }
         if (state.coins < part.price) {
@@ -51,13 +56,33 @@ export const useGameStore = create<GameState>()(
         }
         set({
           coins: state.coins - part.price,
-          ownedPartIds: [...state.ownedPartIds, part.id],
+          ownedPartIds: [...owned, part.id],
         });
         return { success: true };
       },
 
       isPartOwned: (partId: string) => {
-        return get().ownedPartIds.includes(partId);
+        return (get().ownedPartIds || []).includes(partId);
+      },
+
+      buyIntel: (intel: MarketIntel) => {
+        const state = get();
+        const owned = state.ownedIntelIds || [];
+        if (owned.includes(intel.id)) {
+          return { success: false, reason: "Intel report already in inventory!" };
+        }
+        if (state.coins < intel.price) {
+          return { success: false, reason: "Insufficient funds for classified intel!" };
+        }
+        set({
+          coins: state.coins - intel.price,
+          ownedIntelIds: [...owned, intel.id],
+        });
+        return { success: true };
+      },
+
+      isIntelOwned: (intelId: string) => {
+        return (get().ownedIntelIds || []).includes(intelId);
       },
 
       canAfford: (price: number) => {
@@ -89,6 +114,7 @@ export const useGameStore = create<GameState>()(
           xpMax: 500,
           level: 1,
           ownedPartIds: [],
+          ownedIntelIds: [],
         });
       },
     }),

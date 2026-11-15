@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { Screen, Panel, Btn, Coins, Img, Moonscape } from "../components/layout/ui";
-import { MARKET_CATEGORIES, type MarketCategory, type MarketPart } from "../data/marketData";
+import {
+  MARKET_CATEGORIES,
+  MARKET_INTEL,
+  type MarketCategory,
+  type MarketPart,
+  type MarketIntel,
+} from "../data/marketData";
 import { useGameStore, formatCoins } from "../stores/gameStore";
 
 function fmt(n: number): string {
@@ -143,7 +149,7 @@ function PartsView({
   const handleBuy = (part: MarketPart) => {
     const result = buyPart(part);
     if (result.success) {
-      setToast(`🎉 Acquired ${part.name} for $${fmt(part.price)}!`);
+      setToast(`🎉 Acquired ${part.name} for $${fmt(part.price)}! Added to Inventory.`);
       setTimeout(() => setToast(null), 3500);
     } else {
       setToast(`❌ ${result.reason || "Purchase failed!"}`);
@@ -217,10 +223,10 @@ function PartsView({
                 key={part.id}
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1.2fr 2fr auto auto",
+                  gridTemplateColumns: "74px 1.3fr 2fr auto auto",
                   alignItems: "center",
-                  gap: 20,
-                  padding: "12px 16px",
+                  gap: 16,
+                  padding: "10px 16px",
                   marginBottom: 8,
                   background: owned
                     ? "rgba(10, 40, 25, 0.85)"
@@ -237,6 +243,35 @@ function PartsView({
                   boxShadow: owned ? "inset 0 0 12px rgba(34, 197, 94, 0.2)" : "none",
                 }}
               >
+                {/* Photo of component on the left */}
+                <div
+                  style={{
+                    width: 70,
+                    height: 66,
+                    background: "rgba(6, 16, 44, 0.85)",
+                    border: `2px solid ${owned ? "rgba(34, 197, 94, 0.5)" : "rgba(43, 184, 255, 0.4)"}`,
+                    borderRadius: 4,
+                    display: "grid",
+                    placeItems: "center",
+                    overflow: "hidden",
+                  }}
+                >
+                  {part.img ? (
+                    <img
+                      src={part.img}
+                      alt={part.name}
+                      style={{
+                        maxWidth: 66,
+                        maxHeight: 62,
+                        objectFit: "contain",
+                        imageRendering: "pixelated",
+                      }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: 28 }}>{cat.emoji}</span>
+                  )}
+                </div>
+
                 <div>
                   <div
                     style={{
@@ -256,7 +291,7 @@ function PartsView({
                   )}
                   {owned && (
                     <div style={{ fontSize: 12, color: "#4ade80", fontWeight: 600 }}>
-                      Hardware ready in hangar
+                      ✓ Hardware ready in inventory
                     </div>
                   )}
                 </div>
@@ -350,8 +385,268 @@ function PartsView({
   );
 }
 
+function IntelMarketView({
+  onBack,
+  playerLevel,
+}: {
+  onBack: () => void;
+  playerLevel: number;
+}) {
+  const { isIntelOwned, canAfford, buyIntel } = useGameStore();
+  const [toast, setToast] = useState<string | null>(null);
+
+  const handleBuy = (intel: MarketIntel) => {
+    const res = buyIntel(intel);
+    if (res.success) {
+      setToast(`🎉 Acquired Classified Dossier: ${intel.title}! Added to Inventory.`);
+      setTimeout(() => setToast(null), 3500);
+    } else {
+      setToast(`❌ ${res.reason || "Failed to acquire intel!"}`);
+      setTimeout(() => setToast(null), 3500);
+    }
+  };
+
+  return (
+    <Screen>
+      <Moonscape small />
+      {/* Header */}
+      <Panel x={462} y={16} w={532} h={64}>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "grid",
+            placeItems: "center",
+            zIndex: 1,
+          }}
+        >
+          <span style={{ color: "var(--gold)", fontWeight: 700, fontSize: 22 }}>
+            👥 CLASSIFIED INTEL BROKERAGE
+          </span>
+        </div>
+      </Panel>
+      <Coins />
+
+      {/* Toast Notification Banner */}
+      {toast && (
+        <div
+          style={{
+            position: "absolute",
+            top: 84,
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "rgba(6, 16, 44, 0.95)",
+            border: "2px solid var(--gold)",
+            color: "var(--gold)",
+            padding: "8px 24px",
+            borderRadius: 6,
+            fontWeight: 700,
+            fontSize: 16,
+            zIndex: 100,
+            boxShadow: "0 0 20px rgba(255, 210, 31, 0.6)",
+            pointerEvents: "none",
+          }}
+        >
+          {toast}
+        </div>
+      )}
+
+      {/* Intel List panel */}
+      <Panel x={18} y={96} w={1420} h={614}>
+        <div
+          style={{
+            position: "absolute",
+            inset: "14px 14px",
+            overflowY: "auto",
+            zIndex: 1,
+            paddingRight: 4,
+          }}
+        >
+          {MARKET_INTEL.map((intel) => {
+            const unlocked = playerLevel >= intel.unlockLevel;
+            const owned = isIntelOwned(intel.id);
+            const affordable = canAfford(intel.price);
+
+            return (
+              <div
+                key={intel.id}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "74px 1.4fr 2fr auto auto",
+                  alignItems: "center",
+                  gap: 16,
+                  padding: "12px 16px",
+                  marginBottom: 8,
+                  background: owned
+                    ? "rgba(10, 40, 25, 0.85)"
+                    : unlocked
+                    ? "rgba(11,26,64,0.9)"
+                    : "rgba(8,14,30,0.7)",
+                  border: `2px solid ${
+                    owned ? "#22c55e" : unlocked ? "#38bdf8" : "#0f2040"
+                  }`,
+                  clipPath:
+                    "polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px)",
+                  opacity: unlocked ? 1 : 0.5,
+                  filter: unlocked ? "none" : "grayscale(0.4)",
+                  boxShadow: owned ? "inset 0 0 12px rgba(34, 197, 94, 0.2)" : "none",
+                }}
+              >
+                {/* Intel Icon */}
+                <div
+                  style={{
+                    width: 70,
+                    height: 66,
+                    background: "rgba(6, 16, 44, 0.85)",
+                    border: `2px solid ${owned ? "rgba(34, 197, 94, 0.5)" : "rgba(56, 189, 248, 0.4)"}`,
+                    borderRadius: 4,
+                    display: "grid",
+                    placeItems: "center",
+                    fontSize: 32,
+                  }}
+                >
+                  {intel.icon}
+                </div>
+
+                {/* Title & Badge */}
+                <div>
+                  <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 2 }}>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        background: "rgba(239, 68, 68, 0.25)",
+                        border: "1px solid #ef4444",
+                        color: "#fca5a5",
+                        padding: "1px 6px",
+                        borderRadius: 3,
+                      }}
+                    >
+                      {intel.badge}
+                    </span>
+                    <span style={{ fontSize: 11, color: "var(--cyan)", fontWeight: 600 }}>
+                      {intel.category.toUpperCase()} INTEL
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      fontWeight: 700,
+                      fontSize: 15,
+                      color: owned ? "#86efac" : unlocked ? "#f0f9ff" : "#7788aa",
+                    }}
+                  >
+                    {!unlocked ? "🔒 " : owned ? "✓ " : ""}
+                    {intel.title}
+                  </div>
+                  {!unlocked && (
+                    <div style={{ fontSize: 12, color: "var(--gold)" }}>
+                      Unlocks at Level {intel.unlockLevel}
+                    </div>
+                  )}
+                  {owned && (
+                    <div style={{ fontSize: 12, color: "#4ade80", fontWeight: 600 }}>
+                      ✓ Intel dossier in inventory
+                    </div>
+                  )}
+                </div>
+
+                {/* Summary */}
+                <div style={{ fontSize: 13, color: "#bae6fd", lineHeight: 1.4 }}>
+                  {intel.summary}
+                </div>
+
+                {/* Price */}
+                <div
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 18,
+                    color: owned ? "#86efac" : "var(--gold)",
+                    whiteSpace: "nowrap",
+                    minWidth: 70,
+                    textAlign: "right",
+                  }}
+                >
+                  💰 {fmt(intel.price)}
+                </div>
+
+                {/* Action button */}
+                <div>
+                  {!unlocked ? (
+                    <div
+                      style={{
+                        width: 90,
+                        height: 34,
+                        background: "#0a1230",
+                        border: "2px solid #1b3a78",
+                        display: "grid",
+                        placeItems: "center",
+                        color: "#64748b",
+                        fontSize: 12,
+                        clipPath:
+                          "polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px)",
+                      }}
+                    >
+                      LOCKED
+                    </div>
+                  ) : owned ? (
+                    <button
+                      disabled
+                      style={{
+                        background: "linear-gradient(#15803d,#064e3b)",
+                        border: "2px solid #22c55e",
+                        color: "#86efac",
+                        fontWeight: 700,
+                        fontSize: 13,
+                        padding: "8px 16px",
+                        clipPath:
+                          "polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px)",
+                        fontFamily: "inherit",
+                        cursor: "default",
+                      }}
+                    >
+                      ✓ IN INVENTORY
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleBuy(intel)}
+                      disabled={!affordable}
+                      style={{
+                        background: affordable
+                          ? "linear-gradient(#ffe45c,#f0a010)"
+                          : "#1e293b",
+                        border: `2px solid ${affordable ? "#fff0a0" : "#475569"}`,
+                        color: affordable ? "#2a1600" : "#94a3b8",
+                        fontWeight: 700,
+                        fontSize: 13,
+                        padding: "8px 18px",
+                        cursor: affordable ? "pointer" : "not-allowed",
+                        clipPath:
+                          "polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px)",
+                        fontFamily: "inherit",
+                        boxShadow: affordable ? "0 0 12px rgba(255, 210, 31, 0.6)" : "none",
+                      }}
+                    >
+                      {affordable ? "Buy Intel" : "Need Funds"}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Panel>
+
+      {/* Back button */}
+      <Btn x={17} y={724} w={320} h={82} icon={<span style={{ fontSize: 32 }}>‹</span>} onClick={onBack}>
+        Back to Market
+      </Btn>
+    </Screen>
+  );
+}
+
 export function MarketPage({ go }: { go: (s: string) => void }) {
   const [activeCategory, setActiveCategory] = useState<MarketCategory | null>(null);
+  const [viewingIntel, setViewingIntel] = useState(false);
   const { level } = useGameStore();
 
   if (activeCategory) {
@@ -364,7 +659,16 @@ export function MarketPage({ go }: { go: (s: string) => void }) {
     );
   }
 
-  const intelUnlocked = level >= 2;
+  if (viewingIntel) {
+    return (
+      <IntelMarketView
+        onBack={() => setViewingIntel(false)}
+        playerLevel={level}
+      />
+    );
+  }
+
+  const intelUnlocked = level >= 1;
 
   return (
     <Screen>
@@ -478,7 +782,7 @@ export function MarketPage({ go }: { go: (s: string) => void }) {
                 Market Locked
               </div>
               <div style={{ fontSize: 15, color: "#8899cc", textAlign: "center" }}>
-                Reach Level 2 to unlock
+                Reach Level 1 to unlock
               </div>
             </div>
           )}
@@ -529,18 +833,19 @@ export function MarketPage({ go }: { go: (s: string) => void }) {
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700, fontSize: 17, color: "#eaf2ff" }}>BUY INTEL</div>
               <div style={{ fontSize: 13, color: "#8899cc" }}>
-                Purchase valuable mission information from other players.
+                Purchase valuable mission telemetry and planetary dossiers.
               </div>
             </div>
             {intelUnlocked && (
               <button
+                onClick={() => setViewingIntel(true)}
                 style={{
                   background: "linear-gradient(#0d3a7a,#082060)",
                   border: "2px solid var(--neon)",
                   color: "var(--cyan)",
                   fontWeight: 700,
                   fontSize: 13,
-                  padding: "6px 14px",
+                  padding: "8px 16px",
                   cursor: "pointer",
                   fontFamily: "inherit",
                   clipPath:
@@ -565,6 +870,20 @@ export function MarketPage({ go }: { go: (s: string) => void }) {
       >
         Dashboard
       </Btn>
+
+      {/* Inventory Button above Market */}
+      <Btn
+        x={1222}
+        y={634}
+        w={222}
+        h={78}
+        icon={<Img src="/assets/sprites/ui/gear.jpg" size={46} />}
+        chevron={false}
+        onClick={() => go("inventory")}
+      >
+        Inventory
+      </Btn>
+
       <Btn
         x={1222}
         y={724}
