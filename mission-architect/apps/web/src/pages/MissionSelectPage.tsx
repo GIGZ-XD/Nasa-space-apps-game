@@ -1,11 +1,12 @@
 import { Btn, Coins, Img, Moonscape, Panel, Screen } from "../components/layout/ui";
-import { MISSIONS, PLAYER, type Mission } from "../data/missions";
+import { MISSIONS, type Mission } from "../data/missions";
+import { useGameStore } from "../stores/gameStore";
 
 const POS: Record<number, [number, number]> = { 1: [100, 125], 2: [533, 130], 3: [963, 130], 4: [281, 420], 5: [757, 420] };
 const W = 394, H = 268;
 
-function Card({ m, onOpen }: { m: Mission; onOpen: () => void }) {
-  const locked = m.unlockLevel > PLAYER.level;
+function Card({ m, onOpen, playerLevel }: { m: Mission; onOpen: () => void; playerLevel: number }) {
+  const locked = m.unlockLevel > playerLevel;
   const [x, y] = POS[m.id];
   return (
     <button className={`card panel ${locked ? "locked" : "sel"}`} style={{ left: x, top: y, width: W, height: H }} onClick={locked ? undefined : onOpen} aria-disabled={locked}>
@@ -13,12 +14,13 @@ function Card({ m, onOpen }: { m: Mission; onOpen: () => void }) {
       <h3 className="cardtitle">{m.short}</h3>
       <img className="pix cardart" src={m.card} alt={m.name} />
       <div className="stats"><span><Img src="/assets/sprites/ui/coin.jpg" size={32} />{m.cost}</span><span><span style={{ color: "#4db8ff" }}>★</span>{m.xp.toLocaleString()} XP</span></div>
-      <div className="view">VIEW MISSION ›</div>
+      <div className="view">{locked ? `UNLOCKS AT LVL ${m.unlockLevel}` : "VIEW MISSION ›"}</div>
     </button>
   );
 }
 
 export function MissionSelectPage({ go, open }: { go: (s: string) => void; open: (id: number) => void }) {
+  const { level } = useGameStore();
   return (
     <Screen>
       <Moonscape small />
@@ -29,7 +31,7 @@ export function MissionSelectPage({ go, open }: { go: (s: string) => void; open:
         <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", color: "var(--cyan)", fontWeight: 600, fontSize: 21, zIndex: 1 }}>Choose your next operation</div>
       </Panel>
       <Coins />
-      {MISSIONS.map((m) => <Card key={m.id} m={m} onOpen={() => open(m.id)} />)}
+      {MISSIONS.map((m) => <Card key={m.id} m={m} onOpen={() => open(m.id)} playerLevel={level} />)}
       <Btn x={17} y={724} w={282} h={82} icon={<Img src="/assets/sprites/ui/home.jpg" size={50} />} onClick={() => go("home")}>Dashboard</Btn>
       <Btn x={1214} y={724} w={230} h={82} icon={<Img src="/assets/sprites/ui/market.jpg" size={50} />} chevron={false} onClick={() => go("market")}>Market</Btn>
     </Screen>

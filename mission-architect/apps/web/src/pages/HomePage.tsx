@@ -1,9 +1,11 @@
 import { Btn, Coins, Img, Moonscape, Panel, Screen } from "../components/layout/ui";
 import { PLAYER } from "../data/missions";
 import { useAuthStore } from "../stores/authStore";
+import { useGameStore } from "../stores/gameStore";
 
 export function HomePage({ go }: { go: (s: string) => void }) {
   const { user, isAuthenticated, logout } = useAuthStore();
+  const { level, xp, xpMax } = useGameStore();
   const commanderName = isAuthenticated && user ? (user.callsign || user.username) : PLAYER.name;
 
   return (
@@ -56,10 +58,10 @@ export function HomePage({ go }: { go: (s: string) => void }) {
                 </button>
               )}
             </div>
-            <div style={{ fontSize: 18, color: "#a5b4fc" }}>Level {PLAYER.level} Commander</div>
+            <div style={{ fontSize: 18, color: "#a5b4fc" }}>Level {level} Commander</div>
             <div style={{ display: "flex", gap: 14, alignItems: "center", marginTop: 4 }}>
-              <div className="xp"><i style={{ width: `${(PLAYER.xp / PLAYER.xpMax) * 100}%` }} /></div>
-              <span style={{ color: "var(--cyan)", fontSize: 18, fontWeight: 600 }}>{PLAYER.xp} / {PLAYER.xpMax} XP</span>
+              <div className="xp"><i style={{ width: `${Math.min(100, (xp / xpMax) * 100)}%` }} /></div>
+              <span style={{ color: "var(--cyan)", fontSize: 18, fontWeight: 600 }}>{xp} / {xpMax} XP</span>
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Screen, Panel, Btn, Coins, Img, Moonscape } from "../components/layout/ui";
-import { MARKET_CATEGORIES, type MarketCategory } from "../data/marketData";
-import { PLAYER } from "../data/missions";
+import { MARKET_CATEGORIES, type MarketCategory, type MarketPart } from "../data/marketData";
+import { useGameStore, formatCoins } from "../stores/gameStore";
 
 function fmt(n: number): string {
   if (n >= 1_000_000) {
@@ -15,13 +15,17 @@ function CategoryCard({
   cat,
   idx,
   onView,
+  playerLevel,
 }: {
   cat: MarketCategory;
   idx: number;
   onView: () => void;
+  playerLevel: number;
 }) {
-  const unlocked = PLAYER.level >= cat.unlockLevel;
-  // 3-column top row (idx 0,1,2), 2-column bottom row (idx 3,4) centered
+  const { isPartOwned } = useGameStore();
+  const unlocked = playerLevel >= cat.unlockLevel;
+  const ownedCount = cat.parts.filter((p) => isPartOwned(p.id)).length;
+
   const topRow = idx < 3;
   const col = topRow ? idx : idx - 3;
   const colCount = topRow ? 3 : 2;
@@ -61,11 +65,28 @@ function CategoryCard({
         }}
       />
       <div style={{ position: "absolute", inset: 0, padding: "10px 12px", zIndex: 1 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-          <span style={{ fontSize: 22 }}>{cat.emoji}</span>
-          <span style={{ fontWeight: 700, fontSize: 15, color: unlocked ? "#eaf2ff" : "#8899bb" }}>
-            {cat.name}
-          </span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 22 }}>{cat.emoji}</span>
+            <span style={{ fontWeight: 700, fontSize: 15, color: unlocked ? "#eaf2ff" : "#8899bb" }}>
+              {cat.name}
+            </span>
+          </div>
+          {ownedCount > 0 && (
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: "#86efac",
+                background: "rgba(34, 197, 94, 0.2)",
+                border: "1px solid #22c55e",
+                padding: "2px 6px",
+                borderRadius: 4,
+              }}
+            >
+              {ownedCount}/{cat.parts.length}
+            </span>
+          )}
         </div>
         <div style={{ fontSize: 13, color: unlocked ? "var(--gold)" : "#5566aa", marginBottom: 4 }}>
           {unlocked ? "✅" : "🔒"} {unlocked ? "Available" : `Unlocks at Level ${cat.unlockLevel}`}
@@ -110,10 +131,26 @@ function CategoryCard({
 function PartsView({
   cat,
   onBack,
+  playerLevel,
 }: {
   cat: MarketCategory;
   onBack: () => void;
+  playerLevel: number;
 }) {
+  const { isPartOwned, canAfford, buyPart } = useGameStore();
+  const [toast, setToast] = useState<string | null>(null);
+
+  const handleBuy = (part: MarketPart) => {
+    const result = buyPart(part);
+    if (result.success) {
+      setToast(`🎉 Acquired ${part.name} for $${fmt(part.price)}!`);
+      setTimeout(() => setToast(null), 3500);
+    } else {
+      setToast(`❌ ${result.reason || "Purchase failed!"}`);
+      setTimeout(() => setToast(null), 3500);
+    }
+  };
+
   return (
     <Screen>
       <Moonscape small />
@@ -128,12 +165,36 @@ function PartsView({
             zIndex: 1,
           }}
         >
-          <span style={{ color: "var(--gold)", fontWeight: 700, fontSize: 26 }}>
+          <span style={{ color: "var(--gold)", fontWeight: 700, fontSize: 24 }}>
             {cat.emoji} {cat.name.toUpperCase()} — PARTS CATALOGUE
           </span>
         </div>
       </Panel>
       <Coins />
+
+      {/* Toast Notification Banner */}
+      {toast && (
+        <div
+          style={{
+            position: "absolute",
+            top: 84,
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "rgba(6, 16, 44, 0.95)",
+            border: "2px solid var(--gold)",
+            color: "var(--gold)",
+            padding: "8px 24px",
+            borderRadius: 6,
+            fontWeight: 700,
+            fontSize: 16,
+            zIndex: 100,
+            boxShadow: "0 0 20px rgba(255, 210, 31, 0.6)",
+            pointerEvents: "none",
+          }}
+        >
+          {toast}
+        </div>
+      )}
 
       {/* Parts list panel */}
       <Panel x={18} y={96} w={1420} h={614}>
@@ -147,23 +208,33 @@ function PartsView({
           }}
         >
           {cat.parts.map((part) => {
-            const partUnlocked = PLAYER.level >= part.unlockLevel;
+            const partUnlocked = playerLevel >= part.unlockLevel;
+            const owned = isPartOwned(part.id);
+            const affordable = canAfford(part.price);
+
             return (
               <div
                 key={part.id}
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 2fr auto auto",
+                  gridTemplateColumns: "1.2fr 2fr auto auto",
                   alignItems: "center",
                   gap: 20,
                   padding: "12px 16px",
                   marginBottom: 8,
-                  background: partUnlocked ? "rgba(11,26,64,0.9)" : "rgba(8,14,30,0.7)",
-                  border: `2px solid ${partUnlocked ? "#1b5fb3" : "#0f2040"}`,
+                  background: owned
+                    ? "rgba(10, 40, 25, 0.85)"
+                    : partUnlocked
+                    ? "rgba(11,26,64,0.9)"
+                    : "rgba(8,14,30,0.7)",
+                  border: `2px solid ${
+                    owned ? "#22c55e" : partUnlocked ? "#1b5fb3" : "#0f2040"
+                  }`,
                   clipPath:
                     "polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px)",
                   opacity: partUnlocked ? 1 : 0.5,
                   filter: partUnlocked ? "none" : "grayscale(0.4)",
+                  boxShadow: owned ? "inset 0 0 12px rgba(34, 197, 94, 0.2)" : "none",
                 }}
               >
                 <div>
@@ -171,16 +242,21 @@ function PartsView({
                     style={{
                       fontWeight: 700,
                       fontSize: 16,
-                      color: partUnlocked ? "#eaf2ff" : "#7788aa",
+                      color: owned ? "#86efac" : partUnlocked ? "#eaf2ff" : "#7788aa",
                       marginBottom: 2,
                     }}
                   >
-                    {partUnlocked ? "" : "🔒 "}
+                    {!partUnlocked ? "🔒 " : owned ? "✓ " : ""}
                     {part.name}
                   </div>
                   {!partUnlocked && (
                     <div style={{ fontSize: 12, color: "var(--gold)" }}>
                       Unlocks at Level {part.unlockLevel}
+                    </div>
+                  )}
+                  {owned && (
+                    <div style={{ fontSize: 12, color: "#4ade80", fontWeight: 600 }}>
+                      Hardware ready in hangar
                     </div>
                   )}
                 </div>
@@ -191,7 +267,7 @@ function PartsView({
                   style={{
                     fontWeight: 700,
                     fontSize: 18,
-                    color: "var(--gold)",
+                    color: owned ? "#86efac" : "var(--gold)",
                     whiteSpace: "nowrap",
                     minWidth: 70,
                     textAlign: "right",
@@ -200,34 +276,64 @@ function PartsView({
                   💰 {fmt(part.price)}
                 </div>
                 <div>
-                  {partUnlocked ? (
-                    <button
+                  {!partUnlocked ? (
+                    <div
                       style={{
-                        background: "linear-gradient(#ffe45c,#f0a010)",
-                        border: "2px solid #fff0a0",
-                        color: "#2a1600",
+                        width: 90,
+                        height: 34,
+                        background: "#0a1230",
+                        border: "2px solid #1b3a78",
+                        display: "grid",
+                        placeItems: "center",
+                        color: "#64748b",
+                        fontSize: 12,
+                        clipPath:
+                          "polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px)",
+                      }}
+                    >
+                      LOCKED
+                    </div>
+                  ) : owned ? (
+                    <button
+                      disabled
+                      style={{
+                        background: "linear-gradient(#15803d,#064e3b)",
+                        border: "2px solid #22c55e",
+                        color: "#86efac",
                         fontWeight: 700,
                         fontSize: 14,
-                        padding: "6px 18px",
-                        cursor: "pointer",
+                        padding: "8px 18px",
                         clipPath:
                           "polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px)",
                         fontFamily: "inherit",
+                        cursor: "default",
+                        boxShadow: "0 0 10px rgba(34, 197, 94, 0.4)",
                       }}
                     >
-                      Buy
+                      ✓ OWNED
                     </button>
                   ) : (
-                    <div
+                    <button
+                      onClick={() => handleBuy(part)}
+                      disabled={!affordable}
                       style={{
-                        width: 70,
-                        height: 32,
-                        background: "#0a1230",
-                        border: "2px solid #1b3a78",
+                        background: affordable
+                          ? "linear-gradient(#ffe45c,#f0a010)"
+                          : "#1e293b",
+                        border: `2px solid ${affordable ? "#fff0a0" : "#475569"}`,
+                        color: affordable ? "#2a1600" : "#94a3b8",
+                        fontWeight: 700,
+                        fontSize: 14,
+                        padding: "8px 22px",
+                        cursor: affordable ? "pointer" : "not-allowed",
                         clipPath:
                           "polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px)",
+                        fontFamily: "inherit",
+                        boxShadow: affordable ? "0 0 12px rgba(255, 210, 31, 0.6)" : "none",
                       }}
-                    />
+                    >
+                      {affordable ? "Buy" : "Need Funds"}
+                    </button>
                   )}
                 </div>
               </div>
@@ -240,19 +346,25 @@ function PartsView({
       <Btn x={17} y={724} w={320} h={82} icon={<span style={{ fontSize: 32 }}>‹</span>} onClick={onBack}>
         Back to Market
       </Btn>
-      <Coins />
     </Screen>
   );
 }
 
 export function MarketPage({ go }: { go: (s: string) => void }) {
   const [activeCategory, setActiveCategory] = useState<MarketCategory | null>(null);
+  const { level } = useGameStore();
 
   if (activeCategory) {
-    return <PartsView cat={activeCategory} onBack={() => setActiveCategory(null)} />;
+    return (
+      <PartsView
+        cat={activeCategory}
+        onBack={() => setActiveCategory(null)}
+        playerLevel={level}
+      />
+    );
   }
 
-  const intelUnlocked = PLAYER.level >= 2;
+  const intelUnlocked = level >= 2;
 
   return (
     <Screen>
@@ -317,6 +429,7 @@ export function MarketPage({ go }: { go: (s: string) => void }) {
                 cat={cat}
                 idx={idx}
                 onView={() => setActiveCategory(cat)}
+                playerLevel={level}
               />
             ))}
           </div>

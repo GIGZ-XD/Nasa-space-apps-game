@@ -1,28 +1,17 @@
-import { useEffect, useState } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../stores/authStore';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
-/**
- * Wraps any route that requires authentication.
- *
- * - On first render it calls `checkSession()` to restore a token
- *   that survived a page refresh.
- * - While the session check is in-flight it shows a minimal loading
- *   screen so the user is never flashed to /login unnecessarily.
- * - Once resolved, unauthenticated visitors are redirected to /login.
- */
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading, checkSession } = useAuthStore();
-  const location = useLocation();
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
     checkSession().finally(() => setChecked(true));
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [checkSession]);
 
   if (!checked || isLoading) {
     return (
@@ -45,7 +34,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return null;
   }
 
   return <>{children}</>;

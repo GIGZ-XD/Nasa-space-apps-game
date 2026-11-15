@@ -96,3 +96,41 @@ export const MARKET_CATEGORIES: MarketCategory[] = [
     ],
   },
 ];
+
+export const ALL_MARKET_PARTS: MarketPart[] = MARKET_CATEGORIES.flatMap((c) => c.parts);
+
+export function findPartById(id: string): MarketPart | undefined {
+  return ALL_MARKET_PARTS.find((p) => p.id === id);
+}
+
+export function findPartByNameOrSlot(name: string): MarketPart | undefined {
+  const norm = name.toLowerCase().trim();
+  // Exact or partial name match
+  const direct = ALL_MARKET_PARTS.find(
+    (p) => p.name.toLowerCase().includes(norm) || norm.includes(p.name.toLowerCase().split(" ")[0])
+  );
+  if (direct) return direct;
+
+  if (norm.includes("falcon 9")) return findPartById("lv3");
+  if (norm.includes("falcon heavy")) return findPartById("lv5");
+  if (norm.includes("atlas v")) return findPartById("lv4");
+  if (norm.includes("sls")) return findPartById("lv6");
+  if (norm.includes("wallops")) return findPartById("lp1");
+  if (norm.includes("39a") || norm.includes("ksc")) return findPartById("lp2");
+  if (norm.includes("41") || norm.includes("canaveral")) return findPartById("lp3");
+  if (norm.includes("3u") || norm.includes("nanosat")) return findPartById("sat3");
+  if (norm.includes("lro")) return findPartById("sat5");
+  if (norm.includes("osiris")) return findPartById("sat6");
+  if (norm.includes("vhf")) return findPartById("sp1");
+  if (norm.includes("lroc")) return findPartById("sp4");
+  if (norm.includes("neutron")) return findPartById("sp5");
+  if (norm.includes("nova-c")) return findPartById("lr2");
+  if (norm.includes("aeroshell") || norm.includes("sky crane")) return findPartById("lr5");
+  if (norm.includes("perseverance") || norm.includes("curiosity") || norm.includes("rover")) return findPartById("lr8");
+  if (norm.includes("draco") || norm.includes("autonav")) return findPartById("sp6");
+  if (norm.includes("sherloc") || norm.includes("drill")) return findPartById("sp8");
+  if (norm.includes("mmrtg")) return findPartById("sp7");
+
+  return undefined;
+}
+
