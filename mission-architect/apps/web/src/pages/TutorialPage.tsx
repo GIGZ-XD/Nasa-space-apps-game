@@ -62,7 +62,7 @@ const STEPS: Step[] = [
         </P>
         <P>
           The mission brief shows the {cy("objectives")} (launch, reach orbit, transfer to geostationary orbit) and the{" "}
-          {cy("rewards")}: up to {hl("3M coins")} and base {hl("200 XP")}.
+          {cy("rewards")}: up to {hl("3M coins")} and {hl("200 XP")}.
         </P>
         <P>
           Only Mission 1 is open at the start. Later missions stay locked 🔒 until you complete the one before.
@@ -207,8 +207,8 @@ const STEPS: Step[] = [
       <>
         <P>
           • {hl("Coins")}: up to 3M, scaled by your score (80% score = 80% of the coins).<br />
-          • {hl("XP")}: base 200 + a bonus for difficulty and score. Gain enough XP to {cy("level up")}.<br />
-          • {hl("Success")} unlocks {cy("Mission 2")}. A failure earns no coins or base XP and unlocks nothing.
+          • {hl("XP")}: a flat {hl("200 XP")} for completing Mission 1. Gain enough XP to {cy("level up")}.<br />
+          • {hl("Success")} unlocks {cy("Mission 2")}. A failure earns no coins or XP and unlocks nothing.
         </P>
         <P>
           ⚠️ {hl("Parts are expended!")} After every launch, win or lose, all the parts you used are destroyed. Buy new ones

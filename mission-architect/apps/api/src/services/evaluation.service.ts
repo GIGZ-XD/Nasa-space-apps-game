@@ -53,10 +53,9 @@ export function calculateCoins(baseCoins: number, los: number, status: MissionSt
   return status === "SUCCESS" ? Math.round(baseCoins * (los / 100)) : 0;
 }
 
-/** XP = B + D×10 + LOS×5, with B = 0 on failure. */
-export function calculateXP(baseXP: number, difficulty: number, los: number, status: MissionStatus): number {
-  const B = status === "SUCCESS" ? baseXP : 0;
-  return Math.round(B + difficulty * 10 + los * 5);
+/** XP = the mission's configured XP prize on success; none on failure. */
+export function calculateXP(baseXP: number, status: MissionStatus): number {
+  return status === "SUCCESS" ? Math.round(baseXP) : 0;
 }
 
 // ---- Persistence (JSON file so attempts/reward records survive restarts) ----
@@ -142,7 +141,7 @@ export const evaluationService = {
       successRate: los,
       missionStatus: status,
       coinsAwarded: calculateCoins(rewardConfig.baseCoins, los, status),
-      xpAwarded: calculateXP(rewardConfig.baseXP, rewardConfig.difficulty, los, status),
+      xpAwarded: calculateXP(rewardConfig.baseXP, status),
       rewarded: true,
       nextLevelUnlocked: status === "SUCCESS" && getMissionRewards(level + 1) !== undefined,
       completedAt: new Date().toISOString(),

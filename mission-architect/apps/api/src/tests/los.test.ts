@@ -97,9 +97,9 @@ await test("13. Changing equipment changes LOS", () => {
 await test("14. LOS 59.99 is MISSION FAILED", () => assert.strictEqual(getMissionStatus(59.99), "FAILED"));
 await test("15. LOS exactly 60 is MISSION SUCCESSFUL", () => assert.strictEqual(getMissionStatus(60), "SUCCESS"));
 await test("16. Failed missions award zero coins", () => assert.strictEqual(calculateCoins(1000, 20, "FAILED"), 0));
-await test("17. Failed missions award XP with B = 0 (=150)", () => assert.strictEqual(calculateXP(100, 5, 20, "FAILED"), 150));
+await test("17. Failed missions award no XP", () => assert.strictEqual(calculateXP(200, "FAILED"), 0));
 await test("18. Successful mission coins = base × LOS/100 (=800)", () => assert.strictEqual(calculateCoins(1000, 80, "SUCCESS"), 800));
-await test("19. Successful mission XP = B + D×10 + LOS×5 (=550)", () => assert.strictEqual(calculateXP(100, 5, 80, "SUCCESS"), 550));
+await test("19. Successful mission XP = the mission's XP prize, regardless of score (=200)", () => assert.strictEqual(calculateXP(200, "SUCCESS"), 200));
 
 await test("20. Duplicate reward requests pay only once", async () => {
   const a = await evaluationService.evaluateMission("u1", 1, [1001, 2001, 3001, 4001], "att-dup");
@@ -113,7 +113,7 @@ await test("20. Duplicate reward requests pay only once", async () => {
 await test("20b. Reward amounts come from backend config, not the client", async () => {
   const r = await evaluationService.evaluateMission("u1", 1, [1001, 2001, 3001, 4001]);
   assert.strictEqual(r.coinsAwarded, 3_000_000);
-  assert.strictEqual(r.xpAwarded, 200 + 2 * 10 + 100 * 5);
+  assert.strictEqual(r.xpAwarded, 200);
 });
 await test("21. Failed hard constraints block launch (LOS alone cannot override)", async () => {
   // Level 1 with a launch vehicle too weak for the mission Δv/payload (Electron works; use none)

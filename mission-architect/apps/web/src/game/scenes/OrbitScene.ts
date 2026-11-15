@@ -140,9 +140,6 @@ export class OrbitScene extends Phaser.Scene {
     // 6. Telemetry & Navigation HUD
     this.buildOrbitHUD(width, height);
 
-    // 7. Keyboard Shortcuts for Testing & Verification
-    this.setupKeyboardControls();
-
     // 8. Register Outcome Listener from React Event Bus
     this.setupOutcomeListener();
 
@@ -308,62 +305,12 @@ export class OrbitScene extends Phaser.Scene {
       }
     );
 
-    // Interactive dev buttons for runtime verification
-    let btnX = width - 470;
-
-    const makeBtn = (label: string, color: string, onClick: () => void) => {
-      const btn = this.add.text(btnX, bottomY + 6, label, {
-        fontFamily: "Courier, monospace",
-        fontSize: "11px",
-        color,
-      }).setInteractive({ useHandCursor: true });
-      btn.on("pointerdown", onClick);
-      btnX += btn.width + 12;
-      return btn;
-    };
-
-    const successBtn = makeBtn("[ SUCCESS (S) ]", "#22c55e", () => this.setMissionOutcome("success"));
-    const failureBtn = makeBtn("[ FAILURE (F) ]", "#ef4444", () => this.setMissionOutcome("failure", "Power Depletion"));
-    const resetBtn = makeBtn("[ RESET (R) ]", "#94a3b8", () => this.setMissionOutcome("pending"));
-    const relaunchBtn = makeBtn("[ LAUNCH (L) ]", "#f59e0b", () => this.relaunch());
-
     this.hudContainer.add([
       hudBg,
       this.statusTitleText,
       this.telemetryText,
       this.hintText,
-      successBtn,
-      failureBtn,
-      resetBtn,
-      relaunchBtn,
     ]);
-  }
-
-  private setupKeyboardControls(): void {
-    if (!this.input.keyboard) return;
-
-    this.input.keyboard.on("keydown-S", () => {
-      this.setMissionOutcome("success");
-    });
-
-    this.input.keyboard.on("keydown-F", () => {
-      this.setMissionOutcome("failure", "Orbital Decay");
-    });
-
-    this.input.keyboard.on("keydown-R", () => {
-      this.setMissionOutcome("pending");
-    });
-
-    this.input.keyboard.on("keydown-L", () => {
-      this.relaunch();
-    });
-  }
-
-  private relaunch(): void {
-    SceneTransitionCoordinator.transitionTo({
-      fromScene: this,
-      toSceneKey: LaunchScene.KEY,
-    });
   }
 
   update(time: number, delta: number): void {
