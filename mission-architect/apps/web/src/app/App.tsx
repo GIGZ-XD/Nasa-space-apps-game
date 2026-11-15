@@ -8,12 +8,14 @@ import { LeaderboardPage } from "../pages/LeaderboardPage";
 import { MarketPage } from "../pages/MarketPage";
 import { WorkshopPage } from "../pages/WorkshopPage";
 import { InventoryPage } from "../pages/InventoryPage";
+import { ResultsPage } from "../pages/ResultsPage";
 import { LoginPage } from "../pages/LoginPage";
 import { DevHarness } from "./DevHarness";
 import { useAuthStore } from "../stores/authStore";
+import { useLOSStore } from "../stores/losStore";
 import { Screen as StageScreen } from "../components/layout/ui";
 
-type Screen = "home" | "select" | "brief" | "workshop" | "launch" | "leaderboard" | "market" | "inventory" | "login" | "signup";
+type Screen = "home" | "select" | "brief" | "workshop" | "launch" | "results" | "leaderboard" | "market" | "inventory" | "login" | "signup";
 
 export function App() {
   const { isAuthenticated, isInitialized, checkSession } = useAuthStore();
@@ -120,21 +122,54 @@ export function App() {
       />
     );
   }
+  const evaluationResult = useLOSStore((s) => s.evaluationResult);
+
   if (screen === "workshop") {
     return <WorkshopPage mission={mission} go={go} launch={() => setScreen("launch")} />;
   }
   if (screen === "launch") {
+    const outcome = evaluationResult ? (evaluationResult.mission_status === "SUCCESS" ? "success" : "failure") : "pending";
     return (
       <div style={{ position: "fixed", inset: 0, background: "#030611" }}>
-        <button
-          className="overlay-back"
-          onClick={() => setScreen("workshop")}
-          style={{ padding: "6px 12px", cursor: "pointer" }}
-        >
-          ← Back to workshop
-        </button>
-        <PhaserGame initialScene="LaunchScene" />
+        <div style={{ position: "absolute", top: 12, left: 16, right: 16, display: "flex", justifyContent: "space-between", zIndex: 1000, pointerEvents: "auto" }}>
+          <button
+            className="overlay-back"
+            onClick={() => setScreen("workshop")}
+            style={{ padding: "8px 16px", cursor: "pointer", background: "rgba(10, 24, 60, 0.85)", border: "2px solid #1b4a99", color: "#eaf2ff", fontWeight: 700 }}
+          >
+            ← Back to workshop
+          </button>
+          <button
+            onClick={() => setScreen("results")}
+            style={{
+              padding: "8px 20px",
+              cursor: "pointer",
+              background: outcome === "success" ? "linear-gradient(#15803d, #166534)" : "linear-gradient(#991b1b, #7f1d1d)",
+              border: `2px solid ${outcome === "success" ? "#4ade80" : "#f87171"}`,
+              color: "#fff",
+              fontWeight: 800,
+              fontSize: 14,
+              letterSpacing: 1,
+              boxShadow: "0 0 14px rgba(0,0,0,0.6)",
+            }}
+          >
+            ★ VIEW MISSION DEBRIEF & REWARDS ›
+          </button>
+        </div>
+        <PhaserGame
+          initialScene="LaunchScene"
+          missionOutcome={outcome}
+        />
       </div>
+    );
+  }
+  if (screen === "results") {
+    return (
+      <ResultsPage
+        missionId={missionId}
+        go={go}
+        onRetry={() => setScreen("workshop")}
+      />
     );
   }
   if (screen === "market") {

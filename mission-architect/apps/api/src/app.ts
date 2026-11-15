@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import { errorHandler } from "./middleware/error.middleware";
 import { authRoutes } from "./routes/auth.routes";
+import { evaluationRoutes } from "./routes/evaluation.routes";
 import { MISSIONS } from "../../web/src/data/missions";
 import { getLeaderboardData } from "../../web/src/data/leaderboardData";
 import { LeaderboardTimeframe } from "../../web/src/types/leaderboard";
@@ -14,6 +15,9 @@ app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
 // Auth endpoints
 app.use("/api/auth", authRoutes);
+
+// Spacecraft Evaluation & LOS endpoints
+app.use("/api", evaluationRoutes);
 
 // Mission endpoints
 app.get("/api/missions", (_req, res) => res.json(MISSIONS));
