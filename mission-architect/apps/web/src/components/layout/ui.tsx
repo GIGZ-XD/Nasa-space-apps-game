@@ -1,5 +1,6 @@
 import { useEffect, useState, type CSSProperties, type PropsWithChildren, type ReactNode } from "react";
 import { PLAYER } from "../../data/missions";
+import { useGameStore, formatCoins } from "../../stores/gameStore";
 import "../../styles/ui.css";
 
 export const STAGE_W = 1456;
@@ -60,10 +61,11 @@ export function Btn({ x, y, w, h, icon, children, onClick, gold, chevron = true 
 }
 
 export function Coins() {
+  const coins = useGameStore((s) => s.coins);
   return (
     <Panel x={1216} y={20} w={220} h={72}>
       <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", gap: 14, padding: "0 22px", zIndex: 1 }}>
-        <Img src="/assets/sprites/ui/coin.jpg" size={44} /><b style={{ fontSize: 30 }}>{PLAYER.coins}</b>
+        <Img src="/assets/sprites/ui/coin.jpg" size={44} /><b style={{ fontSize: 30 }}>{formatCoins(coins)}</b>
       </div>
     </Panel>
   );

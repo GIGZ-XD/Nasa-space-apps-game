@@ -7,6 +7,8 @@ export interface LaunchAnimationCallbacks {
   onMaxQ?: () => void;
   onStaging?: () => void;
   onComplete?: () => void;
+  /** Fired after a failed launch's explosion has played */
+  onFailure?: () => void;
 }
 
 export interface LaunchAnimationConfig {
@@ -14,6 +16,20 @@ export interface LaunchAnimationConfig {
   rocket: Rocket;
   padY: number;
   callbacks?: LaunchAnimationCallbacks;
+  /** When this returns true the rocket climbs a little, then explodes. */
+  shouldFail?: () => boolean;
+}
+
+interface Debris {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  life: number;
+  maxLife: number;
+  color: number;
+  fire: boolean;
 }
 
 interface SmokePuff {
@@ -42,7 +58,11 @@ export class LaunchAnimationController {
   private rocket: Rocket;
   private padY: number;
   private callbacks?: LaunchAnimationCallbacks;
+  private shouldFail?: () => boolean;
 
+  private explosionGraphics: Phaser.GameObjects.Graphics;
+  private debris: Debris[] = [];
+  private isFailed: boolean = false;
   private flameGraphics: Phaser.GameObjects.Graphics;
   private smokeGraphics: Phaser.GameObjects.Graphics;
 
@@ -59,6 +79,9 @@ export class LaunchAnimationController {
     this.rocket = config.rocket;
     this.padY = config.padY;
     this.callbacks = config.callbacks;
+    this.shouldFail = config.shouldFail;
+    this.explosionGraphics = this.scene.add.graphics();
+    this.explosionGraphics.setDepth(20);
 
     // Visual layers
     this.smokeGraphics = this.scene.add.graphics();
@@ -101,6 +124,12 @@ export class LaunchAnimationController {
 
     this.callbacks?.onLiftoff?.();
 
+    // Failed mission: lift off, climb a little, then blow up
+    if (this.shouldFail?.()) {
+      this.startFailedAscent();
+      return;
+    }
+
     // Camera rumble increases on liftoff
     this.scene.cameras.main.shake(2500, 0.005);
 
@@ -141,11 +170,68 @@ export class LaunchAnimationController {
     this.activeTweens.push(liftoffTween);
   }
 
+  /** Rises ~230px with a wobble, then explodes. */
+  private startFailedAscent(): void {
+    this.scene.cameras.main.shake(2400, 0.006);
+    const startY = this.rocket.y;
+    const climb = this.scene.tweens.add({
+      targets: this.rocket,
+      y: startY - 230,
+      duration: 2600,
+      ease: "Power2.easeIn",
+      onUpdate: (tween) => {
+        // Engine instability: growing wobble before the failure
+        this.rocket.rotation = Math.sin(tween.progress * 40) * 0.05 * tween.progress;
+      },
+      onComplete: () => this.triggerFailure(),
+    });
+    this.activeTweens.push(climb);
+  }
+
+  /** Destroys the rocket in a fireball (also used if the player skips a doomed launch). */
+  public triggerFailure(): void {
+    if (this.isFailed || this.isCompleted) return;
+    this.isFailed = true;
+    this.isAscending = false;
+    this.flameIntensity = 0;
+    this.flameGraphics.clear();
+    this.smokeGraphics.clear();
+    this.smokePuffs = [];
+    for (const t of this.activeTweens) if (t.isPlaying()) t.stop();
+    this.activeTweens = [];
+
+    const { x, y } = this.rocket;
+    this.rocket.setVisible(false);
+
+    const palette = [0xffffff, 0xfde047, 0xf97316, 0xef4444, 0x7f1d1d, 0x334155];
+    for (let i = 0; i < 110; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const speed = 60 + Math.random() * 420;
+      const fire = Math.random() < 0.75;
+      this.debris.push({
+        x: x + (Math.random() - 0.5) * 20,
+        y: y + (Math.random() - 0.5) * 40,
+        vx: Math.cos(a) * speed,
+        vy: Math.sin(a) * speed - 60,
+        size: fire ? 8 + Math.random() * 22 : 3 + Math.random() * 6,
+        life: 0,
+        maxLife: fire ? 0.7 + Math.random() * 0.9 : 1.2 + Math.random() * 1.2,
+        color: fire ? palette[Math.floor(Math.random() * 4)] : palette[4 + Math.floor(Math.random() * 2)],
+        fire,
+      });
+    }
+
+    this.scene.cameras.main.flash(350, 255, 220, 140);
+    this.scene.cameras.main.shake(900, 0.018);
+    this.callbacks?.onFailure?.();
+  }
+
   /**
    * Updates exhaust flames and smoke puffs each animation frame
    */
   public update(time: number, delta: number): void {
-    if (this.isCompleted) return;
+    this.updateExplosion(delta);
+    if (this.isCompleted || this.isFailed) return;
 
     const sec = time / 1000;
     const exhaust = this.rocket.getExhaustWorldPosition();
@@ -231,11 +317,34 @@ export class LaunchAnimationController {
     }
   }
 
+  private updateExplosion(delta: number): void {
+    const g = this.explosionGraphics;
+    g.clear();
+    const dt = delta / 1000;
+    for (let i = this.debris.length - 1; i >= 0; i--) {
+      const d = this.debris[i];
+      d.life += dt;
+      if (d.life >= d.maxLife) {
+        this.debris.splice(i, 1);
+        continue;
+      }
+      d.vy += (d.fire ? 40 : 520) * dt; // fire drifts, debris falls
+      d.x += d.vx * dt;
+      d.y += d.vy * dt;
+      d.vx *= 0.985;
+      const t = d.life / d.maxLife;
+      g.fillStyle(d.color, 1 - t);
+      const size = d.fire ? d.size * (1 + t * 0.8) : d.size;
+      if (d.fire) g.fillCircle(d.x, d.y, size);
+      else g.fillRect(d.x, d.y, size, size);
+    }
+  }
+
   /**
    * Instantly skips the launch animation and proceeds to orbit
    */
   public skip(): void {
-    if (this.isCompleted) return;
+    if (this.isCompleted || this.isFailed) return;
 
     // Cancel all active tweens
     for (const tween of this.activeTweens) {
@@ -270,6 +379,8 @@ export class LaunchAnimationController {
     }
     this.activeTweens = [];
     this.smokePuffs = [];
+    this.debris = [];
+    this.explosionGraphics.destroy();
     this.flameGraphics.destroy();
     this.smokeGraphics.destroy();
   }

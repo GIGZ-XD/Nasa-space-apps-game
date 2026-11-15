@@ -23,6 +23,8 @@ export interface PhaserGameProps {
   initialScene?: string;
   /** Optional mission outcome status driven authoritatively by React ('pending' | 'success' | 'failure') */
   missionOutcome?: MissionOutcomeStatus;
+  /** Image URLs of the player's chosen parts, drawn in the launch/orbit scenes */
+  loadout?: Record<string, string>;
   /** Callback invoked once Phaser.Game has booted and is ready */
   onGameReady?: (game: Phaser.Game) => void;
   /** Callback invoked after Phaser.Game has been destroyed during unmount */
@@ -48,6 +50,7 @@ export const PhaserGame: React.FC<PhaserGameProps> = memo(function PhaserGame({
   scenes,
   initialScene,
   missionOutcome,
+  loadout,
   onGameReady,
   onGameDestroyed,
 }) {
@@ -59,6 +62,7 @@ export const PhaserGame: React.FC<PhaserGameProps> = memo(function PhaserGame({
   const onGameDestroyedRef = useRef(onGameDestroyed);
   const initialSceneRef = useRef(initialScene);
   const missionOutcomeRef = useRef(missionOutcome);
+  const loadoutRef = useRef(loadout);
 
   useEffect(() => {
     onGameReadyRef.current = onGameReady;
@@ -102,6 +106,7 @@ export const PhaserGame: React.FC<PhaserGameProps> = memo(function PhaserGame({
       scenes,
       initialScene: initialSceneRef.current,
       missionOutcome: missionOutcomeRef.current,
+      loadout: loadoutRef.current,
     });
 
     const game = new Phaser.Game(config);

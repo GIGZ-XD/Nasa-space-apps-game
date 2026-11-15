@@ -3,7 +3,10 @@ import { Rocket } from "../objects/Rocket";
 import { LaunchAnimationController } from "../animations/launchAnimation";
 import { SceneTransitionCoordinator } from "../systems/SceneTransition";
 import { OrbitScene } from "./OrbitScene";
+import { LandingScene } from "./LandingScene";
+import { DriftScene } from "./DriftScene";
 import { WorkshopScene } from "./WorkshopScene";
+import { OUTCOME_EVENTS } from "../types/outcome";
 
 export type LaunchState = "READY" | "COUNTDOWN" | "IGNITION" | "ASCENT" | "STAGING" | "COMPLETED";
 
@@ -49,6 +52,13 @@ export class LaunchScene extends Phaser.Scene {
     super({ key: LaunchScene.KEY });
   }
 
+  preload(): void {
+    // Load the launch vehicle and pad the player chose (URLs supplied through the registry)
+    const loadout = (this.registry.get("loadout") as Record<string, string> | undefined) ?? {};
+    if (loadout.vehicle && !this.textures.exists("part-vehicle")) this.load.image("part-vehicle", loadout.vehicle);
+    if (loadout.pad && !this.textures.exists("part-pad")) this.load.image("part-pad", loadout.pad);
+  }
+
   create(): void {
     const { width, height } = this.scale;
 
@@ -75,19 +85,42 @@ export class LaunchScene extends Phaser.Scene {
     this.gantryGraphics = this.add.graphics();
     this.gantryGraphics.setDepth(4);
     this.drawGantryTower(this.rocketStartX, this.padY, 0);
+    if (this.textures.exists("part-pad")) {
+      // the player's chosen launchpad replaces the generic gantry tower
+      this.gantryGraphics.setVisible(false);
+      const padImg = this.add.image(this.rocketStartX, this.padY + 4, "part-pad").setOrigin(0.5, 1).setDepth(3);
+      padImg.setScale(300 / padImg.height);
+    }
 
     // 4. Rocket (Center on pad)
+    const hasVehicle = this.textures.exists("part-vehicle");
     this.rocket = new Rocket(this, this.rocketStartX, this.rocketStartY, {
       scale: 2.2,
+      textureKey: hasVehicle ? "part-vehicle" : undefined,
+      targetHeight: 300,
     });
     this.rocket.setDepth(10);
+    if (hasVehicle) {
+      // stand the chosen rocket on the pad
+      this.rocketStartY = this.padY - this.rocket.getBottomOffset() - 6;
+      this.rocket.y = this.rocketStartY;
+    }
 
     // 5. Launch Animation Controller
     this.animController = new LaunchAnimationController({
       scene: this,
       rocket: this.rocket,
       padY: this.padY,
+      shouldFail: () => this.registry.get("missionOutcome") === "failure",
       callbacks: {
+        onFailure: () => {
+          this.state = "COMPLETED";
+          this.statusText.setText("STATUS: ANOMALY // VEHICLE LOST // MISSION FAILED");
+          this.statusText.setColor("#ef4444");
+          this.telemetryText.setText("TELEMETRY LOST");
+          this.events.emit(OUTCOME_EVENTS.LAUNCH_FAILED);
+          this.game.events?.emit(OUTCOME_EVENTS.LAUNCH_FAILED);
+        },
         onIgnition: () => {
           this.state = "IGNITION";
           this.statusText.setText("STATUS: MAIN ENGINES IGNITED // THRUST BUILDING");
@@ -457,6 +490,14 @@ export class LaunchScene extends Phaser.Scene {
     this.game.events.emit("launch:complete");
   }
 
+  /** Which scene follows the launch: orbit (missions 1-2), landing (3-4) or deep-space drift (5). */
+  private nextSceneKey(): string {
+    const mission = ((this.registry.get("loadout") as Record<string, string> | undefined) ?? {}).mission;
+    if (mission === "3" || mission === "4") return LandingScene.KEY;
+    if (mission === "5") return DriftScene.KEY;
+    return OrbitScene.KEY;
+  }
+
   /**
    * Called when rocket ascends past the upper stratosphere
    */
@@ -469,7 +510,7 @@ export class LaunchScene extends Phaser.Scene {
     // Transition smoothly to OrbitScene
     SceneTransitionCoordinator.transitionTo({
       fromScene: this,
-      toSceneKey: OrbitScene.KEY,
+      toSceneKey: this.nextSceneKey(),
       duration: 800,
     });
   }
@@ -479,6 +520,17 @@ export class LaunchScene extends Phaser.Scene {
    */
   public skipToOrbit(): void {
     if (this.state === "COMPLETED") return;
+
+    // A doomed mission can't skip past its failure
+    if (this.registry.get("missionOutcome") === "failure") {
+      if (this.countdownTimer) {
+        this.countdownTimer.destroy();
+        this.countdownTimer = undefined;
+      }
+      this.retractGantryArms();
+      this.animController.triggerFailure();
+      return;
+    }
     this.state = "COMPLETED";
 
     if (this.countdownTimer) {
@@ -492,7 +544,7 @@ export class LaunchScene extends Phaser.Scene {
 
     SceneTransitionCoordinator.skipTo({
       fromScene: this,
-      toSceneKey: OrbitScene.KEY,
+      toSceneKey: this.nextSceneKey(),
     });
   }
 

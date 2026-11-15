@@ -5,6 +5,8 @@ export interface SpacecraftConfig {
   y?: number;
   scale?: number;
   textureKey?: string;
+  /** When a texture is used: size its longest side to about this many px */
+  targetSize?: number;
   enableIdleFloat?: boolean;
 }
 
@@ -43,6 +45,10 @@ export class Spacecraft extends Phaser.GameObjects.Container {
     if (config.textureKey && scene.textures.exists(config.textureKey)) {
       // Modular fallback: use external sprite if provided
       const sprite = scene.add.sprite(0, 0, config.textureKey);
+      if (config.targetSize) {
+        // the scene scales this container by ~2.2 in orbit, so pre-compensate
+        sprite.setScale(config.targetSize / (Math.max(sprite.width, sprite.height) * 2.2));
+      }
       this.add(sprite);
     } else {
       // Build modular procedural pixel-art spacecraft
@@ -193,6 +199,9 @@ export class Spacecraft extends Phaser.GameObjects.Container {
       this.y = this.baseY + Math.sin(sec * 1.8) * 8;
       this.rotation = Math.sin(sec * 1.2) * 0.03;
     }
+
+    // Sprite spacecraft: no procedural thruster/beacon graphics to animate
+    if (!this.thrusterGraphics) return;
 
     // 2. Animated Ion Thruster Exhaust Plume
     const tg = this.thrusterGraphics;
