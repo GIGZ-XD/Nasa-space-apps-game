@@ -6,6 +6,25 @@
 /** Success threshold (percent). successRate >= threshold => MISSION SUCCESSFUL. */
 export const MISSION_SUCCESS_THRESHOLD = 30;
 
+/**
+ * Parts that are not the ideal/listed alternative for a slot but belong to the
+ * same equipment category still count: their catalogue suitability is scaled by
+ * this factor (0.6 => a 100-rated off-spec part scores 60).
+ */
+export const OFF_SPEC_SUITABILITY_FACTOR = 0.6;
+
+/**
+ * Equipment categories that are different "types" of the same kind of hardware.
+ * A part from one category can still fill an empty slot of a sibling category,
+ * but at a further reduced suitability (CROSS_TYPE_SUITABILITY_FACTOR on top of
+ * the off-spec factor). Example: a comms radio counted as a science sensor.
+ */
+export const EQUIPMENT_FAMILIES: number[][] = [
+  [4, 5, 8, 10, 11], // sensors, comms, deployable science, navigation, sampling tools
+  [6, 9, 12], // landers / entry systems, rovers, ascent vehicles
+];
+export const CROSS_TYPE_SUITABILITY_FACTOR = 0.5;
+
 export interface MissionRewardConfig {
   level: number;
   baseCoins: number; // base coin reward at 100% LOS

@@ -43,7 +43,7 @@ export interface SelectedEquipmentReport {
   playerName: string;
   uniqueId: number | null;
   equipmentName: string | null;
-  status: "USED" | "UNUSED" | "LOCKED" | "INVALID";
+  status: "USED" | "OFF_SPEC" | "UNUSED" | "INVALID";
   slotLabel: string | null;
   suitability: number | null;
   message: string;

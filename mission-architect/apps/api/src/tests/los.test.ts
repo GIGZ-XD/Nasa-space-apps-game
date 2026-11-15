@@ -63,10 +63,29 @@ await test("10. Invalid unique ids are rejected", () => {
   throwsCode(() => calculateLOS(1, [9999]), "INVALID_ID");
   throwsCode(() => calculateLOS(1, ["nope"]), "INVALID_ID");
 });
-await test("11. Locked equipment cannot be selected", () => {
-  throwsCode(() => calculateLOS(1, [1002]), "LOCKED"); // Kennedy LC-39A unlocks at level 2
-  const live = calculateLOS(1, [1002, 1001], { strict: false });
-  assert.strictEqual(live.rejected_equipment[0].reason, "LOCKED");
+await test("11. Parts that are not the ideal ones are still read (off-spec, 60%)", () => {
+  // Falcon 9 (2003) on Level 1: not Pegasus/Electron, same category -> counted at 100 x 0.6 = 60
+  const r = calculateLOS(1, [1001, 2003, 3001, 4001]);
+  const veh = r.equipment_scores.find((s) => s.slotId === "vehicle")!;
+  assert.strictEqual(veh.suitability, 60);
+  assert.strictEqual(r.missing_equipment.length, 0);
+  assert.strictEqual(r.selected_equipment.find((e) => e.uniqueId === 2003)!.status, "OFF_SPEC");
+  assert.ok(r.los < 100 && r.los > 0);
+});
+await test("11b. Ideal parts are never displaced by off-spec parts", () => {
+  const r = calculateLOS(1, [1001, 2003, 2001, 3001, 4001]); // Falcon 9 + Pegasus
+  assert.strictEqual(r.equipment_scores.find((s) => s.slotId === "vehicle")!.suitability, 100);
+});
+await test("11d. A different sensor type (comms radio) still fills an empty Sensor slot at a lower score", () => {
+  const r = calculateLOS(1, [1001, 2001, 3001, 5001]); // IRIS comms, no camera
+  const sensor = r.equipment_scores.find((s) => s.slotId === "sensor")!;
+  assert.strictEqual(sensor.suitability, 30); // 100 x 0.6 x 0.5
+  assert.strictEqual(r.missing_equipment.length, 0);
+});
+await test("11c. A part from an unrelated category stays unused", () => {
+  const r = calculateLOS(1, [1001, 2001, 3001, 4001, 9001]); // rover on an Earth-observation mission
+  assert.strictEqual(r.selected_equipment.find((e) => e.uniqueId === 9001)!.status, "UNUSED");
+  assert.strictEqual(r.los, 100);
 });
 await test("12. LOS is clamped to 0..100", () => {
   assert.strictEqual(calculateLOS(1, []).los, 0);

@@ -467,11 +467,11 @@ export function WorkshopPage({
                   YOUR SELECTED PARTS — HOW THEY WERE READ
                 </div>
                 {liveResult!.selected_equipment.map((e) => {
-                  const color = e.status === "USED" ? "#86efac" : e.status === "UNUSED" ? "#94a3b8" : "#f87171";
+                  const color = e.status === "USED" ? "#86efac" : e.status === "OFF_SPEC" ? "#fbbf24" : e.status === "UNUSED" ? "#94a3b8" : "#f87171";
                   return (
                     <div key={e.partId} style={{ display: "flex", justifyContent: "space-between", gap: 8, fontSize: 11, padding: "3px 4px", color }}>
                       <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 200 }}>
-                        {e.status === "USED" ? "✓" : e.status === "UNUSED" ? "–" : "🔒"} {e.playerName}
+                        {e.status === "USED" ? "✓" : e.status === "OFF_SPEC" ? "≈" : e.status === "UNUSED" ? "–" : "✗"} {e.playerName}
                       </span>
                       <span style={{ textAlign: "right" }}>{e.message}</span>
                     </div>

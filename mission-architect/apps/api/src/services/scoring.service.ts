@@ -6,11 +6,12 @@ import {
   getUniqueId,
   type EquipmentItem,
 } from "../data/aegisCatalogue";
+import { CROSS_TYPE_SUITABILITY_FACTOR, EQUIPMENT_FAMILIES, OFF_SPEC_SUITABILITY_FACTOR } from "../config/missionConfig";
 import { ALL_MARKET_PARTS } from "../../../web/src/data/marketData";
 
 export class EquipmentError extends Error {
   constructor(
-    public code: "INVALID_ID" | "LOCKED" | "INVALID_LEVEL",
+    public code: "INVALID_ID" | "INVALID_LEVEL",
     message: string,
   ) {
     super(message);
@@ -38,7 +39,7 @@ export interface EquipmentScore {
 
 export interface RejectedEquipment {
   partId: string;
-  reason: "INVALID_ID" | "LOCKED";
+  reason: "INVALID_ID";
   message: string;
 }
 
@@ -48,7 +49,7 @@ export interface SelectedEquipmentReport {
   playerName: string; // name of the part as the player sees it in the market
   uniqueId: number | null;
   equipmentName: string | null; // catalogue item it was resolved to
-  status: "USED" | "UNUSED" | "LOCKED" | "INVALID";
+  status: "USED" | "OFF_SPEC" | "UNUSED" | "INVALID";
   slotLabel: string | null;
   suitability: number | null;
   message: string;
@@ -113,37 +114,68 @@ export function calculateLOS(
       report.push({ partId, playerName: playerNameOf(partId), uniqueId: null, equipmentName: null, status: "INVALID", slotLabel: null, suitability: null, message: "Not recognised by the mission catalogue" });
       continue;
     }
-    if (item.unlockLevel > level) {
-      const err = new EquipmentError(
-        "LOCKED",
-        `${item.name} is locked until mission level ${item.unlockLevel}`,
-      );
-      if (strict) throw err;
-      rejected.push({ partId, reason: "LOCKED", message: err.message });
-      report.push({ partId, playerName: playerNameOf(partId), uniqueId: item.uniqueId, equipmentName: item.name, status: "LOCKED", slotLabel: null, suitability: null, message: `Locked until mission level ${item.unlockLevel}` });
-      continue;
-    }
     if (seen.has(item.uniqueId)) continue; // same item twice never counts twice
     seen.add(item.uniqueId);
     selected.push({ partId, item });
   }
 
-  // 2. Fill each required slot with its best matching selected item.
+  // 2. Fill each required slot. Pass 1: ideal / listed alternatives.
+  //    Pass 2: any other part of the same category counts at a reduced
+  //    (off-spec) suitability, so every part the player picked is read.
   const used = new Set<number>();
-  const scores: EquipmentScore[] = [];
-  const missing: string[] = [];
+  const offSpec = new Set<number>();
+  const slotPick = new Map<string, { partId: string; item: EquipmentItem; suitability: number }>();
 
   for (const slot of config.requiredSlots) {
     let best: { partId: string; item: EquipmentItem; suitability: number } | null = null;
     for (const opt of slot.options) {
       const hit = selected.find((s) => s.item.uniqueId === opt.uniqueId && !used.has(s.item.uniqueId));
-      if (hit && (!best || opt.suitability > best.suitability)) {
-        best = { ...hit, suitability: opt.suitability };
-      }
+      if (hit && (!best || opt.suitability > best.suitability)) best = { ...hit, suitability: opt.suitability };
     }
-    if (best) used.add(best.item.uniqueId);
-    else missing.push(slot.label);
+    if (best) {
+      used.add(best.item.uniqueId);
+      slotPick.set(slot.slotId, best);
+    }
+  }
+  for (const slot of config.requiredSlots) {
+    if (slotPick.has(slot.slotId)) continue;
+    let best: { partId: string; item: EquipmentItem; suitability: number } | null = null;
+    for (const s of selected) {
+      if (used.has(s.item.uniqueId) || s.item.categoryId !== slot.categoryId) continue;
+      const suit = Math.round(s.item.suitability * OFF_SPEC_SUITABILITY_FACTOR);
+      if (!best || suit > best.suitability) best = { ...s, suitability: suit };
+    }
+    if (best) {
+      used.add(best.item.uniqueId);
+      offSpec.add(best.item.uniqueId);
+      slotPick.set(slot.slotId, best);
+    }
+  }
 
+  // Pass 3: a different type of sensor/hardware from the same family still counts.
+  const crossType = new Set<number>();
+  const sameFamily = (a: number, b: number) => EQUIPMENT_FAMILIES.some((f) => f.includes(a) && f.includes(b));
+  for (const slot of config.requiredSlots) {
+    if (slotPick.has(slot.slotId)) continue;
+    let best: { partId: string; item: EquipmentItem; suitability: number } | null = null;
+    for (const s of selected) {
+      if (used.has(s.item.uniqueId) || !sameFamily(s.item.categoryId, slot.categoryId)) continue;
+      const suit = Math.round(s.item.suitability * OFF_SPEC_SUITABILITY_FACTOR * CROSS_TYPE_SUITABILITY_FACTOR);
+      if (!best || suit > best.suitability) best = { ...s, suitability: suit };
+    }
+    if (best) {
+      used.add(best.item.uniqueId);
+      offSpec.add(best.item.uniqueId);
+      crossType.add(best.item.uniqueId);
+      slotPick.set(slot.slotId, best);
+    }
+  }
+
+  const scores: EquipmentScore[] = [];
+  const missing: string[] = [];
+  for (const slot of config.requiredSlots) {
+    const best = slotPick.get(slot.slotId) ?? null;
+    if (!best) missing.push(slot.label);
     const idealItem = getEquipmentByUniqueId(slot.idealUniqueId);
     const idealSuitability = slot.options[0]?.suitability ?? 100;
     const suitability = best?.suitability ?? 0;
@@ -170,7 +202,9 @@ export function calculateLOS(
     const sc = scores.find((x) => x.selectedUniqueId === item.uniqueId);
     report.push(
       sc
-        ? { partId, playerName: playerNameOf(partId), uniqueId: item.uniqueId, equipmentName: item.name, status: "USED", slotLabel: sc.label, suitability: sc.suitability, message: `Counted in the ${sc.label} slot (${sc.suitability}% suitability)` }
+        ? offSpec.has(item.uniqueId)
+          ? { partId, playerName: playerNameOf(partId), uniqueId: item.uniqueId, equipmentName: item.name, status: "OFF_SPEC", slotLabel: sc.label, suitability: sc.suitability, message: crossType.has(item.uniqueId) ? `Different type of equipment — counted in ${sc.label} at ${sc.suitability}% (vs ${sc.idealSuitability}%)` : `Not the ideal part — counted in ${sc.label} at ${sc.suitability}% (vs ${sc.idealSuitability}%)` }
+          : { partId, playerName: playerNameOf(partId), uniqueId: item.uniqueId, equipmentName: item.name, status: "USED", slotLabel: sc.label, suitability: sc.suitability, message: `Counted in the ${sc.label} slot (${sc.suitability}% suitability)` }
         : { partId, playerName: playerNameOf(partId), uniqueId: item.uniqueId, equipmentName: item.name, status: "UNUSED", slotLabel: null, suitability: null, message: "Not needed for this mission — does not affect LOS" },
     );
   }

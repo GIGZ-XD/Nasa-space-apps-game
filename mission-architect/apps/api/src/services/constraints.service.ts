@@ -1,5 +1,6 @@
 import { MISSION_CONSTRAINTS, type MissionConstraintConfig } from "../config/missionConfig";
 import { getEquipmentByUniqueId, getIdealConfig, getUniqueId } from "../data/aegisCatalogue";
+import { calculateLOS } from "./scoring.service";
 import { ALL_MARKET_PARTS } from "../../../web/src/data/marketData";
 
 /**
@@ -94,12 +95,13 @@ export function validateConstraints(level: number, selectedParts: Array<string |
     const partId = String(raw);
     const uniqueId = getUniqueId(partId);
     const eq = uniqueId === undefined ? undefined : getEquipmentByUniqueId(uniqueId);
-    if (!eq || eq.unlockLevel > level) continue;
+    if (!eq) continue;
     if (!items.has(eq.uniqueId)) items.set(eq.uniqueId, { partId, uniqueId: eq.uniqueId });
   }
 
   // Mission Readiness Score: required slots that are filled.
-  const filled = ideal.requiredSlots.filter((s) => s.options.some((o) => items.has(o.uniqueId))).length;
+  // A slot is filled by its ideal, a listed alternative, or any same-category (off-spec) part.
+  const filled = calculateLOS(level, selectedParts, { strict: false, variant }).required_completed;
   const mrs = Math.round((filled / ideal.requiredSlots.length) * 10000) / 100;
 
   let cost = 0;
