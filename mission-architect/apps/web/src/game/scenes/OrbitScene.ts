@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { Starfield } from "../systems/Starfield";
 import { createEarthTexture } from "../systems/EarthTexture";
+import { createRetroPlanetTexture } from "../systems/RetroPlanetTexture";
 import { Planet } from "../objects/Planet";
 import { Spacecraft } from "../objects/Spacecraft";
 import { SceneTransitionCoordinator } from "../systems/SceneTransition";
@@ -89,6 +90,8 @@ export class OrbitScene extends Phaser.Scene {
     // Geo-satellite mission: a realistic, perfectly circular Earth
     const loadout = (this.registry.get("loadout") as Record<string, string> | undefined) ?? {};
     const realisticEarth = loadout.planet === "earth";
+    const retroMoon = loadout.planet === "moon";
+    if (retroMoon) createRetroPlanetTexture(this, "retro-moon", "moon", 96);
     if (realisticEarth) {
       createEarthTexture(this, "earth-realistic", planetRadius * 2);
       // soft blue atmosphere glow around the circle
@@ -104,7 +107,7 @@ export class OrbitScene extends Phaser.Scene {
 
     this.planet = new Planet(this, this.orbitCenterX, this.orbitCenterY, {
       radius: planetRadius,
-      textureKey: realisticEarth ? "earth-realistic" : undefined,
+      textureKey: realisticEarth ? "earth-realistic" : retroMoon ? "retro-moon" : undefined,
       type: "terrestrial",
       hasAtmosphere: true,
       hasRing: false,

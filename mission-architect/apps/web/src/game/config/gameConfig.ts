@@ -4,6 +4,8 @@ import { PreloadScene } from "../scenes/PreloadScene";
 import { WorkshopScene } from "../scenes/WorkshopScene";
 import { LaunchScene } from "../scenes/LaunchScene";
 import { OrbitScene } from "../scenes/OrbitScene";
+import { LandingScene } from "../scenes/LandingScene";
+import { DriftScene } from "../scenes/DriftScene";
 
 export interface GameConfigOptions {
   parent?: HTMLElement | string;
@@ -76,7 +78,7 @@ export function createGameConfig(options: GameConfigOptions = {}): Phaser.Types.
         }
       },
     },
-    scene: scenes ?? [BootScene, PreloadScene, WorkshopScene, LaunchScene, OrbitScene],
+    scene: scenes ?? [BootScene, PreloadScene, WorkshopScene, LaunchScene, OrbitScene, LandingScene, DriftScene],
   };
 }
 

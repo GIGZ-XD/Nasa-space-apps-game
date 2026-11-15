@@ -109,7 +109,16 @@ export function WorkshopPage({
     if (imgOf("vehicle")) loadout.vehicle = imgOf("vehicle")!;
     if (imgOf("satellite")) loadout.satellite = imgOf("satellite")!;
     if (imgOf("launchpad")) loadout.pad = imgOf("launchpad")!;
+    // Mission 3 shows the lander, mission 4 the rover (preferring the matching part)
+    const landers = installedList["lander"] ?? [];
+    const ROVERS = ["lr7", "lr8", "lr9"];
+    const LANDERS = ["lr1", "lr2", "lr3", "lr4"];
+    const wanted = mission.id === 4 ? ROVERS : LANDERS;
+    const landerPart = landers.find((p) => wanted.includes(p.id)) ?? landers[0];
+    if (landerPart?.img) loadout.lander = landerPart.img;
+    loadout.mission = String(mission.id);
     if (mission.id === 1) loadout.planet = "earth"; // Geo-satellite: realistic Earth
+    if (mission.id === 2) loadout.planet = "moon"; // Lunar satellite: retro pixel Moon
     consumeParts(installedPartIds);
     launch(loadout);
   };

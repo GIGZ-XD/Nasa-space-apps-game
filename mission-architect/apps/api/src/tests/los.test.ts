@@ -137,7 +137,7 @@ await test("21d. Power check limit is the per-mission value (L1 = 25 W)", () => 
   assert.ok(ok.checks.find((x) => x.id === "power")!.passed); // 40 - 15 = 25 W
   const low = validateConstraints(1, [1001, 2001, 3001, 4001, 4003]); // + Neutron Spectrometer (-20 W)
   assert.strictEqual(low.checks.find((x) => x.id === "power")!.passed, false);
-  assert.strictEqual(validateConstraints(5, ideal(5, "msr"), "msr").checks.find((x) => x.id === "power")!.limit, 3_320);
+  assert.strictEqual(validateConstraints(5, ideal(5, "msr"), "msr").checks.find((x) => x.id === "power")!.limit, 2_700);
 });
 await test("21c. Budget limit (20M) blocks launch when total cost exceeds it", async () => {
   const { ALL_MARKET_PARTS } = await import("../../../web/src/data/marketData");

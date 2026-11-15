@@ -9,7 +9,7 @@ import Phaser from "phaser";
 /** Land/sea threshold of the noise field (lower = more land). */
 const LAND = 0.495;
 
-function hash(ix: number, iy: number, seed: number): number {
+export function hash(ix: number, iy: number, seed: number): number {
   // 32-bit integer mixing (Math.imul keeps full precision)
   let h = (Math.imul(ix, 374761393) + Math.imul(iy, 668265263) + Math.imul(seed, 1442695041)) | 0;
   h = Math.imul(h ^ (h >>> 13), 1274126177);
@@ -31,7 +31,7 @@ function valueNoise(x: number, y: number, seed: number): number {
   return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
 }
 
-function fbm(x: number, y: number, seed: number, octaves = 5): number {
+export function fbm(x: number, y: number, seed: number, octaves = 5): number {
   let amp = 0.5;
   let freq = 1;
   let sum = 0;

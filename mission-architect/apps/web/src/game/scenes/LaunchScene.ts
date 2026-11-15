@@ -3,6 +3,8 @@ import { Rocket } from "../objects/Rocket";
 import { LaunchAnimationController } from "../animations/launchAnimation";
 import { SceneTransitionCoordinator } from "../systems/SceneTransition";
 import { OrbitScene } from "./OrbitScene";
+import { LandingScene } from "./LandingScene";
+import { DriftScene } from "./DriftScene";
 import { WorkshopScene } from "./WorkshopScene";
 import { OUTCOME_EVENTS } from "../types/outcome";
 
@@ -488,6 +490,14 @@ export class LaunchScene extends Phaser.Scene {
     this.game.events.emit("launch:complete");
   }
 
+  /** Which scene follows the launch: orbit (missions 1-2), landing (3-4) or deep-space drift (5). */
+  private nextSceneKey(): string {
+    const mission = ((this.registry.get("loadout") as Record<string, string> | undefined) ?? {}).mission;
+    if (mission === "3" || mission === "4") return LandingScene.KEY;
+    if (mission === "5") return DriftScene.KEY;
+    return OrbitScene.KEY;
+  }
+
   /**
    * Called when rocket ascends past the upper stratosphere
    */
@@ -500,7 +510,7 @@ export class LaunchScene extends Phaser.Scene {
     // Transition smoothly to OrbitScene
     SceneTransitionCoordinator.transitionTo({
       fromScene: this,
-      toSceneKey: OrbitScene.KEY,
+      toSceneKey: this.nextSceneKey(),
       duration: 800,
     });
   }
@@ -534,7 +544,7 @@ export class LaunchScene extends Phaser.Scene {
 
     SceneTransitionCoordinator.skipTo({
       fromScene: this,
-      toSceneKey: OrbitScene.KEY,
+      toSceneKey: this.nextSceneKey(),
     });
   }
 
