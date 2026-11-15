@@ -248,6 +248,10 @@ export const PART_ID_TO_UNIQUE_ID: Record<string, number> = {
   sp7: 8002, sp8: 4004, sp9: 11001, sp10: 11003,
   lr1: 6003, lr2: 6001, lr3: 6003, lr4: 6002, lr5: 6004, lr6: 12001,
   lr7: 9002, lr8: 9001, lr9: 11004,
+  // Added with the extended market
+  lp4: 1005, lv7: 2004, lv8: 2006, lv9: 2007, sat7: 3005,
+  sp11: 5001, sp12: 7001, sp13: 7002, sp14: 8001, sp15: 10001, sp16: 11001, sp17: 11002,
+  lr10: 9002, lr11: 12002, lr12: 13001, lr13: 13002,
 };
 
 /** Resolve a market part id ("lp1") or a numeric unique id ("1001"/1001). */

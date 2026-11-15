@@ -34,11 +34,12 @@ export const MARKET_CATEGORIES: MarketCategory[] = [
     name: "Launchpad",
     emoji: "🗼",
     unlockLevel: 1,
-    priceRange: "100K – 500K",
+    priceRange: "100K – 520K",
     parts: [
       { id: "lp1", name: "Wallops Flight Facility (Pad 0A/0B)", desc: "Lightweight pad for small and medium rockets on Virginia's Eastern Shore.", price: 110000, unlockLevel: 1, img: "/assets/sprites/parts/lp1.png" },
       { id: "lp2", name: "Kennedy Space Center (LC-39A / LC-39B)", desc: "Historic NASA launchpad supporting Falcon 9, Falcon Heavy & SLS missions.", price: 280000, unlockLevel: 1, img: "/assets/sprites/parts/lp2.png" },
       { id: "lp3", name: "Cape Canaveral SLC-41", desc: "Premier ULA launch site for Atlas V and next-gen rockets.", price: 450000, unlockLevel: 1, img: "/assets/sprites/parts/lp3.png" },
+      { id: "lp4", name: "Heavy Integration Pad (KSC LC-39B)", desc: "The heaviest NASA launch complex, built for multi-stage interplanetary return architectures.", price: 520000, unlockLevel: 1, img: "/assets/sprites/parts/lp3.png" },
     ],
   },
   {
@@ -54,6 +55,9 @@ export const MARKET_CATEGORIES: MarketCategory[] = [
       { id: "lv4", name: "Atlas V (401 / 541)", desc: "ULA medium-to-heavy lift rocket with optional solid boosters.", price: 1100000, unlockLevel: 1, img: "/assets/sprites/parts/lv4.png" },
       { id: "lv5", name: "Falcon Heavy", desc: "SpaceX's heavy-lift rocket capable of deep-space trajectories.", price: 1300000, unlockLevel: 1, img: "/assets/sprites/parts/lv5.png" },
       { id: "lv6", name: "SLS (Block 1B / Deep-Space Config)", desc: "NASA's most powerful rocket designed for Artemis and beyond.", price: 1500000, unlockLevel: 1, img: "/assets/sprites/parts/lv6.png" },
+      { id: "lv7", name: "Minotaur V", desc: "Solid-fuel launcher that can send small spacecraft on lunar trajectories.", price: 700000, unlockLevel: 1, img: "/assets/sprites/parts/lv2.png" },
+      { id: "lv8", name: "Vulcan Centaur", desc: "ULA's high-energy next-generation booster for heavy interplanetary payloads.", price: 1250000, unlockLevel: 1, img: "/assets/sprites/parts/lv4.png" },
+      { id: "lv9", name: "Atlas V 541", desc: "Atlas V with four solid boosters: the heavy-lift rocket that flew Curiosity and Perseverance to Mars.", price: 1150000, unlockLevel: 1, img: "/assets/sprites/parts/lv4.png" },
     ],
   },
   {
@@ -61,7 +65,7 @@ export const MARKET_CATEGORIES: MarketCategory[] = [
     name: "Satellite (Orbiter)",
     emoji: "🛰️",
     unlockLevel: 1,
-    priceRange: "300K – 1.20M",
+    priceRange: "300K – 1.30M",
     parts: [
       { id: "sat1", name: "1U/3U Bare-Bones Nanosat Bus", desc: "Tiny CubeSat frame for educational and low-budget missions.", price: 300000, unlockLevel: 1, img: "/assets/sprites/parts/sat1.png" },
       { id: "sat2", name: "RainCube 6U CubeSat Bus", desc: "Miniaturized satellite bus proven for Earth observation.", price: 450000, unlockLevel: 1, img: "/assets/sprites/parts/sat2.png" },
@@ -69,6 +73,7 @@ export const MARKET_CATEGORIES: MarketCategory[] = [
       { id: "sat4", name: "CAPSTONE Deep-Space CubeSat Bus", desc: "Lightweight bus tested in lunar halo orbit for Artemis.", price: 750000, unlockLevel: 1, img: "/assets/sprites/parts/sat4.png" },
       { id: "sat5", name: "Lunar Reconnaissance Orbiter (LRO) Bus", desc: "NASA's proven lunar mapping satellite platform.", price: 950000, unlockLevel: 1, img: "/assets/sprites/parts/sat5.png" },
       { id: "sat6", name: "OSIRIS-REx / Mars Sample Return Interplanetary Bus", desc: "Robust bus designed for asteroid and planetary sample return.", price: 1200000, unlockLevel: 1, img: "/assets/sprites/parts/sat6.png" },
+      { id: "sat7", name: "Mars Sample Return Orbiter Bus", desc: "Interplanetary orbiter bus with NEXT-C ion thrusters for rendezvous with the sample return lander.", price: 1300000, unlockLevel: 1, img: "/assets/sprites/parts/sat6.png" },
     ],
   },
   {
@@ -88,6 +93,13 @@ export const MARKET_CATEGORIES: MarketCategory[] = [
       { id: "sp8", name: "Mastcam-Z Stereo Cameras & SHERLOC Spectrometer", desc: "Perseverance-class imaging and Raman spectrometer.", price: 900000, unlockLevel: 1, img: "/assets/sprites/parts/sp8.png" },
       { id: "sp9", name: "TRIDENT 1-Meter Hammer Drill & MSOLO MS", desc: "Deep drilling and mass spectrometer for volatile detection.", price: 950000, unlockLevel: 1, img: "/assets/sprites/parts/sp9.png" },
       { id: "sp10", name: "Heavy Planetary Core-Drill", desc: "Industrial-grade drill for subsurface geological sample collection.", price: 1000000, unlockLevel: 1, img: "/assets/sprites/parts/sp10.png" },
+      { id: "sp11", name: "IRIS Deep-Space X-Band Transponder", desc: "Deep-space radio that stays connected to NASA's Deep Space Network across 384,400 km to the Moon.", price: 350000, unlockLevel: 1 },
+      { id: "sp12", name: "Solar Wings + Radioisotope Heater Units (RHUs)", desc: "Deployable solar arrays with heater units that keep electronics alive through freezing planetary nights.", price: 280000, unlockLevel: 1 },
+      { id: "sp13", name: "MMRTG (Plutonium-238 Power Generator)", desc: "Nuclear battery that never gets covered in dust and keeps a rover running through nights and storms.", price: 650000, unlockLevel: 1 },
+      { id: "sp14", name: "Robotic Arm", desc: "Deployable arm that reaches out to place instruments and handle samples after landing.", price: 380000, unlockLevel: 1 },
+      { id: "sp15", name: "Navcam Stereo Cameras + AutoNav", desc: "Stereo cameras and hazard avoidance that let a rover spot boulders and steer around them on its own.", price: 340000, unlockLevel: 1 },
+      { id: "sp16", name: "Rotary Percussive Drill + Sample Caching System", desc: "Drills into rock and seals soil and rock cores into sample tubes.", price: 880000, unlockLevel: 1 },
+      { id: "sp17", name: "TAGSAM (Touch-and-Go Sampler) Robotic Arm", desc: "Reaches out to grab loose asteroid regolith without crashing into the surface.", price: 780000, unlockLevel: 1 },
     ],
   },
   {
@@ -95,7 +107,7 @@ export const MARKET_CATEGORIES: MarketCategory[] = [
     name: "Lander & Rover",
     emoji: "🤖",
     unlockLevel: 1,
-    priceRange: "750K – 2.00M",
+    priceRange: "600K – 2.00M",
     parts: [
       { id: "lr1", name: "DART Kinetic Impactor (Hard Lander)", desc: "NASA's planetary defense impactor that redirected asteroid Dimorphos.", price: 750000, unlockLevel: 1, img: "/assets/sprites/parts/lr1.png" },
       { id: "lr2", name: "Nova-C / Blue Ghost Lander", desc: "Commercial lunar lander for CLPS program surface delivery.", price: 900000, unlockLevel: 1, img: "/assets/sprites/parts/lr2.png" },
@@ -106,6 +118,10 @@ export const MARKET_CATEGORIES: MarketCategory[] = [
       { id: "lr7", name: "VIPER 4-Wheeled Polar Rover", desc: "NASA's lunar south pole rover to map water ice deposits.", price: 1500000, unlockLevel: 1, img: "/assets/sprites/parts/lr7.png" },
       { id: "lr8", name: "Perseverance 6-Wheeled MMRTG Rover", desc: "Advanced Mars rover with nuclear power and sample caching.", price: 1800000, unlockLevel: 1, img: "/assets/sprites/parts/lr8.png" },
       { id: "lr9", name: "Sample Cache Retrieval Rover & Robotic Manipulator Arm", desc: "Robotic arm rover for precise sample collection and return.", price: 2000000, unlockLevel: 1, img: "/assets/sprites/parts/lr9.png" },
+      { id: "lr10", name: "Curiosity 6-Wheeled Rover", desc: "Mars Science Laboratory rover with a rocker-bogie suspension for climbing Martian rocks.", price: 1700000, unlockLevel: 1, img: "/assets/sprites/parts/lr8.png" },
+      { id: "lr11", name: "Sample Return Capsule (SRC)", desc: "Sealed capsule that carries the collected samples home.", price: 600000, unlockLevel: 1 },
+      { id: "lr12", name: "PICA-X Reinforced Aeroshell Capsule (Earth Entry Vehicle)", desc: "Heat-shielded capsule that protects the samples through Earth re-entry at over 40,000 km/h.", price: 900000, unlockLevel: 1 },
+      { id: "lr13", name: "EEV Thermal Protection Shield & Parachute", desc: "Earth Entry Vehicle heat shield with parachute for a safe landing in the desert.", price: 850000, unlockLevel: 1 },
     ],
   },
 ];

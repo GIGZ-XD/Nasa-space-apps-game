@@ -66,5 +66,5 @@ export const MISSION_CONSTRAINTS: MissionConstraintConfig[] = [
   { level: 2, destination: "Lunar", budget: MISSION_BUDGET, minNetPower: 85, requiredDeltaV: 12_500, fuelMassKg: 150 },
   { level: 3, destination: "Lunar", budget: MISSION_BUDGET, minNetPower: 590, requiredDeltaV: 12_500, fuelMassKg: 800 },
   { level: 4, destination: "Mars", budget: MISSION_BUDGET, minNetPower: 90, requiredDeltaV: 13_800, fuelMassKg: 1_500 },
-  { level: 5, destination: "Mars", budget: MISSION_BUDGET, minNetPower: 2_700, variantMinNetPower: { bennu: 2_700, msr: 2_700 }, requiredDeltaV: 14_200, fuelMassKg: 4_000 },
+  { level: 5, destination: "Mars", budget: MISSION_BUDGET, minNetPower: 2_880, variantMinNetPower: { bennu: 2_880, msr: 3_320 }, requiredDeltaV: 14_200, fuelMassKg: 4_000 },
 ];
