@@ -18,7 +18,7 @@ export function WorkshopPage({
 }: {
   mission: Mission;
   go: (s: string) => void;
-  launch: () => void;
+  launch: (loadout: Record<string, string>) => void;
 }) {
   const ownedPartIds = useGameStore((s) => s.ownedPartIds) || [];
   const [selected, setSelected] = useState(MARKET_CATEGORIES[0].id);
@@ -33,6 +33,7 @@ export function WorkshopPage({
   const setInstalledPart = useGameStore((s) => s.setInstalledPart);
   const toggleInstalledPart = useGameStore((s) => s.toggleInstalledPart);
   const unlockMission = useGameStore((s) => s.unlockMission);
+  const consumeParts = useGameStore((s) => s.consumeParts);
   const addCoins = useGameStore((s) => s.addCoins);
   const addXp = useGameStore((s) => s.addXp);
 
@@ -101,7 +102,16 @@ export function WorkshopPage({
       if (result.xpAwarded > 0) addXp(result.xpAwarded);
       if (result.next_level_unlocked) unlockMission(mission.id + 1);
     }
-    launch();
+    // Snapshot the chosen parts' pictures for the launch scenes, then the parts are
+    // destroyed by the mission (success or failure) and can't be used again.
+    const imgOf = (cat: string) => installedList[cat]?.[0]?.img;
+    const loadout: Record<string, string> = {};
+    if (imgOf("vehicle")) loadout.vehicle = imgOf("vehicle")!;
+    if (imgOf("satellite")) loadout.satellite = imgOf("satellite")!;
+    if (imgOf("launchpad")) loadout.pad = imgOf("launchpad")!;
+    if (mission.id === 1) loadout.planet = "earth"; // Geo-satellite: realistic Earth
+    consumeParts(installedPartIds);
+    launch(loadout);
   };
 
   // Bottom-to-top assembly order for the build bay

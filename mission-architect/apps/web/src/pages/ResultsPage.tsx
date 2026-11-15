@@ -191,13 +191,13 @@ export function ResultsPage({ missionId, go, onRetry }: ResultsPageProps) {
               <div style={{ color: "#e2e8f0" }}>
                 Orbital telemetry confirmed! The spacecraft configuration met mission constraints with a{" "}
                 <b style={{ color: "#86efac" }}>{los.toFixed(2)}%</b> operational rating. Full recovery
-                and mission science rewards have been transferred to your command account.{missionId < 5 && (nextUnlocked ? " Next mission unlocked!" : "")}
+                and mission science rewards have been transferred to your command account. All spacecraft parts used on this mission were expended and cannot be reused.{missionId < 5 && (nextUnlocked ? " Next mission unlocked!" : "")}
               </div>
             ) : (
               <div style={{ color: "#fca5a5" }}>
                 Critical orbital anomaly! The configuration achieved only{" "}
                 <b style={{ color: "#f87171" }}>{los.toFixed(2)}%</b>, which falls below the minimum
-                mandated <b>{threshold.toFixed(2)}%</b> passing threshold, so no completion coins or base XP are awarded and the next mission stays locked. Improve the configuration and try again.{(missing.length > 0 || poor.length > 0) && (<> Underperforming: <b>{[...missing, ...poor].join(", ")}</b>.</>)}
+                mandated <b>{threshold.toFixed(2)}%</b> passing threshold, so no completion coins or base XP are awarded and the next mission stays locked. All spacecraft parts used on this mission were destroyed and cannot be reused. Buy new parts and try again.{(missing.length > 0 || poor.length > 0) && (<> Underperforming: <b>{[...missing, ...poor].join(", ")}</b>.</>)}
               </div>
             )}
           </div>

@@ -15,7 +15,7 @@ function Card({ m, onOpen, unlocked }: { m: Mission; onOpen: () => void; unlocke
       <h3 className="cardtitle">{m.short}</h3>
       <img className="pix cardart" src={m.card} alt={m.name} />
       <div className="stats"><span><Img src="/assets/sprites/ui/coin.jpg" size={32} />{m.cost}</span><span><span style={{ color: "#4db8ff" }}>★</span>{m.xp.toLocaleString()} XP</span></div>
-      <div className="view">{locked ? `COMPLETE MISSION ${m.id - 1} TO UNLOCK` : "VIEW MISSION ›"}</div>
+      <div className="view">{locked ? "🔒 LOCKED" : "VIEW MISSION ›"}</div>
     </button>
   );
 }

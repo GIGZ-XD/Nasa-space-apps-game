@@ -14,6 +14,8 @@ export interface GameConfigOptions {
   autoCenter?: Phaser.Scale.Center;
   initialScene?: string;
   missionOutcome?: string;
+  /** Image URLs of the parts the player chose (vehicle / satellite / pad) */
+  loadout?: Record<string, string>;
 }
 
 export const DEFAULT_GAME_WIDTH = 1280;
@@ -41,6 +43,7 @@ export function createGameConfig(options: GameConfigOptions = {}): Phaser.Types.
     autoCenter = Phaser.Scale.CENTER_BOTH,
     initialScene,
     missionOutcome,
+    loadout,
   } = options;
 
   return {
@@ -67,6 +70,9 @@ export function createGameConfig(options: GameConfigOptions = {}): Phaser.Types.
         }
         if (missionOutcome) {
           game.registry.set("missionOutcome", missionOutcome);
+        }
+        if (loadout) {
+          game.registry.set("loadout", loadout);
         }
       },
     },

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { PhaserGame } from "../game";
 import { OUTCOME_EVENTS } from "../game/types/outcome";
-import { playSfx, preloadSfx } from "../audio/sfx";
+import { classifyClick, playSfx, preloadSfx } from "../audio/sfx";
 import { MISSIONS } from "../data/missions";
 import { HomePage } from "../pages/HomePage";
 import { MissionSelectPage } from "../pages/MissionSelectPage";
@@ -37,12 +37,15 @@ export function App() {
   const [marketFromWorkshop, setMarketFromWorkshop] = useState(false);
   // True once the spacecraft has finished 2 orbits after launch (reveals the result)
   const [orbitsDone, setOrbitsDone] = useState(false);
+  // Pictures of the parts that were launched (the parts themselves are consumed)
+  const [loadout, setLoadout] = useState<Record<string, string>>({});
 
   // Sound effects: preload, button clicks, and the mission-success jingle
   useEffect(() => {
     preloadSfx();
     const onClick = (e: MouseEvent) => {
-      if ((e.target as Element | null)?.closest?.("button")) playSfx("click");
+      const btn = (e.target as Element | null)?.closest?.("button");
+      if (btn) playSfx(classifyClick(btn));
     };
     document.addEventListener("click", onClick, true);
     return () => document.removeEventListener("click", onClick, true);
@@ -143,7 +146,8 @@ export function App() {
     );
   }
   if (screen === "workshop") {
-    return <WorkshopPage mission={mission} go={go} launch={() => {
+    return <WorkshopPage mission={mission} go={go} launch={(lo) => {
+      setLoadout(lo);
       setOrbitsDone(false);
       setScreen("launch");
     }} />;
@@ -155,6 +159,7 @@ export function App() {
         <PhaserGame
           initialScene="LaunchScene"
           missionOutcome={outcome}
+          loadout={loadout}
           onGameReady={(game) => {
             // Reveal the result only after the spacecraft has flown 2 orbits
             game.events.on(OUTCOME_EVENTS.ORBITS_COMPLETE, () => setOrbitsDone(true));

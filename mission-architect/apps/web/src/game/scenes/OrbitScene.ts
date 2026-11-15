@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { Starfield } from "../systems/Starfield";
+import { createEarthTexture } from "../systems/EarthTexture";
 import { Planet } from "../objects/Planet";
 import { Spacecraft } from "../objects/Spacecraft";
 import { SceneTransitionCoordinator } from "../systems/SceneTransition";
@@ -56,6 +57,14 @@ export class OrbitScene extends Phaser.Scene {
     super({ key: OrbitScene.KEY });
   }
 
+  preload(): void {
+    // Load the satellite the player built (image URL supplied through the registry)
+    const loadout = (this.registry.get("loadout") as Record<string, string> | undefined) ?? {};
+    if (loadout.satellite && !this.textures.exists("part-satellite")) {
+      this.load.image("part-satellite", loadout.satellite);
+    }
+  }
+
   create(): void {
     const { width, height } = this.scale;
     this.orbitAngle = 0;
@@ -77,8 +86,25 @@ export class OrbitScene extends Phaser.Scene {
     this.orbitCenterY = Math.round(height * 0.5);
     const planetRadius = Math.round(Math.min(width, height) * 0.22);
 
+    // Geo-satellite mission: a realistic, perfectly circular Earth
+    const loadout = (this.registry.get("loadout") as Record<string, string> | undefined) ?? {};
+    const realisticEarth = loadout.planet === "earth";
+    if (realisticEarth) {
+      createEarthTexture(this, "earth-realistic", planetRadius * 2);
+      // soft blue atmosphere glow around the circle
+      const glow = this.add.graphics();
+      glow.setDepth(-1);
+      for (let i = 0; i < 14; i++) {
+        glow.fillStyle(0x4aa8ff, 0.018 + (14 - i) * 0.003);
+        glow.fillCircle(this.orbitCenterX, this.orbitCenterY, planetRadius + 2 + i * 2.2);
+      }
+      glow.lineStyle(2, 0x9ad4ff, 0.55);
+      glow.strokeCircle(this.orbitCenterX, this.orbitCenterY, planetRadius + 1);
+    }
+
     this.planet = new Planet(this, this.orbitCenterX, this.orbitCenterY, {
       radius: planetRadius,
+      textureKey: realisticEarth ? "earth-realistic" : undefined,
       type: "terrestrial",
       hasAtmosphere: true,
       hasRing: false,
@@ -94,6 +120,8 @@ export class OrbitScene extends Phaser.Scene {
     this.spacecraft = new Spacecraft(this, this.orbitCenterX + this.baseOrbitRadiusX, this.orbitCenterY, {
       scale: 2.2,
       enableIdleFloat: false, // Explicit orbital positioning
+      textureKey: this.textures.exists("part-satellite") ? "part-satellite" : undefined,
+      targetSize: 170,
     });
     this.spacecraft.setDepth(10);
 
@@ -218,13 +246,12 @@ export class OrbitScene extends Phaser.Scene {
   private drawOrbitalPath(color: number, alpha: number, radiusScale: number = 1.0): void {
     if (!this.trajectoryGraphics) return;
     const g = this.trajectoryGraphics;
+    // The orbit track is intentionally not drawn: the satellite flies its orbit
+    // without a visible line around the planet.
     g.clear();
-
-    const rx = this.baseOrbitRadiusX * radiusScale;
-    const ry = this.baseOrbitRadiusY * radiusScale;
-
-    g.lineStyle(1.5, color, alpha);
-    g.strokeEllipse(this.orbitCenterX, this.orbitCenterY, rx * 2, ry * 2);
+    void color;
+    void alpha;
+    void radiusScale;
   }
 
   /**

@@ -31,6 +31,8 @@ export interface GameState {
   /** Toggle a part in a category that holds several parts (sensors / landers). */
   toggleInstalledPart: (categoryId: string, partId: string) => void;
   unlockMission: (missionId: number) => void;
+  /** Destroys parts used on a mission: removes them from inventory and the assembly bay. */
+  consumeParts: (partIds: string[]) => void;
   resetProgress: () => void;
   /** Reset all progress unless the given user already owns the saved state. */
   switchUser: (userId: string, playerName?: string) => void;
@@ -75,6 +77,21 @@ export const useGameStore = create<GameState>()(
           if (next.length) parts[categoryId] = next;
           else delete parts[categoryId];
           return { installedParts: parts };
+        });
+      },
+
+      consumeParts: (partIds) => {
+        set((state) => {
+          const gone = new Set(partIds);
+          const installed: Record<string, string | string[]> = {};
+          for (const [cat, v] of Object.entries(state.installedParts || {})) {
+            const list = (Array.isArray(v) ? v : [v]).filter((id) => !gone.has(id));
+            if (list.length) installed[cat] = list;
+          }
+          return {
+            ownedPartIds: (state.ownedPartIds || []).filter((id) => !gone.has(id)),
+            installedParts: installed,
+          };
         });
       },
 

@@ -50,6 +50,13 @@ export class LaunchScene extends Phaser.Scene {
     super({ key: LaunchScene.KEY });
   }
 
+  preload(): void {
+    // Load the launch vehicle and pad the player chose (URLs supplied through the registry)
+    const loadout = (this.registry.get("loadout") as Record<string, string> | undefined) ?? {};
+    if (loadout.vehicle && !this.textures.exists("part-vehicle")) this.load.image("part-vehicle", loadout.vehicle);
+    if (loadout.pad && !this.textures.exists("part-pad")) this.load.image("part-pad", loadout.pad);
+  }
+
   create(): void {
     const { width, height } = this.scale;
 
@@ -76,12 +83,26 @@ export class LaunchScene extends Phaser.Scene {
     this.gantryGraphics = this.add.graphics();
     this.gantryGraphics.setDepth(4);
     this.drawGantryTower(this.rocketStartX, this.padY, 0);
+    if (this.textures.exists("part-pad")) {
+      // the player's chosen launchpad replaces the generic gantry tower
+      this.gantryGraphics.setVisible(false);
+      const padImg = this.add.image(this.rocketStartX, this.padY + 4, "part-pad").setOrigin(0.5, 1).setDepth(3);
+      padImg.setScale(300 / padImg.height);
+    }
 
     // 4. Rocket (Center on pad)
+    const hasVehicle = this.textures.exists("part-vehicle");
     this.rocket = new Rocket(this, this.rocketStartX, this.rocketStartY, {
       scale: 2.2,
+      textureKey: hasVehicle ? "part-vehicle" : undefined,
+      targetHeight: 300,
     });
     this.rocket.setDepth(10);
+    if (hasVehicle) {
+      // stand the chosen rocket on the pad
+      this.rocketStartY = this.padY - this.rocket.getBottomOffset() - 6;
+      this.rocket.y = this.rocketStartY;
+    }
 
     // 5. Launch Animation Controller
     this.animController = new LaunchAnimationController({

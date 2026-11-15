@@ -268,6 +268,7 @@ export class Planet extends Phaser.GameObjects.Container {
    * Animates cloud movement and atmospheric breathing each frame
    */
   public update(time: number, delta: number): void {
+    if (!this.cloudLayer) return; // sprite planets have no procedural cloud layer
     this.cloudOffset += (delta * 0.015);
     this.drawClouds(this.cloudOffset);
   }
