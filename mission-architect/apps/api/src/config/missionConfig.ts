@@ -33,11 +33,11 @@ export interface MissionRewardConfig {
 }
 
 export const MISSION_REWARDS: MissionRewardConfig[] = [
-  { level: 1, baseCoins: 500_000, baseXP: 500, difficulty: 2 },
-  { level: 2, baseCoins: 750_000, baseXP: 700, difficulty: 4 },
-  { level: 3, baseCoins: 1_000_000, baseXP: 900, difficulty: 6 },
-  { level: 4, baseCoins: 1_500_000, baseXP: 1200, difficulty: 8 },
-  { level: 5, baseCoins: 2_000_000, baseXP: 1500, difficulty: 10 },
+  { level: 1, baseCoins: 3_000_000, baseXP: 200, difficulty: 2 },
+  { level: 2, baseCoins: 5_000_000, baseXP: 250, difficulty: 4 },
+  { level: 3, baseCoins: 7_000_000, baseXP: 350, difficulty: 6 },
+  { level: 4, baseCoins: 9_000_000, baseXP: 375, difficulty: 8 },
+  { level: 5, baseCoins: 10_000_000, baseXP: 420, difficulty: 10 },
 ];
 
 /** Budget cap (USD) on total spacecraft cost, applied to every mission. */

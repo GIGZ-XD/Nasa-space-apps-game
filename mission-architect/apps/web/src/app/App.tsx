@@ -10,6 +10,7 @@ import { LeaderboardPage } from "../pages/LeaderboardPage";
 import { MarketPage } from "../pages/MarketPage";
 import { WorkshopPage } from "../pages/WorkshopPage";
 import { InventoryPage } from "../pages/InventoryPage";
+import { TutorialPage } from "../pages/TutorialPage";
 import { ResultsPage } from "../pages/ResultsPage";
 import { LoginPage } from "../pages/LoginPage";
 import { DevHarness } from "./DevHarness";
@@ -17,7 +18,7 @@ import { useAuthStore } from "../stores/authStore";
 import { useLOSStore } from "../stores/losStore";
 import { Screen as StageScreen } from "../components/layout/ui";
 
-type Screen = "home" | "select" | "brief" | "workshop" | "launch" | "results" | "leaderboard" | "market" | "inventory" | "login" | "signup";
+type Screen = "home" | "select" | "brief" | "workshop" | "launch" | "results" | "leaderboard" | "market" | "inventory" | "login" | "signup" | "tutorial";
 
 export function App() {
   const { isAuthenticated, isInitialized, checkSession } = useAuthStore();
@@ -235,6 +236,9 @@ export function App() {
   }
   if (screen === "market") {
     return <MarketPage go={go} fromWorkshop={marketFromWorkshop} />;
+  }
+  if (screen === "tutorial") {
+    return <TutorialPage go={go} />;
   }
   if (screen === "inventory") {
     return <InventoryPage go={go} />;

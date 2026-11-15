@@ -38,7 +38,7 @@ export interface GameState {
   switchUser: (userId: string, playerName?: string) => void;
 }
 
-export const STARTING_COINS = 50_000_000;
+export const STARTING_COINS = 5_000_000;
 
 export function formatCoins(amount: number): string {
   if (amount >= 1_000_000) {

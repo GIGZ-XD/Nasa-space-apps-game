@@ -14,11 +14,11 @@ export interface Mission {
   objectives: Objective[];
 }
 
-export const PLAYER = { name: "Commander_01", level: 1, xp: 150, xpMax: 500, coins: "50M" };
+export const PLAYER = { name: "Commander_01", level: 1, xp: 150, xpMax: 500, coins: "5M" };
 
 export const MISSIONS: Mission[] = [
   {
-    id: 1, name: "Geo-Satellite Mission", short: "GEO-SATELLITE MISSION", unlockLevel: 1, cost: "250K", xp: 500,
+    id: 1, name: "Geo-Satellite Mission", short: "GEO-SATELLITE MISSION", unlockLevel: 1, cost: "3M", xp: 200,
     theme: "geo", icon: "🛰️", card: "/assets/sprites/spacecraft/card-1.jpg", tagline: "Place a communications satellite into geostationary orbit.",
     objectives: [
       { id: "1.1", title: "Launch", text: "Lift off from Earth and clear the launch tower." },
@@ -27,7 +27,7 @@ export const MISSIONS: Mission[] = [
     ],
   },
   {
-    id: 2, name: "Lunar Satellite", short: "LUNAR SATELLITE", unlockLevel: 2, cost: "350K", xp: 700,
+    id: 2, name: "Lunar Satellite", short: "LUNAR SATELLITE", unlockLevel: 2, cost: "5M", xp: 250,
     theme: "lunar", icon: "🌙", card: "/assets/sprites/spacecraft/card-2.jpg", tagline: "Map the Moon from lunar orbit.",
     objectives: [
       { id: "2.1", title: "Translunar Launch", text: "Send the spacecraft toward the Moon." },
@@ -36,7 +36,7 @@ export const MISSIONS: Mission[] = [
     ],
   },
   {
-    id: 3, name: "Lunar Lander (Dark Side)", short: "LUNAR LANDER (DARK SIDE)", unlockLevel: 3, cost: "500K", xp: 900,
+    id: 3, name: "Lunar Lander (Dark Side)", short: "LUNAR LANDER (DARK SIDE)", unlockLevel: 3, cost: "7M", xp: 350,
     theme: "dark", icon: "🛬", card: "/assets/sprites/spacecraft/card-3.jpg", tagline: "Land on the far side of the Moon.",
     objectives: [
       { id: "3.1", title: "Launch", text: "Launch toward the Moon." },
@@ -45,7 +45,7 @@ export const MISSIONS: Mission[] = [
     ],
   },
   {
-    id: 4, name: "Mars Rover", short: "MARS ROVER", unlockLevel: 4, cost: "750K", xp: 1200,
+    id: 4, name: "Mars Rover", short: "MARS ROVER", unlockLevel: 4, cost: "9M", xp: 375,
     theme: "mars", icon: "🤖", card: "/assets/sprites/spacecraft/card-4.jpg", hero: "/assets/sprites/spacecraft/hero-4.jpg", tagline: "Deploy a rover on Mars, explore the terrain, and gather valuable scientific data.",
     objectives: [
       { id: "4.1", title: "Interplanetary Launch", text: "Successfully launch the spacecraft from Earth and establish a trajectory towards Mars." },
@@ -57,7 +57,7 @@ export const MISSIONS: Mission[] = [
     ],
   },
   {
-    id: 5, name: "Deep-Space Mission", short: "DEEP-SPACE MISSION", unlockLevel: 5, cost: "1.00M", xp: 1500,
+    id: 5, name: "Deep-Space Mission", short: "DEEP-SPACE MISSION", unlockLevel: 5, cost: "10M", xp: 420,
     theme: "deep", icon: "🌌", card: "/assets/sprites/spacecraft/card-5.jpg", tagline: "Send a probe beyond the planets.",
     objectives: [
       { id: "5.1", title: "Heavy Launch", text: "Launch aboard a deep-space capable vehicle." },
