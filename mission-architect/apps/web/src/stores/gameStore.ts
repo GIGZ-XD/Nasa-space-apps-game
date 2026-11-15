@@ -12,7 +12,9 @@ export interface GameState {
   ownedIntelIds: string[];
   ownerId: string | null;
   /** Parts placed in the workshop assembly bay, keyed by category id. */
-  installedParts: Record<string, string>;
+  installedParts: Record<string, string | string[]>;
+  /** Mission ids unlocked by completing the previous mission successfully. */
+  unlockedMissionIds: number[];
 
   // Actions
   buyPart: (part: MarketPart) => { success: boolean; reason?: string };
@@ -23,6 +25,9 @@ export interface GameState {
   addCoins: (amount: number) => void;
   addXp: (amount: number) => void;
   setInstalledPart: (categoryId: string, partId: string | null) => void;
+  /** Toggle a part in a category that holds several parts (sensors / landers). */
+  toggleInstalledPart: (categoryId: string, partId: string) => void;
+  unlockMission: (missionId: number) => void;
   resetProgress: () => void;
   /** Reset all progress unless the given user already owns the saved state. */
   switchUser: (userId: string, playerName?: string) => void;
@@ -54,6 +59,27 @@ export const useGameStore = create<GameState>()(
       ownedIntelIds: [],
       ownerId: null,
       installedParts: {},
+      unlockedMissionIds: [],
+
+      toggleInstalledPart: (categoryId, partId) => {
+        set((state) => {
+          const cur = state.installedParts?.[categoryId];
+          const list = Array.isArray(cur) ? cur : cur ? [cur] : [];
+          const next = list.includes(partId) ? list.filter((p) => p !== partId) : [...list, partId];
+          const parts = { ...(state.installedParts || {}) };
+          if (next.length) parts[categoryId] = next;
+          else delete parts[categoryId];
+          return { installedParts: parts };
+        });
+      },
+
+      unlockMission: (missionId) => {
+        set((state) => ({
+          unlockedMissionIds: (state.unlockedMissionIds || []).includes(missionId)
+            ? state.unlockedMissionIds
+            : [...(state.unlockedMissionIds || []), missionId],
+        }));
+      },
 
       setInstalledPart: (categoryId, partId) => {
         set((state) => {
@@ -137,6 +163,7 @@ export const useGameStore = create<GameState>()(
           ownedIntelIds: [],
           ownerId: null,
           installedParts: {},
+          unlockedMissionIds: [],
         });
       },
 
@@ -152,6 +179,7 @@ export const useGameStore = create<GameState>()(
           ownedIntelIds: [],
           ownerId: userId,
           installedParts: {},
+          unlockedMissionIds: [],
         });
       },
     }),

@@ -6,6 +6,8 @@ import { useGameStore } from "../stores/gameStore";
 import { useLOSStore } from "../stores/losStore";
 
 const REQUIRED = new Set(["launchpad", "vehicle", "satellite", "sensors"]);
+/** Categories that can hold several parts at once. */
+const MULTI = new Set(["sensors", "lander"]);
 const CLIP =
   "polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px)";
 
@@ -23,6 +25,8 @@ export function WorkshopPage({
   const [bayView, setBayView] = useState<"assembly" | "telemetry">("assembly");
   const installedIds = useGameStore((s) => s.installedParts) || {};
   const setInstalledPart = useGameStore((s) => s.setInstalledPart);
+  const toggleInstalledPart = useGameStore((s) => s.toggleInstalledPart);
+  const unlockMission = useGameStore((s) => s.unlockMission);
   const addCoins = useGameStore((s) => s.addCoins);
   const addXp = useGameStore((s) => s.addXp);
 
@@ -32,21 +36,31 @@ export function WorkshopPage({
   const loadingLive = useLOSStore((s) => s.loadingLive);
 
   // Resolve saved ids to parts, ignoring any the player no longer owns
-  const installed: Record<string, MarketPart | undefined> = useMemo(() => {
-    const map: Record<string, MarketPart | undefined> = {};
-    for (const [catId, partId] of Object.entries(installedIds)) {
-      if (ownedPartIds.includes(partId)) {
-        map[catId] = ALL_MARKET_PARTS.find((p) => p.id === partId);
-      }
+  // Sensors and landers can hold several parts (comms, cameras, drills ...)
+  const installedList: Record<string, MarketPart[]> = useMemo(() => {
+    const map: Record<string, MarketPart[]> = {};
+    for (const [catId, value] of Object.entries(installedIds)) {
+      const ids = Array.isArray(value) ? value : [value];
+      const parts = ids
+        .filter((id) => ownedPartIds.includes(id))
+        .map((id) => ALL_MARKET_PARTS.find((p) => p.id === id))
+        .filter((p): p is MarketPart => Boolean(p));
+      if (parts.length) map[catId] = parts;
     }
     return map;
   }, [installedIds, ownedPartIds]);
 
-  const installedPartIds = useMemo(() => {
-    return Object.values(installed)
-      .filter((p): p is MarketPart => Boolean(p))
-      .map((p) => p.id);
-  }, [installed]);
+  // First part per category, used by the single-part visual slots
+  const installed: Record<string, MarketPart | undefined> = useMemo(() => {
+    const map: Record<string, MarketPart | undefined> = {};
+    for (const [catId, parts] of Object.entries(installedList)) map[catId] = parts[0];
+    return map;
+  }, [installedList]);
+
+  const installedPartIds = useMemo(
+    () => Object.values(installedList).flat().map((p) => p.id),
+    [installedList],
+  );
 
   // Recalculate live LOS whenever installed parts or mission level change
   useEffect(() => {
@@ -55,20 +69,31 @@ export function WorkshopPage({
 
   const category = MARKET_CATEGORIES.find((c) => c.id === selected) ?? MARKET_CATEGORIES[0];
   const ownedInCategory = category.parts.filter((p) => ownedPartIds.includes(p.id));
-  const missing = MARKET_CATEGORIES.filter((c) => REQUIRED.has(c.id) && !installed[c.id]);
-  const ready = missing.length === 0;
+  // Launch eligibility is decided by the backend (all slots + hard constraints)
+  const constraints = liveResult?.constraints;
+  const missing = liveResult?.missing_equipment ?? [];
+  const ready = !loadingLive && liveResult?.launch_allowed === true;
+  const threshold = liveResult?.success_threshold ?? 30;
+  const [launchError, setLaunchError] = useState<string | null>(null);
 
   const toggle = (part: MarketPart) => {
-    setInstalledPart(category.id, installed[category.id]?.id === part.id ? null : part.id);
+    if (MULTI.has(category.id)) toggleInstalledPart(category.id, part.id);
+    else setInstalledPart(category.id, installedList[category.id]?.[0]?.id === part.id ? null : part.id);
   };
 
   const handleLaunch = async () => {
     if (!ready) return;
-    // Call backend authoritative evaluation
+    setLaunchError(null);
+    // Backend re-validates everything and calculates rewards (never trusts the client)
     const result = await evaluateMission(mission.id, installedPartIds);
-    if (result && result.rewarded) {
+    if (!result) {
+      setLaunchError(useLOSStore.getState().error || "Launch failed");
+      return;
+    }
+    if (result.rewarded) {
       if (result.coinsAwarded > 0) addCoins(result.coinsAwarded);
       if (result.xpAwarded > 0) addXp(result.xpAwarded);
+      if (result.next_level_unlocked) unlockMission(mission.id + 1);
     }
     launch();
   };
@@ -77,8 +102,8 @@ export function WorkshopPage({
   const stack = ["launchpad", "vehicle", "satellite", "sensors", "lander"];
 
   const losScore = liveResult?.los ?? 0;
-  const completedSlots = (liveResult?.equipment_scores || []).filter((s) => s.suitability > 0).length;
-  const totalSlots = liveResult?.equipment_scores?.length || 4;
+  const completedSlots = liveResult?.required_completed ?? 0;
+  const totalSlots = liveResult?.required_total ?? 0;
 
   return (
     <Screen>
@@ -133,6 +158,7 @@ export function WorkshopPage({
         >
           {MARKET_CATEGORIES.map((c) => {
             const part = installed[c.id];
+            const count = installedList[c.id]?.length ?? 0;
             const active = c.id === selected;
             return (
               <button
@@ -173,7 +199,7 @@ export function WorkshopPage({
                       whiteSpace: "nowrap",
                     }}
                   >
-                    {part ? part.name : "Empty slot"}
+                    {count > 1 ? `${count} parts installed` : part ? part.name : "Empty slot"}
                   </div>
                 </span>
                 {part && (
@@ -223,7 +249,7 @@ export function WorkshopPage({
                 fontWeight: bayView === "telemetry" ? 700 : 500,
               }}
             >
-              📊 Live LOS Telemetry
+              📊 LOS vs Ideal
             </span>
           </div>
         }
@@ -255,7 +281,7 @@ export function WorkshopPage({
               style={{
                 fontSize: 22,
                 fontWeight: 900,
-                color: losScore >= 30 ? "#4ade80" : "#f87171",
+                color: losScore >= threshold ? "#4ade80" : "#f87171",
                 fontFamily: "monospace",
               }}
             >
@@ -268,9 +294,9 @@ export function WorkshopPage({
               Passing Threshold
             </div>
             <div style={{ fontSize: 14, fontWeight: 700, color: "#38bdf8", marginTop: 2 }}>
-              &ge; 30.00%
+              &ge; {threshold.toFixed(2)}%
             </div>
-            <div style={{ fontSize: 10, color: "#94a3b8" }}>Target: 100%</div>
+            <div style={{ fontSize: 10, color: "#94a3b8" }}>Ideal: {(liveResult?.ideal_los ?? 100).toFixed(0)}%</div>
           </div>
 
           <div>
@@ -360,15 +386,18 @@ export function WorkshopPage({
             }}
           >
             <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 8 }}>
-              Category suitability evaluated against mission benchmark:
+              Ideal vs player, per required slot (weighted contribution to LOS):
             </div>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
               <thead>
                 <tr style={{ color: "var(--cyan)", borderBottom: "1px solid #1b4a99" }}>
-                  <th style={{ textAlign: "left", padding: "6px 4px" }}>SLOT</th>
-                  <th style={{ textAlign: "left", padding: "6px 4px" }}>COMPONENT</th>
-                  <th style={{ textAlign: "center", padding: "6px 4px" }}>WT</th>
-                  <th style={{ textAlign: "right", padding: "6px 4px" }}>SUITABILITY</th>
+                  <th style={{ textAlign: "left", padding: "5px 3px" }}>SLOT</th>
+                  <th style={{ textAlign: "left", padding: "5px 3px" }}>IDEAL</th>
+                  <th style={{ textAlign: "left", padding: "5px 3px" }}>PLAYER</th>
+                  <th style={{ textAlign: "center", padding: "5px 3px" }}>I / P</th>
+                  <th style={{ textAlign: "center", padding: "5px 3px" }}>Δ</th>
+                  <th style={{ textAlign: "center", padding: "5px 3px" }}>WT</th>
+                  <th style={{ textAlign: "right", padding: "5px 3px" }}>PTS</th>
                 </tr>
               </thead>
               <tbody>
@@ -377,41 +406,74 @@ export function WorkshopPage({
                     key={i}
                     style={{
                       borderBottom: "1px solid rgba(27, 74, 153, 0.3)",
-                      background: s.suitability === 0 ? "rgba(239, 68, 68, 0.08)" : "transparent",
+                      background: s.difference > 0 ? "rgba(239, 68, 68, 0.08)" : "transparent",
                     }}
                   >
-                    <td style={{ padding: "8px 4px", color: "#93c5fd", fontWeight: 700 }}>
-                      {s.label}
+                    <td style={{ padding: "6px 3px", color: "#93c5fd", fontWeight: 700 }}>{s.label}</td>
+                    <td style={{ padding: "6px 3px", color: "#94a3b8", maxWidth: 90, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {s.idealName}
                     </td>
-                    <td
-                      style={{
-                        padding: "8px 4px",
-                        color: s.suitability === 0 ? "#f87171" : "#e2e8f0",
-                        maxWidth: 160,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
+                    <td style={{ padding: "6px 3px", color: s.suitability === 0 ? "#f87171" : "#e2e8f0", maxWidth: 90, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {s.selectedName}
                     </td>
-                    <td style={{ padding: "8px 4px", textAlign: "center", color: "#94a3b8" }}>
-                      {s.weight}
+                    <td style={{ padding: "6px 3px", textAlign: "center", color: "#94a3b8" }}>
+                      {s.idealSuitability} / {s.suitability}
                     </td>
-                    <td
-                      style={{
-                        padding: "8px 4px",
-                        textAlign: "right",
-                        fontWeight: 700,
-                        color: s.suitability === 100 ? "#4ade80" : s.suitability === 0 ? "#f87171" : "#f59e0b",
-                      }}
-                    >
-                      {s.suitability}%
+                    <td style={{ padding: "6px 3px", textAlign: "center", fontWeight: 700, color: s.difference === 0 ? "#4ade80" : s.suitability === 0 ? "#f87171" : "#f59e0b" }}>
+                      {s.difference === 0 ? "✓" : `−${s.difference}`}
+                    </td>
+                    <td style={{ padding: "6px 3px", textAlign: "center", color: "#94a3b8" }}>{s.weight}</td>
+                    <td style={{ padding: "6px 3px", textAlign: "right", color: "#e2e8f0" }}>
+                      {s.contribution.toFixed(1)}/{s.maxContribution.toFixed(1)}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+
+            {(liveResult?.selected_equipment?.length ?? 0) > 0 && (
+              <div style={{ marginTop: 12 }}>
+                <div style={{ fontSize: 12, color: "var(--cyan)", fontWeight: 700, marginBottom: 6 }}>
+                  YOUR SELECTED PARTS — HOW THEY WERE READ
+                </div>
+                {liveResult!.selected_equipment.map((e) => {
+                  const color = e.status === "USED" ? "#86efac" : e.status === "UNUSED" ? "#94a3b8" : "#f87171";
+                  return (
+                    <div key={e.partId} style={{ display: "flex", justifyContent: "space-between", gap: 8, fontSize: 11, padding: "3px 4px", color }}>
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 200 }}>
+                        {e.status === "USED" ? "✓" : e.status === "UNUSED" ? "–" : "🔒"} {e.playerName}
+                      </span>
+                      <span style={{ textAlign: "right" }}>{e.message}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {constraints && (
+              <div style={{ marginTop: 12 }}>
+                <div style={{ fontSize: 12, color: "var(--cyan)", fontWeight: 700, marginBottom: 6 }}>
+                  HARD CONSTRAINTS · Readiness {constraints.mission_readiness_score.toFixed(0)}% · {constraints.destination}
+                </div>
+                {constraints.checks.map((c) => (
+                  <div
+                    key={c.id}
+                    style={{ display: "flex", justifyContent: "space-between", fontSize: 11, padding: "3px 4px", color: c.passed ? "#86efac" : "#f87171" }}
+                  >
+                    <span>{c.passed ? "✓" : "✗"} {c.label}</span>
+                    <span>
+                      {c.actual.toLocaleString()} / {c.limit.toLocaleString()} {c.unit}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {launchError && (
+          <div style={{ position: "absolute", left: 20, right: 20, bottom: 34, zIndex: 2, textAlign: "center", fontSize: 12, color: "#f87171", fontWeight: 700 }}>
+            {launchError}
           </div>
         )}
 
@@ -430,8 +492,12 @@ export function WorkshopPage({
           }}
         >
           {ready
-            ? `🚀 Ready for launch! Expected LOS: ${losScore.toFixed(1)}%`
-            : `⚠️ Missing mandatory: ${missing.map((c) => c.name).join(", ")}`}
+            ? `🚀 Ready for launch! Expected LOS: ${losScore.toFixed(1)}% — projected ${
+                losScore >= threshold ? "SUCCESS" : "FAILURE"
+              }`
+            : missing.length
+            ? `⚠️ Missing mandatory: ${missing.join(", ")}`
+            : `⚠️ ${(constraints?.blockers ?? ["Checking systems..."]).join(" · ")}`}
         </div>
       </Panel>
 
@@ -489,7 +555,7 @@ export function WorkshopPage({
             </div>
           ) : (
             ownedInCategory.map((part) => {
-              const on = installed[category.id]?.id === part.id;
+              const on = (installedList[category.id] ?? []).some((p) => p.id === part.id);
               return (
                 <div
                   key={part.id}

@@ -1,26 +1,57 @@
 import {
-  EQUIPMENT_CATALOGUE,
-  IDEAL_CONFIGS,
-  CATEGORY_WEIGHTS,
-  PART_ID_TO_UNIQUE_ID,
-  getEquipmentByUniqueId,
+  getCategoryName,
   getCategoryWeight,
+  getEquipmentByUniqueId,
   getIdealConfig,
+  getUniqueId,
+  type EquipmentItem,
 } from "../data/aegisCatalogue";
+import { ALL_MARKET_PARTS } from "../../../web/src/data/marketData";
 
-export interface EquipmentInput {
-  partId: string;   // market part id (e.g. "lp1")
-  categoryId?: number;
+export class EquipmentError extends Error {
+  constructor(
+    public code: "INVALID_ID" | "LOCKED" | "INVALID_LEVEL",
+    message: string,
+  ) {
+    super(message);
+    this.name = "EquipmentError";
+  }
 }
 
 export interface EquipmentScore {
+  slotId: string;
   categoryId: number;
   categoryName: string;
   label: string;
   selectedPartId: string | null;
+  selectedUniqueId: number | null;
   selectedName: string;
+  idealUniqueId: number;
+  idealName: string;
+  idealSuitability: number;
   suitability: number;
-  weight: number;
+  difference: number; // idealSuitability - suitability
+  weight: number; // category weight
+  contribution: number; // weighted points this slot adds to LOS
+  maxContribution: number;
+}
+
+export interface RejectedEquipment {
+  partId: string;
+  reason: "INVALID_ID" | "LOCKED";
+  message: string;
+}
+
+/** What the player picked and how the evaluator interpreted each choice. */
+export interface SelectedEquipmentReport {
+  partId: string;
+  playerName: string; // name of the part as the player sees it in the market
+  uniqueId: number | null;
+  equipmentName: string | null; // catalogue item it was resolved to
+  status: "USED" | "UNUSED" | "LOCKED" | "INVALID";
+  slotLabel: string | null;
+  suitability: number | null;
+  message: string;
 }
 
 export interface LOSResult {
@@ -28,113 +59,158 @@ export interface LOSResult {
   los: number;
   ideal_los: number;
   success_rate: number;
+  required_total: number;
+  required_completed: number;
   missing_equipment: string[];
   equipment_scores: EquipmentScore[];
+  rejected_equipment: RejectedEquipment[];
+  selected_equipment: SelectedEquipmentReport[];
   mission_status: "PENDING" | "SUCCESS" | "FAILED";
 }
 
+export interface CalculateOptions {
+  /** strict (default): throw EquipmentError for invalid or locked equipment. */
+  strict?: boolean;
+}
+
+const playerNameOf = (partId: string) => ALL_MARKET_PARTS.find((p) => p.id === partId)?.name ?? partId;
+
+const round2 = (n: number) => Math.round(n * 100) / 100;
+
 /**
- * calculateLOS — backend-authoritative LOS calculation.
- * Never trusts suitability from the frontend.
- *
- * @param level       Mission level 1–5
- * @param selectedParts  Array of market part ids the player has installed
+ * calculateLOS — backend-authoritative LOS.
+ *   LOS = Σ(Wi × Si) / Σ(Wi)
+ * Wi is the category weight; for categories with several required slots the
+ * slot suitabilities are averaged first, so the weight is never multiplied by
+ * the slot count. Suitability always comes from the backend catalogue.
  */
-export function calculateLOS(level: number, selectedParts: string[]): LOSResult {
+export function calculateLOS(
+  level: number,
+  selectedParts: Array<string | number>,
+  options: CalculateOptions = {},
+): LOSResult {
+  const strict = options.strict ?? true;
   const config = getIdealConfig(level);
-  if (!config) {
-    throw new Error(`No ideal configuration found for level ${level}`);
-  }
+  if (!config) throw new EquipmentError("INVALID_LEVEL", `No ideal configuration found for level ${level}`);
 
-  const catWeightMap = new Map<number, number>();
-  for (const cw of CATEGORY_WEIGHTS) {
-    catWeightMap.set(cw.categoryId, cw.weight);
-  }
-
-  const catNameMap = new Map<number, string>();
-  for (const cw of CATEGORY_WEIGHTS) {
-    catNameMap.set(cw.categoryId, cw.name);
-  }
-
-  // Build a map: categoryId → array of installed suitabilities (from backend catalogue)
-  // A player may install multiple items in the same category (e.g. two deployables for level 3).
-  const installedByCat = new Map<number, { suitability: number; name: string; partId: string }[]>();
-
-  for (const partId of selectedParts) {
-    const uniqueId = PART_ID_TO_UNIQUE_ID[partId];
-    if (uniqueId === undefined) continue;
-    const item = getEquipmentByUniqueId(uniqueId);
-    if (!item) continue;
-    const existing = installedByCat.get(item.categoryId) ?? [];
-    existing.push({ suitability: item.suitability, name: item.name, partId });
-    installedByCat.set(item.categoryId, existing);
-  }
-
-  // Count required slots per category
-  const requiredCountByCat = new Map<number, number>();
-  for (const slot of config.requiredSlots) {
-    requiredCountByCat.set(slot.categoryId, (requiredCountByCat.get(slot.categoryId) ?? 0) + 1);
-  }
-
-  // Build per-slot scores
-  const slotSuitabilities = new Map<number, number[]>(); // categoryId → list of per-slot suitabilities
-  for (const [catId, count] of requiredCountByCat) {
-    const installed = installedByCat.get(catId) ?? [];
-    const perSlot: number[] = [];
-    for (let i = 0; i < count; i++) {
-      perSlot.push(installed[i]?.suitability ?? 0);
+  // 1. Resolve + validate the selected equipment.
+  const selected: { partId: string; item: EquipmentItem }[] = [];
+  const rejected: RejectedEquipment[] = [];
+  const report: SelectedEquipmentReport[] = [];
+  const seen = new Set<number>();
+  for (const raw of selectedParts) {
+    const partId = String(raw);
+    const uniqueId = getUniqueId(partId);
+    const item = uniqueId === undefined ? undefined : getEquipmentByUniqueId(uniqueId);
+    if (!item) {
+      const err = new EquipmentError("INVALID_ID", `Unknown equipment "${partId}"`);
+      if (strict) throw err;
+      rejected.push({ partId, reason: "INVALID_ID", message: err.message });
+      report.push({ partId, playerName: playerNameOf(partId), uniqueId: null, equipmentName: null, status: "INVALID", slotLabel: null, suitability: null, message: "Not recognised by the mission catalogue" });
+      continue;
     }
-    slotSuitabilities.set(catId, perSlot);
+    if (item.unlockLevel > level) {
+      const err = new EquipmentError(
+        "LOCKED",
+        `${item.name} is locked until mission level ${item.unlockLevel}`,
+      );
+      if (strict) throw err;
+      rejected.push({ partId, reason: "LOCKED", message: err.message });
+      report.push({ partId, playerName: playerNameOf(partId), uniqueId: item.uniqueId, equipmentName: item.name, status: "LOCKED", slotLabel: null, suitability: null, message: `Locked until mission level ${item.unlockLevel}` });
+      continue;
+    }
+    if (seen.has(item.uniqueId)) continue; // same item twice never counts twice
+    seen.add(item.uniqueId);
+    selected.push({ partId, item });
   }
 
-  // Build equipment_scores list
-  const equipment_scores: EquipmentScore[] = [];
-  const missing_equipment: string[] = [];
+  // 2. Fill each required slot with its best matching selected item.
+  const used = new Set<number>();
+  const scores: EquipmentScore[] = [];
+  const missing: string[] = [];
 
   for (const slot of config.requiredSlots) {
-    const { categoryId, label } = slot;
-    const installed = installedByCat.get(categoryId) ?? [];
-    const slotIndex = equipment_scores.filter((s) => s.categoryId === categoryId).length;
-    const item = installed[slotIndex];
+    let best: { partId: string; item: EquipmentItem; suitability: number } | null = null;
+    for (const opt of slot.options) {
+      const hit = selected.find((s) => s.item.uniqueId === opt.uniqueId && !used.has(s.item.uniqueId));
+      if (hit && (!best || opt.suitability > best.suitability)) {
+        best = { ...hit, suitability: opt.suitability };
+      }
+    }
+    if (best) used.add(best.item.uniqueId);
+    else missing.push(slot.label);
 
-    const suitability = item?.suitability ?? 0;
-    if (!item) missing_equipment.push(label);
-
-    equipment_scores.push({
-      categoryId,
-      categoryName: catNameMap.get(categoryId) ?? "Unknown",
-      label,
-      selectedPartId: item?.partId ?? null,
-      selectedName: item?.name ?? "— not installed —",
+    const idealItem = getEquipmentByUniqueId(slot.idealUniqueId);
+    const idealSuitability = slot.options[0]?.suitability ?? 100;
+    const suitability = best?.suitability ?? 0;
+    scores.push({
+      slotId: slot.slotId,
+      categoryId: slot.categoryId,
+      categoryName: getCategoryName(slot.categoryId),
+      label: slot.label,
+      selectedPartId: best?.partId ?? null,
+      selectedUniqueId: best?.item.uniqueId ?? null,
+      selectedName: best ? playerNameOf(best.partId) : "— not installed —",
+      idealUniqueId: slot.idealUniqueId,
+      idealName: idealItem?.name ?? "Unknown",
+      idealSuitability,
       suitability,
-      weight: getCategoryWeight(categoryId),
+      difference: idealSuitability - suitability,
+      weight: getCategoryWeight(slot.categoryId),
+      contribution: 0,
+      maxContribution: 0,
     });
   }
 
-  // LOS = Σ(Wi × avg_Si_per_category) / Σ(Wi)
-  // Build average suitability per category across its required slots
-  const catAvgSuit = new Map<number, number>();
-  for (const [catId, suits] of slotSuitabilities) {
-    catAvgSuit.set(catId, suits.reduce((a, b) => a + b, 0) / suits.length);
+  for (const { partId, item } of selected) {
+    const sc = scores.find((x) => x.selectedUniqueId === item.uniqueId);
+    report.push(
+      sc
+        ? { partId, playerName: playerNameOf(partId), uniqueId: item.uniqueId, equipmentName: item.name, status: "USED", slotLabel: sc.label, suitability: sc.suitability, message: `Counted in the ${sc.label} slot (${sc.suitability}% suitability)` }
+        : { partId, playerName: playerNameOf(partId), uniqueId: item.uniqueId, equipmentName: item.name, status: "UNUSED", slotLabel: null, suitability: null, message: "Not needed for this mission — does not affect LOS" },
+    );
   }
+
+  // 3. Average per category, then weight.
+  const byCategory = new Map<number, EquipmentScore[]>();
+  for (const s of scores) byCategory.set(s.categoryId, [...(byCategory.get(s.categoryId) ?? []), s]);
 
   let weightedSum = 0;
   let totalWeight = 0;
-  for (const [catId, avgSuit] of catAvgSuit) {
-    const w = catWeightMap.get(catId) ?? 0;
-    weightedSum += w * avgSuit;
+  for (const [catId, slots] of byCategory) {
+    const w = getCategoryWeight(catId);
+    const avg = slots.reduce((a, s) => a + s.suitability, 0) / slots.length;
+    weightedSum += w * avg;
     totalWeight += w;
   }
+  for (const s of scores) {
+    const slotsInCat = byCategory.get(s.categoryId)!.length;
+    s.contribution = totalWeight ? round2(((s.weight / slotsInCat) * s.suitability) / totalWeight) : 0;
+    s.maxContribution = totalWeight ? round2(((s.weight / slotsInCat) * s.idealSuitability) / totalWeight) : 0;
+  }
 
-  const los = totalWeight === 0 ? 0 : Math.min(100, Math.max(0, Math.round((weightedSum / totalWeight) * 100) / 100));
+  const raw = totalWeight === 0 ? 0 : weightedSum / totalWeight;
+  const los = round2(Math.min(100, Math.max(0, raw)));
+  const idealRaw =
+    totalWeight === 0
+      ? 0
+      : [...byCategory].reduce(
+          (a, [catId, slots]) =>
+            a + getCategoryWeight(catId) * (slots.reduce((x, s) => x + s.idealSuitability, 0) / slots.length),
+          0,
+        ) / totalWeight;
 
   return {
     level,
     los,
-    ideal_los: 100,
+    ideal_los: round2(Math.min(100, idealRaw)),
     success_rate: los,
-    missing_equipment,
-    equipment_scores,
+    required_total: config.requiredSlots.length,
+    required_completed: config.requiredSlots.length - missing.length,
+    missing_equipment: missing,
+    equipment_scores: scores,
+    rejected_equipment: rejected,
+    selected_equipment: report,
     mission_status: "PENDING",
   };
 }

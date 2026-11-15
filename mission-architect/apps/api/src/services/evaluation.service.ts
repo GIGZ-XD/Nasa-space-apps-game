@@ -1,6 +1,13 @@
 import crypto from "crypto";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import { calculateLOS, type LOSResult } from "./scoring.service";
+import { validateConstraints, type ConstraintResult } from "./constraints.service";
 import { getMissionRewards } from "../data/aegisCatalogue";
+import { MISSION_SUCCESS_THRESHOLD } from "../config/missionConfig";
+
+export type MissionStatus = "SUCCESS" | "FAILED";
 
 export interface MissionAttempt {
   attemptId: string;
@@ -8,10 +15,11 @@ export interface MissionAttempt {
   missionLevel: number;
   los: number;
   successRate: number;
-  missionStatus: "SUCCESS" | "FAILED";
+  missionStatus: MissionStatus;
   coinsAwarded: number;
   xpAwarded: number;
-  rewarded: boolean;
+  rewarded: boolean; // true once rewards have been paid (exactly once)
+  nextLevelUnlocked: boolean;
   completedAt: string;
   equipmentScores: LOSResult["equipment_scores"];
   missingEquipment: string[];
@@ -21,84 +29,127 @@ export interface EvaluationResult extends LOSResult {
   attemptId: string;
   coinsAwarded: number;
   xpAwarded: number;
-  rewarded: boolean;
+  rewarded: boolean; // true only on the request that actually granted the rewards
+  next_level_unlocked: boolean;
+  success_threshold: number;
+  constraints: ConstraintResult;
 }
 
-// In-memory store for mission attempts
+export class LaunchBlockedError extends Error {
+  constructor(public constraints: ConstraintResult) {
+    super(`Launch blocked: ${constraints.blockers.join(", ")}`);
+    this.name = "LaunchBlockedError";
+  }
+}
+
+/** Mission result for a given LOS (threshold is configurable). */
+export function getMissionStatus(successRate: number): MissionStatus {
+  return successRate >= MISSION_SUCCESS_THRESHOLD ? "SUCCESS" : "FAILED";
+}
+
+/** Coins = Base Reward × (LOS / 100), rounded; none on failure. */
+export function calculateCoins(baseCoins: number, los: number, status: MissionStatus): number {
+  return status === "SUCCESS" ? Math.round(baseCoins * (los / 100)) : 0;
+}
+
+/** XP = B + D×10 + LOS×5, with B = 0 on failure. */
+export function calculateXP(baseXP: number, difficulty: number, los: number, status: MissionStatus): number {
+  const B = status === "SUCCESS" ? baseXP : 0;
+  return Math.round(B + difficulty * 10 + los * 5);
+}
+
+// ---- Persistence (JSON file so attempts/reward records survive restarts) ----
+const STORE_PATH = process.env.ATTEMPTS_FILE || path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../data/attempts.json");
 const attempts = new Map<string, MissionAttempt>();
+
+function load() {
+  try {
+    const rows: MissionAttempt[] = JSON.parse(fs.readFileSync(STORE_PATH, "utf8"));
+    for (const r of rows) attempts.set(r.attemptId, r);
+  } catch {
+    /* no store yet */
+  }
+}
+function persist() {
+  if (process.env.ATTEMPTS_FILE === ":memory:") return;
+  try {
+    fs.mkdirSync(path.dirname(STORE_PATH), { recursive: true });
+    fs.writeFileSync(STORE_PATH, JSON.stringify([...attempts.values()], null, 2));
+  } catch {
+    /* non-fatal */
+  }
+}
+if (process.env.ATTEMPTS_FILE !== ":memory:") load();
+
+function toResult(a: MissionAttempt, constraints: ConstraintResult, rewardedNow: boolean): EvaluationResult {
+  const los = calculateLOS(a.missionLevel, a.equipmentScores.map((s) => s.selectedUniqueId).filter((x): x is number => x !== null));
+  return {
+    ...los,
+    los: a.los,
+    success_rate: a.successRate,
+    equipment_scores: a.equipmentScores,
+    missing_equipment: a.missingEquipment,
+    mission_status: a.missionStatus,
+    attemptId: a.attemptId,
+    coinsAwarded: a.coinsAwarded,
+    xpAwarded: a.xpAwarded,
+    rewarded: rewardedNow,
+    next_level_unlocked: a.nextLevelUnlocked,
+    success_threshold: MISSION_SUCCESS_THRESHOLD,
+    constraints,
+  };
+}
 
 export const evaluationService = {
   /**
-   * Evaluate a mission attempt and store the result.
-   * Does NOT grant rewards yet — call grantRewards() after.
+   * Evaluate a launch and pay rewards atomically (single synchronous step).
+   * `attemptId` is an idempotency key: repeating the same id returns the stored
+   * result and never pays twice. Throws EquipmentError for invalid/locked
+   * equipment and LaunchBlockedError when a hard constraint fails.
    */
   async evaluateMission(
     userId: string,
     level: number,
-    selectedParts: string[]
+    selectedParts: Array<string | number>,
+    attemptId?: string,
   ): Promise<EvaluationResult> {
-    const losResult = calculateLOS(level, selectedParts);
-    const rewardConfig = getMissionRewards(level);
+    const constraints = validateConstraints(level, selectedParts);
 
+    if (attemptId) {
+      const existing = attempts.get(attemptId);
+      if (existing) {
+        if (existing.userId !== userId) throw new Error("Unauthorized");
+        return toResult(existing, constraints, false);
+      }
+    }
+
+    const losResult = calculateLOS(level, selectedParts, { strict: true });
+    if (!constraints.launch_allowed) throw new LaunchBlockedError(constraints);
+
+    const rewardConfig = getMissionRewards(level);
     if (!rewardConfig) throw new Error(`No reward config for level ${level}`);
 
     const { los } = losResult;
-    const { baseCoins, baseXP, difficulty } = rewardConfig;
-    const SUCCESS_THRESHOLD = 30;
-
-    const missionStatus: "SUCCESS" | "FAILED" = los >= SUCCESS_THRESHOLD ? "SUCCESS" : "FAILED";
-
-    // Coins: base × (LOS / 100), 0 on failure
-    const coinsAwarded = missionStatus === "SUCCESS" ? Math.round(baseCoins * (los / 100)) : 0;
-
-    // XP: B + D×10 + LOS×5; B=0 on failure
-    const B = missionStatus === "SUCCESS" ? baseXP : 0;
-    const xpAwarded = Math.round(B + difficulty * 10 + los * 5);
-
-    const attemptId = `att-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`;
-
+    const status = getMissionStatus(los);
     const attempt: MissionAttempt = {
-      attemptId,
+      attemptId: attemptId || `att-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`,
       userId,
       missionLevel: level,
       los,
       successRate: los,
-      missionStatus,
-      coinsAwarded,
-      xpAwarded,
-      rewarded: false,
+      missionStatus: status,
+      coinsAwarded: calculateCoins(rewardConfig.baseCoins, los, status),
+      xpAwarded: calculateXP(rewardConfig.baseXP, rewardConfig.difficulty, los, status),
+      rewarded: true,
+      nextLevelUnlocked: status === "SUCCESS" && getMissionRewards(level + 1) !== undefined,
       completedAt: new Date().toISOString(),
       equipmentScores: losResult.equipment_scores,
       missingEquipment: losResult.missing_equipment,
     };
+    attempts.set(attempt.attemptId, attempt);
+    persist();
 
-    attempts.set(attemptId, attempt);
-
-    return {
-      ...losResult,
-      mission_status: missionStatus,
-      attemptId,
-      coinsAwarded,
-      xpAwarded,
-      rewarded: false,
-    };
-  },
-
-  /**
-   * Mark a mission attempt as rewarded (idempotent — only pays once).
-   * Returns the coins/XP to grant, or null if already paid.
-   */
-  grantRewards(
-    attemptId: string,
-    userId: string
-  ): { coinsAwarded: number; xpAwarded: number } | null {
-    const attempt = attempts.get(attemptId);
-    if (!attempt) throw new Error("Attempt not found");
-    if (attempt.userId !== userId) throw new Error("Unauthorized");
-    if (attempt.rewarded) return null; // already paid
-
-    attempt.rewarded = true;
-    return { coinsAwarded: attempt.coinsAwarded, xpAwarded: attempt.xpAwarded };
+    return toResult(attempt, constraints, true);
   },
 
   getAttempt(attemptId: string): MissionAttempt | undefined {

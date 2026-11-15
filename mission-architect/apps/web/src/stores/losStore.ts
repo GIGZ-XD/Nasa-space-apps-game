@@ -1,13 +1,52 @@
 import { create } from "zustand";
 
 export interface EquipmentScore {
+  slotId: string;
   categoryId: number;
   categoryName: string;
   label: string;
   selectedPartId: string | null;
+  selectedUniqueId: number | null;
   selectedName: string;
+  idealUniqueId: number;
+  idealName: string;
+  idealSuitability: number;
   suitability: number;
+  difference: number;
   weight: number;
+  contribution: number;
+  maxContribution: number;
+}
+
+export interface ConstraintCheck {
+  id: "budget" | "mass" | "power" | "deltaV" | "equipment";
+  label: string;
+  passed: boolean;
+  actual: number;
+  limit: number;
+  unit: string;
+  detail: string;
+}
+
+export interface ConstraintResult {
+  level: number;
+  destination: string;
+  checks: ConstraintCheck[];
+  mission_readiness_score: number;
+  all_passed: boolean;
+  launch_allowed: boolean;
+  blockers: string[];
+}
+
+export interface SelectedEquipmentReport {
+  partId: string;
+  playerName: string;
+  uniqueId: number | null;
+  equipmentName: string | null;
+  status: "USED" | "UNUSED" | "LOCKED" | "INVALID";
+  slotLabel: string | null;
+  suitability: number | null;
+  message: string;
 }
 
 export interface LOSResult {
@@ -15,9 +54,17 @@ export interface LOSResult {
   los: number;
   ideal_los: number;
   success_rate: number;
+  required_total: number;
+  required_completed: number;
   missing_equipment: string[];
   equipment_scores: EquipmentScore[];
+  rejected_equipment: { partId: string; reason: string; message: string }[];
+  selected_equipment: SelectedEquipmentReport[];
   mission_status: "PENDING" | "SUCCESS" | "FAILED";
+  success_threshold?: number;
+  projected_status?: "SUCCESS" | "FAILED";
+  constraints?: ConstraintResult;
+  launch_allowed?: boolean;
 }
 
 export interface EvaluationResult extends LOSResult {
@@ -25,6 +72,9 @@ export interface EvaluationResult extends LOSResult {
   coinsAwarded: number;
   xpAwarded: number;
   rewarded: boolean;
+  next_level_unlocked: boolean;
+  success_threshold: number;
+  constraints: ConstraintResult;
 }
 
 interface LOSState {
@@ -36,18 +86,24 @@ interface LOSState {
 
   fetchLiveLOS: (level: number, selectedParts: string[]) => Promise<LOSResult | null>;
   evaluateMission: (level: number, selectedParts: string[]) => Promise<EvaluationResult | null>;
+  /** Idempotency key for the current launch attempt (prevents double rewards). */
+  attemptId: string | null;
   clearEvaluation: () => void;
 }
 
-export const useLOSStore = create<LOSState>((set) => ({
+let liveRequestSeq = 0;
+
+export const useLOSStore = create<LOSState>((set, get) => ({
   liveResult: null,
   evaluationResult: null,
   loadingLive: false,
   isEvaluating: false,
   error: null,
+  attemptId: null,
 
   fetchLiveLOS: async (level: number, selectedParts: string[]) => {
     try {
+      const seq = ++liveRequestSeq;
       set({ loadingLive: true, error: null });
       const query = new URLSearchParams({
         level: level.toString(),
@@ -59,7 +115,7 @@ export const useLOSStore = create<LOSState>((set) => ({
         throw new Error(`Failed to fetch live evaluation: ${res.statusText}`);
       }
       const data: LOSResult = await res.json();
-      set({ liveResult: data, loadingLive: false });
+      if (seq === liveRequestSeq) set({ liveResult: data, loadingLive: false }); // ignore stale responses
       return data;
     } catch (err: any) {
       set({ error: err.message, loadingLive: false });
@@ -70,7 +126,11 @@ export const useLOSStore = create<LOSState>((set) => ({
   evaluateMission: async (level: number, selectedParts: string[]) => {
     try {
       set({ isEvaluating: true, error: null });
-      const token = localStorage.getItem("token") || "";
+      const token = localStorage.getItem("ma_auth_token") || "";
+      // One attempt id per launch session; repeating the request can never pay twice.
+      const attemptId =
+        get().attemptId ?? `att-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      set({ attemptId });
 
       const res = await fetch("/api/evaluate", {
         method: "POST",
@@ -78,15 +138,16 @@ export const useLOSStore = create<LOSState>((set) => ({
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ level, selectedParts }),
+        body: JSON.stringify({ level, selectedParts, attemptId }),
       });
 
       if (!res.ok) {
-        throw new Error(`Evaluation request failed: ${res.statusText}`);
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `Evaluation request failed: ${res.statusText}`);
       }
 
       const data: EvaluationResult = await res.json();
-      set({ evaluationResult: data, isEvaluating: false });
+      set({ evaluationResult: data, isEvaluating: false, attemptId: null });
       return data;
     } catch (err: any) {
       set({ error: err.message, isEvaluating: false });
@@ -95,6 +156,6 @@ export const useLOSStore = create<LOSState>((set) => ({
   },
 
   clearEvaluation: () => {
-    set({ evaluationResult: null, error: null });
+    set({ evaluationResult: null, error: null, attemptId: null });
   },
 }));

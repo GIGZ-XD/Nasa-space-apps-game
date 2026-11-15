@@ -27,6 +27,9 @@ export function ResultsPage({ missionId, go, onRetry }: ResultsPageProps) {
   const xpAwarded = evaluationResult ? evaluationResult.xpAwarded : 0;
   const scores = evaluationResult ? evaluationResult.equipment_scores : [];
   const missing = evaluationResult ? evaluationResult.missing_equipment : [];
+  const threshold = evaluationResult?.success_threshold ?? 30;
+  const poor = scores.filter((s) => s.difference > 0 && s.suitability > 0).map((s) => `${s.label} (${s.suitability}/${s.idealSuitability})`);
+  const nextUnlocked = evaluationResult?.next_level_unlocked ?? false;
 
   return (
     <Screen>
@@ -111,7 +114,7 @@ export function ResultsPage({ missionId, go, onRetry }: ResultsPageProps) {
             </div>
             <div style={{ fontSize: 12, color: "#cbd5e1" }}>
               Benchmark Target: <b style={{ color: "var(--gold)" }}>{idealLos}%</b> | Threshold:{" "}
-              <b style={{ color: "#38bdf8" }}>30.00%</b>
+              <b style={{ color: "#38bdf8" }}>{threshold.toFixed(2)}%</b>
             </div>
           </div>
 
@@ -178,13 +181,13 @@ export function ResultsPage({ missionId, go, onRetry }: ResultsPageProps) {
               <div style={{ color: "#e2e8f0" }}>
                 Orbital telemetry confirmed! The spacecraft configuration met mission constraints with a{" "}
                 <b style={{ color: "#86efac" }}>{los.toFixed(2)}%</b> operational rating. Full recovery
-                and mission science rewards have been transferred to your command account.
+                and mission science rewards have been transferred to your command account.{missionId < 5 && (nextUnlocked ? " Next mission unlocked!" : "")}
               </div>
             ) : (
               <div style={{ color: "#fca5a5" }}>
                 Critical orbital anomaly! The configuration achieved only{" "}
                 <b style={{ color: "#f87171" }}>{los.toFixed(2)}%</b>, which falls below the minimum
-                mandated <b>30.00%</b> passing threshold. Re-examine missing equipment and equipment suitability.
+                mandated <b>{threshold.toFixed(2)}%</b> passing threshold, so no completion coins or base XP are awarded and the next mission stays locked. Improve the configuration and try again.{(missing.length > 0 || poor.length > 0) && (<> Underperforming: <b>{[...missing, ...poor].join(", ")}</b>.</>)}
               </div>
             )}
           </div>
