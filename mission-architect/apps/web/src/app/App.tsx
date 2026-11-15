@@ -33,6 +33,7 @@ export function App() {
   });
   const [missionId, setMissionId] = useState(4);
   const [marketFromWorkshop, setMarketFromWorkshop] = useState(false);
+  const evaluationResult = useLOSStore((s) => s.evaluationResult);
 
   if (new URLSearchParams(window.location.search).has("dev")) return <DevHarness />;
 
@@ -122,8 +123,6 @@ export function App() {
       />
     );
   }
-  const evaluationResult = useLOSStore((s) => s.evaluationResult);
-
   if (screen === "workshop") {
     return <WorkshopPage mission={mission} go={go} launch={() => setScreen("launch")} />;
   }
