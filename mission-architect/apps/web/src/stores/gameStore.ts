@@ -9,6 +9,7 @@ export interface GameState {
   level: number;
   playerName: string;
   ownedPartIds: string[];
+  ownerId: string | null;
 
   // Actions
   buyPart: (part: MarketPart) => { success: boolean; reason?: string };
@@ -17,6 +18,8 @@ export interface GameState {
   addCoins: (amount: number) => void;
   addXp: (amount: number) => void;
   resetProgress: () => void;
+  /** Reset all progress unless the given user already owns the saved state. */
+  switchUser: (userId: string, playerName?: string) => void;
 }
 
 export function formatCoins(amount: number): string {
@@ -40,6 +43,7 @@ export const useGameStore = create<GameState>()(
       level: 1,
       playerName: "Commander_01",
       ownedPartIds: [],
+      ownerId: null,
 
       buyPart: (part: MarketPart) => {
         const state = get();
@@ -88,7 +92,22 @@ export const useGameStore = create<GameState>()(
           xp: 150,
           xpMax: 500,
           level: 1,
+          playerName: "Commander_01",
           ownedPartIds: [],
+          ownerId: null,
+        });
+      },
+
+      switchUser: (userId: string, playerName?: string) => {
+        if (get().ownerId === userId) return;
+        set({
+          coins: 2_500_000,
+          xp: 150,
+          xpMax: 500,
+          level: 1,
+          playerName: playerName || "Commander_01",
+          ownedPartIds: [],
+          ownerId: userId,
         });
       },
     }),
