@@ -27,7 +27,7 @@ export function ResultsPage({ missionId, go, onRetry }: ResultsPageProps) {
   const xpAwarded = evaluationResult ? evaluationResult.xpAwarded : 0;
   const scores = evaluationResult ? evaluationResult.equipment_scores : [];
   const missing = evaluationResult ? evaluationResult.missing_equipment : [];
-  const threshold = evaluationResult?.success_threshold ?? 30;
+  const threshold = evaluationResult?.success_threshold ?? 60;
   const poor = scores.filter((s) => s.difference > 0 && s.suitability > 0).map((s) => `${s.label} (${s.suitability}/${s.idealSuitability})`);
   const nextUnlocked = evaluationResult?.next_level_unlocked ?? false;
 
@@ -137,18 +137,18 @@ export function ResultsPage({ missionId, go, onRetry }: ResultsPageProps) {
                 position: "relative",
               }}
             >
-              {/* Threshold indicator line at 30% */}
+              {/* Threshold indicator line at the success threshold */}
               <div
                 style={{
                   position: "absolute",
-                  left: "30%",
+                  left: `${threshold}%`,
                   top: 0,
                   bottom: 0,
                   width: 2,
                   background: "#f59e0b",
                   zIndex: 2,
                 }}
-                title="Minimum Passing Threshold (30%)"
+                title={`Minimum Passing Threshold (${threshold}%)`}
               />
               <div
                 style={{

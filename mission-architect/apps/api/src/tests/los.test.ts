@@ -94,8 +94,8 @@ await test("12. LOS is clamped to 0..100", () => {
 await test("13. Changing equipment changes LOS", () => {
   assert.notStrictEqual(calculateLOS(1, [1001, 2001, 3001, 4001]).los, calculateLOS(1, [1001, 2002, 3001, 4001]).los);
 });
-await test("14. LOS 29.99 is MISSION FAILED", () => assert.strictEqual(getMissionStatus(29.99), "FAILED"));
-await test("15. LOS exactly 30 is MISSION SUCCESSFUL", () => assert.strictEqual(getMissionStatus(30), "SUCCESS"));
+await test("14. LOS 59.99 is MISSION FAILED", () => assert.strictEqual(getMissionStatus(59.99), "FAILED"));
+await test("15. LOS exactly 60 is MISSION SUCCESSFUL", () => assert.strictEqual(getMissionStatus(60), "SUCCESS"));
 await test("16. Failed missions award zero coins", () => assert.strictEqual(calculateCoins(1000, 20, "FAILED"), 0));
 await test("17. Failed missions award XP with B = 0 (=150)", () => assert.strictEqual(calculateXP(100, 5, 20, "FAILED"), 150));
 await test("18. Successful mission coins = base × LOS/100 (=800)", () => assert.strictEqual(calculateCoins(1000, 80, "SUCCESS"), 800));
@@ -131,9 +131,22 @@ await test("21b. Perfect configs pass every hard constraint", () => {
     assert.strictEqual(c.mission_readiness_score, 100);
   }
 });
-await test("21c. Budget limit blocks launch", () => {
-  const c = validateConstraints(1, ["lp1", "lv2", "sat2", "sp2"]); 
+await test("21d. Power check limit is the per-mission value (L1 = 25 W)", () => {
+  const ok = validateConstraints(1, [1001, 2001, 3001, 4001]);
+  assert.strictEqual(ok.checks.find((x) => x.id === "power")!.limit, 25);
+  assert.ok(ok.checks.find((x) => x.id === "power")!.passed); // 40 - 15 = 25 W
+  const low = validateConstraints(1, [1001, 2001, 3001, 4001, 4003]); // + Neutron Spectrometer (-20 W)
+  assert.strictEqual(low.checks.find((x) => x.id === "power")!.passed, false);
+  assert.strictEqual(validateConstraints(5, ideal(5, "msr"), "msr").checks.find((x) => x.id === "power")!.limit, 3_320);
+});
+await test("21c. Budget limit (20M) blocks launch when total cost exceeds it", async () => {
+  const { ALL_MARKET_PARTS } = await import("../../../web/src/data/marketData");
+  const all = ALL_MARKET_PARTS.map((p) => p.id); // far more than 20M of hardware
+  const c = validateConstraints(1, all);
+  assert.strictEqual(c.checks.find((x) => x.id === "budget")!.limit, 20_000_000);
   assert.strictEqual(c.checks.find((x) => x.id === "budget")!.passed, false);
+  assert.strictEqual(c.launch_allowed, false);
+  assert.ok(validateConstraints(1, ["lp1", "lv2", "sat2", "sp2"]).checks.find((x) => x.id === "budget")!.passed);
 });
 await test("22. Frontend/backend consistency: live LOS equals evaluated LOS for the same parts", async () => {
   const parts = ["lp1", "lv1", "sat2", "sp2"];

@@ -79,7 +79,7 @@ export function WorkshopPage({
   const constraints = liveResult?.constraints;
   const missing = liveResult?.missing_equipment ?? [];
   const ready = !loadingLive && liveResult?.launch_allowed === true;
-  const threshold = liveResult?.success_threshold ?? 30;
+  const threshold = liveResult?.success_threshold ?? 60;
   const [launchError, setLaunchError] = useState<string | null>(null);
 
   const toggle = (part: MarketPart) => {

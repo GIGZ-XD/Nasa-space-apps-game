@@ -4,7 +4,7 @@
 // ====================================================================
 
 /** Success threshold (percent). successRate >= threshold => MISSION SUCCESSFUL. */
-export const MISSION_SUCCESS_THRESHOLD = 30;
+export const MISSION_SUCCESS_THRESHOLD = 60;
 
 /**
  * Parts that are not the ideal/listed alternative for a slot but belong to the
@@ -40,10 +40,17 @@ export const MISSION_REWARDS: MissionRewardConfig[] = [
   { level: 5, baseCoins: 2_000_000, baseXP: 1500, difficulty: 10 },
 ];
 
+/** Budget cap (USD) on total spacecraft cost, applied to every mission. */
+export const MISSION_BUDGET = 20_000_000;
+
 export interface MissionConstraintConfig {
   level: number;
   destination: "LEO" | "Lunar" | "Mars";
   budget: number; // max total spacecraft cost (USD)
+  /** Power check limit (W): generated − consumed must be at least this. */
+  minNetPower: number;
+  /** Per-variant override of minNetPower (Level 5 expert missions). */
+  variantMinNetPower?: Record<string, number>;
   requiredDeltaV: number; // m/s the launch vehicle must provide
   fuelMassKg: number; // propellant mass added to the payload mass
 }
@@ -54,9 +61,9 @@ export interface MissionConstraintConfig {
  * game-balancing values; edit them here to match the official numbers.
  */
 export const MISSION_CONSTRAINTS: MissionConstraintConfig[] = [
-  { level: 1, destination: "LEO", budget: 1_500_000, requiredDeltaV: 9_400, fuelMassKg: 50 },
-  { level: 2, destination: "Lunar", budget: 3_000_000, requiredDeltaV: 12_500, fuelMassKg: 150 },
-  { level: 3, destination: "Lunar", budget: 10_000_000, requiredDeltaV: 12_500, fuelMassKg: 800 },
-  { level: 4, destination: "Mars", budget: 14_000_000, requiredDeltaV: 13_800, fuelMassKg: 1_500 },
-  { level: 5, destination: "Mars", budget: 18_000_000, requiredDeltaV: 14_200, fuelMassKg: 4_000 },
+  { level: 1, destination: "LEO", budget: MISSION_BUDGET, minNetPower: 25, requiredDeltaV: 9_400, fuelMassKg: 50 },
+  { level: 2, destination: "Lunar", budget: MISSION_BUDGET, minNetPower: 85, requiredDeltaV: 12_500, fuelMassKg: 150 },
+  { level: 3, destination: "Lunar", budget: MISSION_BUDGET, minNetPower: 590, requiredDeltaV: 12_500, fuelMassKg: 800 },
+  { level: 4, destination: "Mars", budget: MISSION_BUDGET, minNetPower: 90, requiredDeltaV: 13_800, fuelMassKg: 1_500 },
+  { level: 5, destination: "Mars", budget: MISSION_BUDGET, minNetPower: 2_880, variantMinNetPower: { bennu: 2_880, msr: 3_320 }, requiredDeltaV: 14_200, fuelMassKg: 4_000 },
 ];

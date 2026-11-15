@@ -116,6 +116,7 @@ export function validateConstraints(level: number, selectedParts: Array<string |
     payloadMass += ph.mass;
     powerNet += ph.power;
   }
+  const minPower = (variant ? cfg.variantMinNetPower?.[variant] : undefined) ?? cfg.minNetPower;
   const payloadLimit = vehicle?.payloadLimitKg ?? 0;
   const deltaV = vehicle?.deltaV ?? 0;
 
@@ -150,11 +151,11 @@ export function validateConstraints(level: number, selectedParts: Array<string |
     {
       id: "power",
       label: "Power",
-      passed: powerNet >= 0,
+      passed: powerNet >= minPower,
       actual: powerNet,
-      limit: 0,
+      limit: minPower,
       unit: "W",
-      detail: "Power generated − power consumed ≥ 0",
+      detail: `Power generated − power consumed ≥ ${minPower} W`,
     },
     {
       id: "deltaV",
