@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Screen, Moonscape, Img, Btn } from '../components/layout/ui';
+import { Screen, Moonscape } from '../components/layout/ui';
 import { useAuthStore } from '../stores/authStore';
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
@@ -147,20 +147,6 @@ export function LoginPage({
         }}
       />
       <Moonscape />
-
-      {/* Back button only when already authenticated */}
-      {go && isAuthenticated && (
-        <Btn
-          x={14}
-          y={16}
-          w={220}
-          h={64}
-          icon={<Img src="/assets/sprites/ui/home.jpg" size={42} />}
-          onClick={() => go('home')}
-        >
-          Back
-        </Btn>
-      )}
 
       {/* ── Main Space Command Center Modal ─────────────────────────────── */}
       <div

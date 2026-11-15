@@ -1,16 +1,25 @@
-import { Router } from "express";
-import { rateLimit } from "express-rate-limit";
+import { Router, Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { authService } from "../services/auth.service";
 
 export const authRoutes = Router();
-const loginRateLimit = rateLimit({
-  windowMs: 60_000,
-  max: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: "Too many login attempts. Please try again later." },
-});
+
+// In-memory lightweight rate limiter (no external deps)
+const attemptsMap = new Map<string, { count: number; resetAt: number }>();
+const loginRateLimit = (req: Request, res: Response, next: NextFunction) => {
+  const ip = req.ip || req.socket.remoteAddress || "unknown";
+  const now = Date.now();
+  const entry = attemptsMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    attemptsMap.set(ip, { count: 1, resetAt: now + 60_000 });
+    return next();
+  }
+  if (entry.count >= 20) {
+    return res.status(429).json({ error: "Too many login attempts. Please try again later." });
+  }
+  entry.count++;
+  return next();
+};
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),

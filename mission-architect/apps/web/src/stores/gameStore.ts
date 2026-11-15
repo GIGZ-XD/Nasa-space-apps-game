@@ -10,6 +10,11 @@ export interface GameState {
   playerName: string;
   ownedPartIds: string[];
   ownedIntelIds: string[];
+  ownerId: string | null;
+  /** Parts placed in the workshop assembly bay, keyed by category id. */
+  installedParts: Record<string, string | string[]>;
+  /** Mission ids unlocked by completing the previous mission successfully. */
+  unlockedMissionIds: number[];
 
   // Actions
   buyPart: (part: MarketPart) => { success: boolean; reason?: string };
@@ -19,8 +24,21 @@ export interface GameState {
   canAfford: (price: number) => boolean;
   addCoins: (amount: number) => void;
   addXp: (amount: number) => void;
+  /** Set when XP raised the player's level; consumed by the results screen. */
+  pendingLevelUp: boolean;
+  clearLevelUp: () => void;
+  setInstalledPart: (categoryId: string, partId: string | null) => void;
+  /** Toggle a part in a category that holds several parts (sensors / landers). */
+  toggleInstalledPart: (categoryId: string, partId: string) => void;
+  unlockMission: (missionId: number) => void;
+  /** Destroys parts used on a mission: removes them from inventory and the assembly bay. */
+  consumeParts: (partIds: string[]) => void;
   resetProgress: () => void;
+  /** Reset all progress unless the given user already owns the saved state. */
+  switchUser: (userId: string, playerName?: string) => void;
 }
+
+export const STARTING_COINS = 5_000_000;
 
 export function formatCoins(amount: number): string {
   if (amount >= 1_000_000) {
@@ -37,13 +55,62 @@ export function formatCoins(amount: number): string {
 export const useGameStore = create<GameState>()(
   persist(
     (set, get) => ({
-      coins: 2_500_000,
+      coins: STARTING_COINS,
       xp: 150,
       xpMax: 500,
       level: 1,
       playerName: "Commander_01",
       ownedPartIds: [],
       ownedIntelIds: [],
+      ownerId: null,
+      installedParts: {},
+      unlockedMissionIds: [],
+      pendingLevelUp: false,
+      clearLevelUp: () => set({ pendingLevelUp: false }),
+
+      toggleInstalledPart: (categoryId, partId) => {
+        set((state) => {
+          const cur = state.installedParts?.[categoryId];
+          const list = Array.isArray(cur) ? cur : cur ? [cur] : [];
+          const next = list.includes(partId) ? list.filter((p) => p !== partId) : [...list, partId];
+          const parts = { ...(state.installedParts || {}) };
+          if (next.length) parts[categoryId] = next;
+          else delete parts[categoryId];
+          return { installedParts: parts };
+        });
+      },
+
+      consumeParts: (partIds) => {
+        set((state) => {
+          const gone = new Set(partIds);
+          const installed: Record<string, string | string[]> = {};
+          for (const [cat, v] of Object.entries(state.installedParts || {})) {
+            const list = (Array.isArray(v) ? v : [v]).filter((id) => !gone.has(id));
+            if (list.length) installed[cat] = list;
+          }
+          return {
+            ownedPartIds: (state.ownedPartIds || []).filter((id) => !gone.has(id)),
+            installedParts: installed,
+          };
+        });
+      },
+
+      unlockMission: (missionId) => {
+        set((state) => ({
+          unlockedMissionIds: (state.unlockedMissionIds || []).includes(missionId)
+            ? state.unlockedMissionIds
+            : [...(state.unlockedMissionIds || []), missionId],
+        }));
+      },
+
+      setInstalledPart: (categoryId, partId) => {
+        set((state) => {
+          const next = { ...(state.installedParts || {}) };
+          if (partId) next[categoryId] = partId;
+          else delete next[categoryId];
+          return { installedParts: next };
+        });
+      },
 
       buyPart: (part: MarketPart) => {
         const state = get();
@@ -103,18 +170,43 @@ export const useGameStore = create<GameState>()(
             newLevel += 1;
             newXpMax = Math.round(newXpMax * 1.5);
           }
-          return { xp: newXp, level: newLevel, xpMax: newXpMax };
+          return {
+            xp: newXp,
+            level: newLevel,
+            xpMax: newXpMax,
+            pendingLevelUp: state.pendingLevelUp || newLevel > state.level,
+          };
         });
       },
 
       resetProgress: () => {
         set({
-          coins: 2_500_000,
+          coins: STARTING_COINS,
           xp: 150,
           xpMax: 500,
           level: 1,
+          playerName: "Commander_01",
           ownedPartIds: [],
           ownedIntelIds: [],
+          ownerId: null,
+          installedParts: {},
+          unlockedMissionIds: [],
+        });
+      },
+
+      switchUser: (userId: string, playerName?: string) => {
+        if (get().ownerId === userId) return;
+        set({
+          coins: STARTING_COINS,
+          xp: 150,
+          xpMax: 500,
+          level: 1,
+          playerName: playerName || "Commander_01",
+          ownedPartIds: [],
+          ownedIntelIds: [],
+          ownerId: userId,
+          installedParts: {},
+          unlockedMissionIds: [],
         });
       },
     }),

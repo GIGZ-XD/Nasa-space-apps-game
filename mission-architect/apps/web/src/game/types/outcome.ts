@@ -24,4 +24,8 @@ export const OUTCOME_EVENTS = {
   FAILURE_RENDERED: "outcome:failure:rendered",
   /** Phaser -> React: Dispatched when orbital decay animation reaches conclusion */
   DECAY_COMPLETE: "outcome:decay:complete",
+  /** Phaser -> React: Dispatched once the spacecraft has completed 2 orbits of the planet */
+  ORBITS_COMPLETE: "orbit:two-complete",
+  /** Phaser -> React: Dispatched when the rocket explodes during a failed launch */
+  LAUNCH_FAILED: "launch:failed",
 } as const;

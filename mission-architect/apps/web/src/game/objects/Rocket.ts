@@ -5,6 +5,8 @@ export interface RocketConfig {
   y?: number;
   scale?: number;
   textureKey?: string;
+  /** When a texture is used: scale it to this on-screen height (px) */
+  targetHeight?: number;
 }
 
 /**
@@ -25,15 +27,24 @@ export class Rocket extends Phaser.GameObjects.Container {
   private rocketScale: number;
 
   public isFairingSeparated: boolean = false;
+  /** Half the sprite height in local units (0 for the procedural rocket) */
+  private spriteHalfHeight = 0;
 
   constructor(scene: Phaser.Scene, x: number, y: number, config: RocketConfig = {}) {
     super(scene, x, y);
 
     this.rocketScale = config.scale ?? 2.0;
+    const hasTexture = !!config.textureKey && scene.textures.exists(config.textureKey);
+    if (hasTexture && config.targetHeight) {
+      // Scale the chosen part sprite so it stands targetHeight pixels tall
+      const frameH = scene.textures.get(config.textureKey!).getSourceImage().height;
+      this.rocketScale = config.targetHeight / frameH;
+    }
     this.setScale(this.rocketScale);
 
-    if (config.textureKey && scene.textures.exists(config.textureKey)) {
-      const sprite = scene.add.sprite(0, 0, config.textureKey);
+    if (hasTexture) {
+      const sprite = scene.add.sprite(0, 0, config.textureKey!);
+      this.spriteHalfHeight = sprite.height / 2;
       this.add(sprite);
     } else {
       this.buildProceduralRocket();
@@ -160,11 +171,16 @@ export class Rocket extends Phaser.GameObjects.Container {
     g.fillRect(-1, -82, 2, 47); // Vertical split line
   }
 
+  /** Distance from the rocket's centre to its base, in world pixels */
+  public getBottomOffset(): number {
+    return (this.spriteHalfHeight || 60) * this.rocketScale;
+  }
+
   /**
    * Returns the world-space coordinate of the rocket exhaust nozzles
    */
   public getExhaustWorldPosition(): { x: number; y: number } {
-    const bottomLocalY = 60 * this.rocketScale;
+    const bottomLocalY = this.getBottomOffset();
     return {
       x: this.x,
       y: this.y + bottomLocalY,
@@ -177,6 +193,12 @@ export class Rocket extends Phaser.GameObjects.Container {
   public separateFairing(onComplete?: () => void): void {
     if (this.isFairingSeparated) return;
     this.isFairingSeparated = true;
+
+    // A sprite rocket has no separate fairing graphic
+    if (!this.fairingGraphics) {
+      this.scene.time.delayedCall(0, () => onComplete?.());
+      return;
+    }
 
     this.scene.tweens.add({
       targets: this.fairingGraphics,
@@ -198,10 +220,12 @@ export class Rocket extends Phaser.GameObjects.Container {
     if (x !== undefined) this.x = x;
     if (y !== undefined) this.y = y;
     this.isFairingSeparated = false;
-    this.fairingGraphics.y = 0;
-    this.fairingGraphics.alpha = 1;
-    this.fairingGraphics.scaleX = 1;
-    this.drawPayloadFairing();
+    if (this.fairingGraphics) {
+      this.fairingGraphics.y = 0;
+      this.fairingGraphics.alpha = 1;
+      this.fairingGraphics.scaleX = 1;
+      this.drawPayloadFairing();
+    }
     this.rotation = 0;
   }
 }

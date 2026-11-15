@@ -4,6 +4,8 @@ import { PreloadScene } from "../scenes/PreloadScene";
 import { WorkshopScene } from "../scenes/WorkshopScene";
 import { LaunchScene } from "../scenes/LaunchScene";
 import { OrbitScene } from "../scenes/OrbitScene";
+import { LandingScene } from "../scenes/LandingScene";
+import { DriftScene } from "../scenes/DriftScene";
 
 export interface GameConfigOptions {
   parent?: HTMLElement | string;
@@ -14,6 +16,8 @@ export interface GameConfigOptions {
   autoCenter?: Phaser.Scale.Center;
   initialScene?: string;
   missionOutcome?: string;
+  /** Image URLs of the parts the player chose (vehicle / satellite / pad) */
+  loadout?: Record<string, string>;
 }
 
 export const DEFAULT_GAME_WIDTH = 1280;
@@ -41,6 +45,7 @@ export function createGameConfig(options: GameConfigOptions = {}): Phaser.Types.
     autoCenter = Phaser.Scale.CENTER_BOTH,
     initialScene,
     missionOutcome,
+    loadout,
   } = options;
 
   return {
@@ -68,9 +73,12 @@ export function createGameConfig(options: GameConfigOptions = {}): Phaser.Types.
         if (missionOutcome) {
           game.registry.set("missionOutcome", missionOutcome);
         }
+        if (loadout) {
+          game.registry.set("loadout", loadout);
+        }
       },
     },
-    scene: scenes ?? [BootScene, PreloadScene, WorkshopScene, LaunchScene, OrbitScene],
+    scene: scenes ?? [BootScene, PreloadScene, WorkshopScene, LaunchScene, OrbitScene, LandingScene, DriftScene],
   };
 }
 

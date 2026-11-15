@@ -644,7 +644,7 @@ function IntelMarketView({
   );
 }
 
-export function MarketPage({ go }: { go: (s: string) => void }) {
+export function MarketPage({ go, fromWorkshop = false }: { go: (s: string) => void; fromWorkshop?: boolean }) {
   const [activeCategory, setActiveCategory] = useState<MarketCategory | null>(null);
   const [viewingIntel, setViewingIntel] = useState(false);
   const { level } = useGameStore();
@@ -870,6 +870,22 @@ export function MarketPage({ go }: { go: (s: string) => void }) {
       >
         Dashboard
       </Btn>
+
+      {/* Shortcut back to the workshop (only when the player came from it) */}
+      {fromWorkshop && (
+        <Btn
+          gold
+          x={478}
+          y={724}
+          w={500}
+          h={82}
+          icon={<Img src="/assets/sprites/ui/rocket.jpg" size={50} />}
+          chevron={false}
+          onClick={() => go("workshop")}
+        >
+          BACK TO WORKSHOP
+        </Btn>
+      )}
 
       {/* Inventory Button above Market */}
       <Btn

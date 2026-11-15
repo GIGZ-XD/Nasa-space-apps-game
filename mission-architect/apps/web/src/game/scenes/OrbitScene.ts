@@ -1,9 +1,10 @@
 import Phaser from "phaser";
 import { Starfield } from "../systems/Starfield";
+import { createEarthTexture } from "../systems/EarthTexture";
+import { createRetroPlanetTexture } from "../systems/RetroPlanetTexture";
 import { Planet } from "../objects/Planet";
 import { Spacecraft } from "../objects/Spacecraft";
 import { SceneTransitionCoordinator } from "../systems/SceneTransition";
-import { WorkshopScene } from "./WorkshopScene";
 import { LaunchScene } from "./LaunchScene";
 import { OutcomeAnimationController } from "../animations/outcomeAnimation";
 import { MissionOutcomeStatus, MissionOutcomePayload, OUTCOME_EVENTS } from "../types/outcome";
@@ -39,6 +40,10 @@ export class OrbitScene extends Phaser.Scene {
 
   // Orbital mechanics parameters
   private orbitAngle: number = 0;
+  /** Orbits to complete before the result is revealed to the player. */
+  private static readonly ORBITS_REQUIRED = 2;
+  private orbitsFlown = 0; // fractional number of full orbits flown since arrival
+  private orbitsReported = false;
   private orbitCenterX: number = 0;
   private orbitCenterY: number = 0;
   private baseOrbitRadiusX: number = 280;
@@ -53,8 +58,19 @@ export class OrbitScene extends Phaser.Scene {
     super({ key: OrbitScene.KEY });
   }
 
+  preload(): void {
+    // Load the satellite the player built (image URL supplied through the registry)
+    const loadout = (this.registry.get("loadout") as Record<string, string> | undefined) ?? {};
+    if (loadout.satellite && !this.textures.exists("part-satellite")) {
+      this.load.image("part-satellite", loadout.satellite);
+    }
+  }
+
   create(): void {
     const { width, height } = this.scale;
+    this.orbitAngle = 0;
+    this.orbitsFlown = 0;
+    this.orbitsReported = false;
 
     // 1. Starfield Background
     this.starfield = new Starfield(this, {
@@ -71,8 +87,27 @@ export class OrbitScene extends Phaser.Scene {
     this.orbitCenterY = Math.round(height * 0.5);
     const planetRadius = Math.round(Math.min(width, height) * 0.22);
 
+    // Geo-satellite mission: a realistic, perfectly circular Earth
+    const loadout = (this.registry.get("loadout") as Record<string, string> | undefined) ?? {};
+    const realisticEarth = loadout.planet === "earth";
+    const retroMoon = loadout.planet === "moon";
+    if (retroMoon) createRetroPlanetTexture(this, "retro-moon", "moon", 96);
+    if (realisticEarth) {
+      createEarthTexture(this, "earth-realistic", planetRadius * 2);
+      // soft blue atmosphere glow around the circle
+      const glow = this.add.graphics();
+      glow.setDepth(-1);
+      for (let i = 0; i < 14; i++) {
+        glow.fillStyle(0x4aa8ff, 0.018 + (14 - i) * 0.003);
+        glow.fillCircle(this.orbitCenterX, this.orbitCenterY, planetRadius + 2 + i * 2.2);
+      }
+      glow.lineStyle(2, 0x9ad4ff, 0.55);
+      glow.strokeCircle(this.orbitCenterX, this.orbitCenterY, planetRadius + 1);
+    }
+
     this.planet = new Planet(this, this.orbitCenterX, this.orbitCenterY, {
       radius: planetRadius,
+      textureKey: realisticEarth ? "earth-realistic" : retroMoon ? "retro-moon" : undefined,
       type: "terrestrial",
       hasAtmosphere: true,
       hasRing: false,
@@ -88,6 +123,8 @@ export class OrbitScene extends Phaser.Scene {
     this.spacecraft = new Spacecraft(this, this.orbitCenterX + this.baseOrbitRadiusX, this.orbitCenterY, {
       scale: 2.2,
       enableIdleFloat: false, // Explicit orbital positioning
+      textureKey: this.textures.exists("part-satellite") ? "part-satellite" : undefined,
+      targetSize: 170,
     });
     this.spacecraft.setDepth(10);
 
@@ -105,9 +142,6 @@ export class OrbitScene extends Phaser.Scene {
 
     // 6. Telemetry & Navigation HUD
     this.buildOrbitHUD(width, height);
-
-    // 7. Keyboard Shortcuts for Testing & Verification
-    this.setupKeyboardControls();
 
     // 8. Register Outcome Listener from React Event Bus
     this.setupOutcomeListener();
@@ -212,13 +246,12 @@ export class OrbitScene extends Phaser.Scene {
   private drawOrbitalPath(color: number, alpha: number, radiusScale: number = 1.0): void {
     if (!this.trajectoryGraphics) return;
     const g = this.trajectoryGraphics;
+    // The orbit track is intentionally not drawn: the satellite flies its orbit
+    // without a visible line around the planet.
     g.clear();
-
-    const rx = this.baseOrbitRadiusX * radiusScale;
-    const ry = this.baseOrbitRadiusY * radiusScale;
-
-    g.lineStyle(1.5, color, alpha);
-    g.strokeEllipse(this.orbitCenterX, this.orbitCenterY, rx * 2, ry * 2);
+    void color;
+    void alpha;
+    void radiusScale;
   }
 
   /**
@@ -275,75 +308,12 @@ export class OrbitScene extends Phaser.Scene {
       }
     );
 
-    // Interactive dev buttons for runtime verification
-    let btnX = width - 470;
-
-    const makeBtn = (label: string, color: string, onClick: () => void) => {
-      const btn = this.add.text(btnX, bottomY + 6, label, {
-        fontFamily: "Courier, monospace",
-        fontSize: "11px",
-        color,
-      }).setInteractive({ useHandCursor: true });
-      btn.on("pointerdown", onClick);
-      btnX += btn.width + 12;
-      return btn;
-    };
-
-    const successBtn = makeBtn("[ SUCCESS (S) ]", "#22c55e", () => this.setMissionOutcome("success"));
-    const failureBtn = makeBtn("[ FAILURE (F) ]", "#ef4444", () => this.setMissionOutcome("failure", "Power Depletion"));
-    const resetBtn = makeBtn("[ RESET (R) ]", "#94a3b8", () => this.setMissionOutcome("pending"));
-    const workshopBtn = makeBtn("[ WORKSHOP (W) ]", "#38bdf8", () => this.returnToWorkshop());
-    const relaunchBtn = makeBtn("[ LAUNCH (L) ]", "#f59e0b", () => this.relaunch());
-
     this.hudContainer.add([
       hudBg,
       this.statusTitleText,
       this.telemetryText,
       this.hintText,
-      successBtn,
-      failureBtn,
-      resetBtn,
-      workshopBtn,
-      relaunchBtn,
     ]);
-  }
-
-  private setupKeyboardControls(): void {
-    if (!this.input.keyboard) return;
-
-    this.input.keyboard.on("keydown-S", () => {
-      this.setMissionOutcome("success");
-    });
-
-    this.input.keyboard.on("keydown-F", () => {
-      this.setMissionOutcome("failure", "Orbital Decay");
-    });
-
-    this.input.keyboard.on("keydown-R", () => {
-      this.setMissionOutcome("pending");
-    });
-
-    this.input.keyboard.on("keydown-W", () => {
-      this.returnToWorkshop();
-    });
-
-    this.input.keyboard.on("keydown-L", () => {
-      this.relaunch();
-    });
-  }
-
-  private returnToWorkshop(): void {
-    SceneTransitionCoordinator.transitionTo({
-      fromScene: this,
-      toSceneKey: WorkshopScene.KEY,
-    });
-  }
-
-  private relaunch(): void {
-    SceneTransitionCoordinator.transitionTo({
-      fromScene: this,
-      toSceneKey: LaunchScene.KEY,
-    });
   }
 
   update(time: number, delta: number): void {
@@ -367,6 +337,12 @@ export class OrbitScene extends Phaser.Scene {
 
       // Advance orbital position
       this.orbitAngle += this.orbitSpeed * dt;
+      this.orbitsFlown += (this.orbitSpeed * dt) / (Math.PI * 2);
+      if (!this.orbitsReported && this.orbitsFlown >= OrbitScene.ORBITS_REQUIRED) {
+        this.orbitsReported = true;
+        this.events.emit(OUTCOME_EVENTS.ORBITS_COMPLETE);
+        this.game.events?.emit(OUTCOME_EVENTS.ORBITS_COMPLETE);
+      }
 
       const cos = Math.cos(this.orbitAngle);
       const sin = Math.sin(this.orbitAngle);

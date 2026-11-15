@@ -5,8 +5,9 @@ import { useGameStore } from "../stores/gameStore";
 const POS: Record<number, [number, number]> = { 1: [100, 125], 2: [533, 130], 3: [963, 130], 4: [281, 420], 5: [757, 420] };
 const W = 394, H = 268;
 
-function Card({ m, onOpen, playerLevel }: { m: Mission; onOpen: () => void; playerLevel: number }) {
-  const locked = m.unlockLevel > playerLevel;
+function Card({ m, onOpen, unlocked }: { m: Mission; onOpen: () => void; unlocked: boolean }) {
+  // Mission 1 is always open; each later mission opens when the previous one is completed
+  const locked = m.id !== 1 && !unlocked;
   const [x, y] = POS[m.id];
   return (
     <button className={`card panel ${locked ? "locked" : "sel"}`} style={{ left: x, top: y, width: W, height: H }} onClick={locked ? undefined : onOpen} aria-disabled={locked}>
@@ -14,13 +15,13 @@ function Card({ m, onOpen, playerLevel }: { m: Mission; onOpen: () => void; play
       <h3 className="cardtitle">{m.short}</h3>
       <img className="pix cardart" src={m.card} alt={m.name} />
       <div className="stats"><span><Img src="/assets/sprites/ui/coin.jpg" size={32} />{m.cost}</span><span><span style={{ color: "#4db8ff" }}>★</span>{m.xp.toLocaleString()} XP</span></div>
-      <div className="view">{locked ? `UNLOCKS AT LVL ${m.unlockLevel}` : "VIEW MISSION ›"}</div>
+      <div className="view">{locked ? "🔒 LOCKED" : "VIEW MISSION ›"}</div>
     </button>
   );
 }
 
 export function MissionSelectPage({ go, open }: { go: (s: string) => void; open: (id: number) => void }) {
-  const { level } = useGameStore();
+  const { unlockedMissionIds } = useGameStore();
   return (
     <Screen>
       <Moonscape small />
@@ -31,7 +32,7 @@ export function MissionSelectPage({ go, open }: { go: (s: string) => void; open:
         <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", color: "var(--cyan)", fontWeight: 600, fontSize: 21, zIndex: 1 }}>Choose your next operation</div>
       </Panel>
       <Coins />
-      {MISSIONS.map((m) => <Card key={m.id} m={m} onOpen={() => open(m.id)} playerLevel={level} />)}
+      {MISSIONS.map((m) => <Card key={m.id} m={m} onOpen={() => open(m.id)} unlocked={(unlockedMissionIds || []).includes(m.id)} />)}
       <Btn x={17} y={724} w={282} h={82} icon={<Img src="/assets/sprites/ui/home.jpg" size={50} />} onClick={() => go("home")}>Dashboard</Btn>
       <Btn x={1214} y={634} w={230} h={78} icon={<Img src="/assets/sprites/ui/gear.jpg" size={46} />} chevron={false} onClick={() => go("inventory")}>Inventory</Btn>
       <Btn x={1214} y={724} w={230} h={82} icon={<Img src="/assets/sprites/ui/market.jpg" size={50} />} chevron={false} onClick={() => go("market")}>Market</Btn>
