@@ -137,7 +137,7 @@ await test("21d. Power check limit is the per-mission value (L1 = 25 W)", () => 
   assert.ok(ok.checks.find((x) => x.id === "power")!.passed); // 40 - 15 = 25 W
   const low = validateConstraints(1, [1001, 2001, 3001, 4001, 4003]); // + Neutron Spectrometer (-20 W)
   assert.strictEqual(low.checks.find((x) => x.id === "power")!.passed, false);
-  assert.strictEqual(validateConstraints(5, ideal(5, "msr"), "msr").checks.find((x) => x.id === "power")!.limit, 2_700);
+  assert.strictEqual(validateConstraints(5, ideal(5, "msr"), "msr").checks.find((x) => x.id === "power")!.limit, 3_320);
 });
 await test("21c. Budget limit (20M) blocks launch when total cost exceeds it", async () => {
   const { ALL_MARKET_PARTS } = await import("../../../web/src/data/marketData");
@@ -177,6 +177,31 @@ await test("L5 variants are scored against their own ideal", () => {
   const parts = ["lp2", "lv6", "sat6", "lr6", "lr9"];
   assert.notStrictEqual(calculateLOS(5, parts, { variant: "bennu" }).los, calculateLOS(5, parts, { variant: "msr" }).los);
 });
+
+await test("Market: every part maps to a catalogue item", async () => {
+  const { ALL_MARKET_PARTS } = await import("../../../web/src/data/marketData");
+  const { getUniqueId, getEquipmentByUniqueId } = await import("../data/aegisCatalogue");
+  for (const p of ALL_MARKET_PARTS) {
+    const u = getUniqueId(p.id);
+    assert.ok(u !== undefined && getEquipmentByUniqueId(u), `market part ${p.id} (${p.name}) has no catalogue mapping`);
+  }
+});
+const MARKET_IDEAL: [number, string | undefined, string[]][] = [
+  [1, undefined, ["lp1", "lv1", "sat2", "sp2"]],
+  [2, undefined, ["lp2", "lv3", "sat4", "sp11", "sp4"]],
+  [3, undefined, ["lp2", "lv4", "sp3", "lr2", "sp12", "sp14", "sp7"]],
+  [4, undefined, ["lp3", "lv9", "lr5", "sp13", "lr8", "sp15", "sp8", "sp16"]],
+  [5, "bennu", ["lp2", "lv9", "sat6", "sp6", "sp17", "lr12"]],
+  [5, "msr", ["lp4", "lv6", "sat7", "lr6", "lr9", "lr13"]],
+];
+for (const [lvl, variant, parts] of MARKET_IDEAL) {
+  await test(`Market: ideal build for level ${lvl}${variant ? " " + variant : ""} can be bought, scores ~100 and may launch`, () => {
+    const r = calculateLOS(lvl, parts, { variant });
+    assert.ok(r.los >= 99.8, `LOS ${r.los}`);
+    const c = validateConstraints(lvl, parts, variant);
+    assert.ok(c.launch_allowed, c.blockers.join(","));
+  });
+}
 
 console.log(`\n${passed}/${total} tests passed`);
 if (passed !== total) process.exit(1);

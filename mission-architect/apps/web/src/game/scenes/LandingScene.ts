@@ -61,7 +61,7 @@ export class LandingScene extends Phaser.Scene {
       const haze = this.add.graphics().setDepth(-1);
       for (let i = 0; i < 10; i++) {
         haze.fillStyle(0xd9824b, 0.035);
-        haze.fillRect(0, groundTop - 40 - i * 22, width, 60 + i * 22);
+        haze.fillRect(0, groundTop - 40 - i * 22, width, height - (groundTop - 40 - i * 22));
       }
     }
     this.add
