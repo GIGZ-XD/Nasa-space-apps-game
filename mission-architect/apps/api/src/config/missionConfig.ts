@@ -39,5 +39,5 @@ export const MISSION_CONSTRAINTS: MissionConstraintConfig[] = [
   { level: 2, destination: "Lunar", budget: 3_000_000, requiredDeltaV: 12_500, fuelMassKg: 150 },
   { level: 3, destination: "Lunar", budget: 10_000_000, requiredDeltaV: 12_500, fuelMassKg: 800 },
   { level: 4, destination: "Mars", budget: 14_000_000, requiredDeltaV: 13_800, fuelMassKg: 1_500 },
-  { level: 5, destination: "Mars", budget: 18_000_000, requiredDeltaV: 14_500, fuelMassKg: 4_000 },
+  { level: 5, destination: "Mars", budget: 18_000_000, requiredDeltaV: 14_200, fuelMassKg: 4_000 },
 ];

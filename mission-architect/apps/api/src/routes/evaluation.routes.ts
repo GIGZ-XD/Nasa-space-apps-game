@@ -28,8 +28,9 @@ evaluationRoutes.get("/evaluate/live", (req: Request, res: Response) => {
   try {
     const level = Number(req.query.level || 1);
     const parts = parseParts(req.query.parts);
-    const los = calculateLOS(level, parts, { strict: false });
-    const constraints = validateConstraints(level, parts);
+    const variant = typeof req.query.variant === "string" && req.query.variant ? req.query.variant : undefined;
+    const los = calculateLOS(level, parts, { strict: false, variant });
+    const constraints = validateConstraints(level, parts, variant);
     const launchAllowed = constraints.launch_allowed && los.rejected_equipment.length === 0;
     return res.json({
       ...los,
@@ -52,7 +53,7 @@ evaluationRoutes.post("/evaluate", async (req: Request, res: Response) => {
   try {
     const user = extractUser(req);
     const userId = user ? user.id : "usr-commander-001";
-    const { level, selectedParts, attemptId } = req.body ?? {};
+    const { level, selectedParts, attemptId, variant } = req.body ?? {};
     if (!level || !Array.isArray(selectedParts)) {
       return res.status(400).json({ error: "Missing level or selectedParts array" });
     }
@@ -61,6 +62,7 @@ evaluationRoutes.post("/evaluate", async (req: Request, res: Response) => {
       Number(level),
       selectedParts,
       typeof attemptId === "string" && attemptId ? attemptId : undefined,
+      typeof variant === "string" && variant ? variant : undefined,
     );
     return res.json(result);
   } catch (err: any) {

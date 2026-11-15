@@ -23,7 +23,7 @@ export const EQUIPMENT_PHYSICS: Record<number, Physics> = {
   2002: { mass: 0, power: 0, payloadLimitKg: 300, deltaV: 9_450 },
   2003: { mass: 0, power: 0, payloadLimitKg: 22_800, deltaV: 13_000 },
   2004: { mass: 0, power: 0, payloadLimitKg: 600, deltaV: 12_600 },
-  2005: { mass: 0, power: 0, payloadLimitKg: 18_500, deltaV: 13_000 },
+  2005: { mass: 0, power: 0, payloadLimitKg: 18_500, deltaV: 14_200 },
   2006: { mass: 0, power: 0, payloadLimitKg: 27_200, deltaV: 13_000 },
   2007: { mass: 0, power: 0, payloadLimitKg: 17_400, deltaV: 14_200 },
   2008: { mass: 0, power: 0, payloadLimitKg: 63_800, deltaV: 14_800 },
@@ -45,9 +45,9 @@ export const EQUIPMENT_PHYSICS: Record<number, Physics> = {
   // rovers / nav / sampling
   9001: { mass: 1_025, power: -100 }, 9002: { mass: 900, power: -100 },
   10001: { mass: 6, power: -30 }, 10002: { mass: 15, power: -50 },
-  11001: { mass: 50, power: -60 }, 11002: { mass: 70, power: -70 }, 11003: { mass: 40, power: -60 },
+  11001: { mass: 50, power: -60 }, 11004: { mass: 150, power: -80 }, 11002: { mass: 70, power: -70 }, 11003: { mass: 40, power: -60 },
   // return
-  12001: { mass: 500, power: -100 }, 12002: { mass: 45, power: -10 }, 13001: { mass: 60, power: 0 },
+  12001: { mass: 500, power: -100 }, 12002: { mass: 45, power: -10 }, 13001: { mass: 60, power: 0 }, 13002: { mass: 80, power: 0 },
 };
 
 export interface ConstraintCheck {
@@ -83,9 +83,9 @@ function partCost(partId: string): number {
  * Hard-constraint validation, kept separate from LOS.
  * LOS alone never overrides a failed hard constraint.
  */
-export function validateConstraints(level: number, selectedParts: Array<string | number>): ConstraintResult {
+export function validateConstraints(level: number, selectedParts: Array<string | number>, variant?: string): ConstraintResult {
   const cfg = getConstraintConfig(level);
-  const ideal = getIdealConfig(level);
+  const ideal = getIdealConfig(level, variant);
   if (!cfg || !ideal) throw new Error(`No constraint configuration for level ${level}`);
 
   // Resolve valid, unlocked, de-duplicated equipment.

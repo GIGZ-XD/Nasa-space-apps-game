@@ -4,6 +4,7 @@ const { calculateLOS, EquipmentError } = await import("../services/scoring.servi
 const { evaluationService, LaunchBlockedError, getMissionStatus, calculateCoins, calculateXP } = await import("../services/evaluation.service");
 const { validateConstraints } = await import("../services/constraints.service");
 const { IDEAL_CONFIGS } = await import("../data/aegisCatalogue");
+const { getVariants } = await import("../data/aegisCatalogue");
 
 let passed = 0;
 let total = 0;
@@ -12,7 +13,7 @@ async function test(name: string, fn: () => void | Promise<void>) {
   try { await fn(); passed++; console.log(`[PASS] ${name}`); }
   catch (e: any) { console.error(`[FAIL] ${name}\n  ${e.message}`); }
 }
-const ideal = (lvl: number) => IDEAL_CONFIGS.find((c) => c.level === lvl)!.requiredSlots.map((s) => s.idealUniqueId);
+const ideal = (lvl: number, variant?: string) => IDEAL_CONFIGS.find((c) => c.level === lvl && (!variant || c.variant === variant))!.requiredSlots.map((s) => s.idealUniqueId);
 const throwsCode = (fn: () => unknown, code: string) => {
   try { fn(); } catch (e: any) { assert.ok(e instanceof EquipmentError); assert.strictEqual(e.code, code); return; }
   assert.fail("expected EquipmentError " + code);
@@ -120,6 +121,29 @@ await test("22. Frontend/backend consistency: live LOS equals evaluated LOS for 
   const live = calculateLOS(1, parts, { strict: false });
   const evald = await evaluationService.evaluateMission("u2", 1, parts);
   assert.strictEqual(live.los, evald.los);
+});
+
+for (const v of ["bennu", "msr"]) {
+  await test(`L5 ${v}: perfect ideal build = LOS 100 and passes constraints`, () => {
+    assert.strictEqual(calculateLOS(5, ideal(5, v), { variant: v }).los, 100);
+    assert.ok(validateConstraints(5, ideal(5, v), v).launch_allowed);
+  });
+}
+await test("L5 has two variants (Bennu, Mars Sample Return)", () => assert.deepStrictEqual(getVariants(5).map((x) => x.variant), ["bennu", "msr"]));
+await test("L5 Bennu: market parts score vs ideal (Atlas V, OSIRIS bus, DRACO, manipulator arm; no capsule on sale)", () => {
+  const r = calculateLOS(5, ["lp2", "lv4", "sat6", "sp6", "lr9"], { variant: "bennu" });
+  // (5+20+15+10)*100 + 10*95 over weights 5+20+15+10+10+8 = 68
+  assert.strictEqual(r.los, Math.round(((5 + 20 + 15 + 10) * 100 + 10 * 95) / 68 * 100) / 100);
+  assert.deepStrictEqual(r.missing_equipment, ["Earth Return Capsule"]);
+});
+await test("L5 MSR: market parts score vs ideal (SLS, MSR bus, lander+MAV, cache rover; no EEV on sale)", () => {
+  const r = calculateLOS(5, ["lp2", "lv6", "sat6", "lr6", "lr9"], { variant: "msr" });
+  assert.strictEqual(r.los, Math.round(((5 + 20 + 15 + 12 + 10) * 100) / 70 * 100) / 100); // weights 5+20+15+12+10+8 = 70
+  assert.deepStrictEqual(r.missing_equipment, ["Earth Return Capsule (EEV)"]);
+});
+await test("L5 variants are scored against their own ideal", () => {
+  const parts = ["lp2", "lv6", "sat6", "lr6", "lr9"];
+  assert.notStrictEqual(calculateLOS(5, parts, { variant: "bennu" }).los, calculateLOS(5, parts, { variant: "msr" }).los);
 });
 
 console.log(`\n${passed}/${total} tests passed`);

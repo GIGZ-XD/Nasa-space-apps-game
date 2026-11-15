@@ -51,6 +51,8 @@ export interface SelectedEquipmentReport {
 
 export interface LOSResult {
   level: number;
+  variant: string | null;
+  variant_name: string;
   los: number;
   ideal_los: number;
   success_rate: number;
@@ -84,8 +86,8 @@ interface LOSState {
   isEvaluating: boolean;
   error: string | null;
 
-  fetchLiveLOS: (level: number, selectedParts: string[]) => Promise<LOSResult | null>;
-  evaluateMission: (level: number, selectedParts: string[]) => Promise<EvaluationResult | null>;
+  fetchLiveLOS: (level: number, selectedParts: string[], variant?: string) => Promise<LOSResult | null>;
+  evaluateMission: (level: number, selectedParts: string[], variant?: string) => Promise<EvaluationResult | null>;
   /** Idempotency key for the current launch attempt (prevents double rewards). */
   attemptId: string | null;
   clearEvaluation: () => void;
@@ -101,7 +103,7 @@ export const useLOSStore = create<LOSState>((set, get) => ({
   error: null,
   attemptId: null,
 
-  fetchLiveLOS: async (level: number, selectedParts: string[]) => {
+  fetchLiveLOS: async (level: number, selectedParts: string[], variant?: string) => {
     try {
       const seq = ++liveRequestSeq;
       set({ loadingLive: true, error: null });
@@ -109,6 +111,7 @@ export const useLOSStore = create<LOSState>((set, get) => ({
         level: level.toString(),
         parts: selectedParts.join(","),
       });
+      if (variant) query.set("variant", variant);
 
       const res = await fetch(`/api/evaluate/live?${query.toString()}`);
       if (!res.ok) {
@@ -123,7 +126,7 @@ export const useLOSStore = create<LOSState>((set, get) => ({
     }
   },
 
-  evaluateMission: async (level: number, selectedParts: string[]) => {
+  evaluateMission: async (level: number, selectedParts: string[], variant?: string) => {
     try {
       set({ isEvaluating: true, error: null });
       const token = localStorage.getItem("ma_auth_token") || "";
@@ -138,7 +141,7 @@ export const useLOSStore = create<LOSState>((set, get) => ({
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ level, selectedParts, attemptId }),
+        body: JSON.stringify({ level, selectedParts, attemptId, variant }),
       });
 
       if (!res.ok) {

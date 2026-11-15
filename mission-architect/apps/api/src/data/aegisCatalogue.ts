@@ -38,6 +38,8 @@ export interface RequiredSlot {
 
 export interface IdealConfig {
   level: number;
+  /** Optional mission variant (Level 5 has two expert missions). */
+  variant?: string;
   name: string;
   requiredSlots: RequiredSlot[];
   minimumRequiredCount: number; // slots that must be filled
@@ -84,6 +86,7 @@ export const EQUIPMENT_CATALOGUE: EquipmentItem[] = [
   { uniqueId: 10001, categoryId: 10, name: "Navcam Stereo Cameras + AutoNav", suitability: 100, unlockLevel: 4 },
   { uniqueId: 4004, categoryId: 4, name: "SHERLOC Spectrometer", suitability: 100, unlockLevel: 4 },
   { uniqueId: 11001, categoryId: 11, name: "Rotary Percussive Drill + Sample Caching System", suitability: 100, unlockLevel: 4 },
+  { uniqueId: 11004, categoryId: 11, name: "Sample Cache Retrieval Rover & Robotic Manipulator Arm", suitability: 100, unlockLevel: 4 },
   // Level 5
   { uniqueId: 1004, categoryId: 1, name: "Kennedy Space Center (LC-39B)", suitability: 100, unlockLevel: 5 },
   { uniqueId: 1005, categoryId: 1, name: "Heavy Integration Pad", suitability: 98, unlockLevel: 5 },
@@ -96,6 +99,7 @@ export const EQUIPMENT_CATALOGUE: EquipmentItem[] = [
   { uniqueId: 12001, categoryId: 12, name: "Mars Ascent Vehicle", suitability: 100, unlockLevel: 5 },
   { uniqueId: 12002, categoryId: 12, name: "Sample Return Capsule", suitability: 98, unlockLevel: 5 },
   { uniqueId: 13001, categoryId: 13, name: "PICA-X Reinforced Aeroshell Capsule", suitability: 100, unlockLevel: 5 },
+  { uniqueId: 13002, categoryId: 13, name: "EEV Thermal Protection Shield & Parachute", suitability: 100, unlockLevel: 5 },
 ];
 
 // -----------------------------------------------------------------------
@@ -182,27 +186,48 @@ export const IDEAL_CONFIGS: IdealConfig[] = [
     minimumRequiredCount: 8,
     requiredSlots: [
       slot("pad", 1, "Launch Pad", 1003),
-      slot("vehicle", 2, "Launch Vehicle", 2007, [{ uniqueId: 2008, suitability: 98 }]),
+      // Market "Atlas V (401 / 541)" resolves to 2005; it is the same family as 2007.
+      slot("vehicle", 2, "Launch Vehicle", 2007, [{ uniqueId: 2005, suitability: 100 }, { uniqueId: 2008, suitability: 98 }]),
       slot("entry", 6, "Entry System", 6004),
       slot("power", 7, "Power System", 7002),
       slot("rover", 9, "Rover", 9001, [{ uniqueId: 9002, suitability: 98 }]),
       slot("nav", 10, "Navigation", 10001),
       slot("sensor", 4, "Sensor", 4004),
-      slot("sampling", 11, "Sample Collection", 11001),
+      slot("sampling", 11, "Sample Collection", 11001, [{ uniqueId: 11004, suitability: 100 }]),
     ],
   },
   {
     level: 5,
-    name: "Asteroid Sample Return",
-    minimumRequiredCount: 7,
+    variant: "bennu",
+    name: "Asteroid Sample Return: Bennu Rendezvous",
+    minimumRequiredCount: 6,
     requiredSlots: [
-      slot("pad", 1, "Launch Pad", 1004, [{ uniqueId: 1005, suitability: 98 }]),
-      slot("vehicle", 2, "Launch Vehicle", 2009),
-      slot("bus", 3, "Spacecraft Bus", 3004, [{ uniqueId: 3005, suitability: 98 }]),
-      slot("nav", 10, "Navigation", 10002),
-      slot("sampling", 11, "Sample Collection", 11002, [{ uniqueId: 11003, suitability: 98 }]),
-      slot("ascent", 12, "Ascent / Return Vehicle", 12001, [{ uniqueId: 12002, suitability: 98 }]),
-      slot("entry", 13, "Earth Entry Vehicle", 13001),
+      slot("pad", 1, "Launch Pad", 1004, [{ uniqueId: 1002, suitability: 100 }, { uniqueId: 1005, suitability: 98 }]),
+      slot("vehicle", 2, "Launch Vehicle", 2007, [
+        { uniqueId: 2005, suitability: 100 }, // market "Atlas V (401 / 541)"
+        { uniqueId: 2008, suitability: 98 }, // Falcon Heavy interplanetary config
+      ]),
+      slot("bus", 3, "Interplanetary Bus", 3004, [{ uniqueId: 3005, suitability: 98 }]),
+      slot("nav", 10, "Proximity Nav & Sensors", 10002),
+      slot("sampler", 11, "Surface Sampler (TAGSAM)", 11002, [
+        { uniqueId: 11004, suitability: 95 }, // robotic manipulator arm
+        { uniqueId: 11003, suitability: 98 },
+      ]),
+      slot("entry", 13, "Earth Return Capsule", 13001, [{ uniqueId: 13002, suitability: 98 }]),
+    ],
+  },
+  {
+    level: 5,
+    variant: "msr",
+    name: "Mars Sample Return: Red Planet Homecoming",
+    minimumRequiredCount: 6,
+    requiredSlots: [
+      slot("pad", 1, "Launch Pad", 1004, [{ uniqueId: 1002, suitability: 100 }, { uniqueId: 1005, suitability: 98 }]),
+      slot("vehicle", 2, "Launch Vehicle", 2009, [{ uniqueId: 2008, suitability: 98 }]), // SLS Block 1B / Falcon Heavy deep-space
+      slot("bus", 3, "Interplanetary Bus", 3005, [{ uniqueId: 3004, suitability: 100 }]), // market bus is OSIRIS-REx / MSR
+      slot("lander", 12, "Surface Lander & MAV", 12001, [{ uniqueId: 12002, suitability: 98 }]),
+      slot("rover", 11, "Rover & Collection System", 11004, [{ uniqueId: 11001, suitability: 98 }]),
+      slot("entry", 13, "Earth Return Capsule (EEV)", 13002, [{ uniqueId: 13001, suitability: 98 }]),
     ],
   },
 ];
@@ -222,7 +247,7 @@ export const PART_ID_TO_UNIQUE_ID: Record<string, number> = {
   sp1: 5001, sp2: 4001, sp3: 5002, sp4: 4002, sp5: 4003, sp6: 10002,
   sp7: 8002, sp8: 4004, sp9: 11001, sp10: 11003,
   lr1: 6003, lr2: 6001, lr3: 6003, lr4: 6002, lr5: 6004, lr6: 12001,
-  lr7: 9002, lr8: 9001, lr9: 11001,
+  lr7: 9002, lr8: 9001, lr9: 11004,
 };
 
 /** Resolve a market part id ("lp1") or a numeric unique id ("1001"/1001). */
@@ -248,8 +273,15 @@ export function getCategoryName(categoryId: number): string {
   return CATEGORY_WEIGHTS.find((c) => c.categoryId === categoryId)?.name ?? "Unknown";
 }
 
-export function getIdealConfig(level: number): IdealConfig | undefined {
-  return IDEAL_CONFIGS.find((c) => c.level === level);
+/** Ideal config for a level; levels with variants default to the first one. */
+export function getIdealConfig(level: number, variant?: string): IdealConfig | undefined {
+  const forLevel = IDEAL_CONFIGS.filter((c) => c.level === level);
+  if (variant) return forLevel.find((c) => c.variant === variant);
+  return forLevel[0];
+}
+
+export function getVariants(level: number): { variant: string; name: string }[] {
+  return IDEAL_CONFIGS.filter((c) => c.level === level && c.variant).map((c) => ({ variant: c.variant!, name: c.name }));
 }
 
 export function getMissionRewards(level: number): MissionRewardConfig | undefined {

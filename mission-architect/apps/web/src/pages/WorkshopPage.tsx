@@ -22,6 +22,12 @@ export function WorkshopPage({
 }) {
   const ownedPartIds = useGameStore((s) => s.ownedPartIds) || [];
   const [selected, setSelected] = useState(MARKET_CATEGORIES[0].id);
+  // Level 5 has two expert missions with different ideal spacecraft
+  const VARIANTS = [
+    { id: "bennu", label: "Bennu Rendezvous" },
+    { id: "msr", label: "Mars Sample Return" },
+  ];
+  const [variant, setVariant] = useState<string | undefined>(mission.id === 5 ? "bennu" : undefined);
   const [bayView, setBayView] = useState<"assembly" | "telemetry">("assembly");
   const installedIds = useGameStore((s) => s.installedParts) || {};
   const setInstalledPart = useGameStore((s) => s.setInstalledPart);
@@ -64,8 +70,8 @@ export function WorkshopPage({
 
   // Recalculate live LOS whenever installed parts or mission level change
   useEffect(() => {
-    fetchLiveLOS(mission.id, installedPartIds);
-  }, [mission.id, installedPartIds, fetchLiveLOS]);
+    fetchLiveLOS(mission.id, installedPartIds, variant);
+  }, [mission.id, installedPartIds, variant, fetchLiveLOS]);
 
   const category = MARKET_CATEGORIES.find((c) => c.id === selected) ?? MARKET_CATEGORIES[0];
   const ownedInCategory = category.parts.filter((p) => ownedPartIds.includes(p.id));
@@ -85,7 +91,7 @@ export function WorkshopPage({
     if (!ready) return;
     setLaunchError(null);
     // Backend re-validates everything and calculates rewards (never trusts the client)
-    const result = await evaluateMission(mission.id, installedPartIds);
+    const result = await evaluateMission(mission.id, installedPartIds, variant);
     if (!result) {
       setLaunchError(useLOSStore.getState().error || "Launch failed");
       return;
@@ -254,6 +260,30 @@ export function WorkshopPage({
           </div>
         }
       >
+        {mission.id === 5 && (
+          <div style={{ position: "absolute", left: 16, right: 16, top: 108, zIndex: 3, display: "flex", gap: 8 }}>
+            {VARIANTS.map((v) => (
+              <button
+                key={v.id}
+                onClick={() => setVariant(v.id)}
+                style={{
+                  flex: 1,
+                  padding: "4px 6px",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  fontFamily: "inherit",
+                  cursor: "pointer",
+                  color: variant === v.id ? "#2a1600" : "#8ec5ff",
+                  background: variant === v.id ? "linear-gradient(#ffe45c,#f0a010)" : "rgba(8,18,44,0.8)",
+                  border: `2px solid ${variant === v.id ? "#fff0a0" : "#1b3a6b"}`,
+                }}
+              >
+                {v.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Top Live Performance Metric Banner */}
         <div
           style={{
@@ -319,7 +349,7 @@ export function WorkshopPage({
               position: "absolute",
               left: 20,
               right: 20,
-              top: 116,
+              top: mission.id === 5 ? 140 : 116,
               bottom: 60,
               zIndex: 1,
               display: "flex",
@@ -378,7 +408,7 @@ export function WorkshopPage({
               position: "absolute",
               left: 20,
               right: 20,
-              top: 116,
+              top: mission.id === 5 ? 140 : 116,
               bottom: 60,
               zIndex: 1,
               overflowY: "auto",

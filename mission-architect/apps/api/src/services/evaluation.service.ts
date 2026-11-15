@@ -13,6 +13,7 @@ export interface MissionAttempt {
   attemptId: string;
   userId: string;
   missionLevel: number;
+  variant?: string | null;
   los: number;
   successRate: number;
   missionStatus: MissionStatus;
@@ -82,7 +83,7 @@ function persist() {
 if (process.env.ATTEMPTS_FILE !== ":memory:") load();
 
 function toResult(a: MissionAttempt, constraints: ConstraintResult, rewardedNow: boolean): EvaluationResult {
-  const los = calculateLOS(a.missionLevel, a.equipmentScores.map((s) => s.selectedUniqueId).filter((x): x is number => x !== null));
+  const los = calculateLOS(a.missionLevel, a.equipmentScores.map((s) => s.selectedUniqueId).filter((x): x is number => x !== null), { variant: a.variant ?? undefined });
   return {
     ...los,
     los: a.los,
@@ -112,8 +113,9 @@ export const evaluationService = {
     level: number,
     selectedParts: Array<string | number>,
     attemptId?: string,
+    variant?: string,
   ): Promise<EvaluationResult> {
-    const constraints = validateConstraints(level, selectedParts);
+    const constraints = validateConstraints(level, selectedParts, variant);
 
     if (attemptId) {
       const existing = attempts.get(attemptId);
@@ -123,7 +125,7 @@ export const evaluationService = {
       }
     }
 
-    const losResult = calculateLOS(level, selectedParts, { strict: true });
+    const losResult = calculateLOS(level, selectedParts, { strict: true, variant });
     if (!constraints.launch_allowed) throw new LaunchBlockedError(constraints);
 
     const rewardConfig = getMissionRewards(level);
@@ -135,6 +137,7 @@ export const evaluationService = {
       attemptId: attemptId || `att-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`,
       userId,
       missionLevel: level,
+      variant: losResult.variant,
       los,
       successRate: los,
       missionStatus: status,

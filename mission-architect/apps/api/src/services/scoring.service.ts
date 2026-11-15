@@ -56,6 +56,8 @@ export interface SelectedEquipmentReport {
 
 export interface LOSResult {
   level: number;
+  variant: string | null;
+  variant_name: string;
   los: number;
   ideal_los: number;
   success_rate: number;
@@ -69,6 +71,8 @@ export interface LOSResult {
 }
 
 export interface CalculateOptions {
+  /** Mission variant (Level 5: "bennu" | "msr"). Defaults to the level's first variant. */
+  variant?: string;
   /** strict (default): throw EquipmentError for invalid or locked equipment. */
   strict?: boolean;
 }
@@ -90,7 +94,7 @@ export function calculateLOS(
   options: CalculateOptions = {},
 ): LOSResult {
   const strict = options.strict ?? true;
-  const config = getIdealConfig(level);
+  const config = getIdealConfig(level, options.variant);
   if (!config) throw new EquipmentError("INVALID_LEVEL", `No ideal configuration found for level ${level}`);
 
   // 1. Resolve + validate the selected equipment.
@@ -202,6 +206,8 @@ export function calculateLOS(
 
   return {
     level,
+    variant: config.variant ?? null,
+    variant_name: config.name,
     los,
     ideal_los: round2(Math.min(100, idealRaw)),
     success_rate: los,
