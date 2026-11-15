@@ -6,12 +6,13 @@ import { MissionSelectPage } from "../pages/MissionSelectPage";
 import { MissionBriefPage } from "../pages/MissionBriefPage";
 import { LeaderboardPage } from "../pages/LeaderboardPage";
 import { MarketPage } from "../pages/MarketPage";
+import { InventoryPage } from "../pages/InventoryPage";
 import { LoginPage } from "../pages/LoginPage";
 import { DevHarness } from "./DevHarness";
 import { useAuthStore } from "../stores/authStore";
 import { Screen as StageScreen } from "../components/layout/ui";
 
-type Screen = "home" | "select" | "brief" | "workshop" | "leaderboard" | "market" | "login" | "signup";
+type Screen = "home" | "select" | "brief" | "workshop" | "leaderboard" | "market" | "inventory" | "login" | "signup";
 
 export function App() {
   const { isAuthenticated, isInitialized, checkSession } = useAuthStore();
@@ -131,6 +132,9 @@ export function App() {
   }
   if (screen === "market") {
     return <MarketPage go={go} />;
+  }
+  if (screen === "inventory") {
+    return <InventoryPage go={go} />;
   }
   if (screen === "login") {
     return <LoginPage go={go} initialMode="login" />;

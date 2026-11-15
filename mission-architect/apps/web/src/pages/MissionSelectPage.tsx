@@ -33,6 +33,7 @@ export function MissionSelectPage({ go, open }: { go: (s: string) => void; open:
       <Coins />
       {MISSIONS.map((m) => <Card key={m.id} m={m} onOpen={() => open(m.id)} playerLevel={level} />)}
       <Btn x={17} y={724} w={282} h={82} icon={<Img src="/assets/sprites/ui/home.jpg" size={50} />} onClick={() => go("home")}>Dashboard</Btn>
+      <Btn x={1214} y={634} w={230} h={78} icon={<Img src="/assets/sprites/ui/gear.jpg" size={46} />} chevron={false} onClick={() => go("inventory")}>Inventory</Btn>
       <Btn x={1214} y={724} w={230} h={82} icon={<Img src="/assets/sprites/ui/market.jpg" size={50} />} chevron={false} onClick={() => go("market")}>Market</Btn>
     </Screen>
   );
