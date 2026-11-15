@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { API_BASE } from "../services/apiClient";
 
 export interface EquipmentScore {
   slotId: string;
@@ -113,7 +114,7 @@ export const useLOSStore = create<LOSState>((set, get) => ({
       });
       if (variant) query.set("variant", variant);
 
-      const res = await fetch(`/api/evaluate/live?${query.toString()}`);
+      const res = await fetch(`${API_BASE}/evaluate/live?${query.toString()}`);
       if (!res.ok) {
         throw new Error(`Failed to fetch live evaluation: ${res.statusText}`);
       }
@@ -135,7 +136,7 @@ export const useLOSStore = create<LOSState>((set, get) => ({
         get().attemptId ?? `att-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       set({ attemptId });
 
-      const res = await fetch("/api/evaluate", {
+      const res = await fetch(`${API_BASE}/evaluate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,5 +1,6 @@
 import { LeaderboardResponse, LeaderboardTimeframe } from "../types/leaderboard";
 import { getLeaderboardData } from "../data/leaderboardData";
+import { API_BASE } from "./apiClient";
 
 /**
  * Leaderboard Service
@@ -11,7 +12,7 @@ export const leaderboardService = {
    */
   async getLeaderboard(timeframe: LeaderboardTimeframe = "all-time"): Promise<LeaderboardResponse> {
     try {
-      const response = await fetch(`/api/leaderboard?timeframe=${timeframe}`, {
+      const response = await fetch(`${API_BASE}/leaderboard?timeframe=${timeframe}`, {
         headers: { Accept: "application/json" },
       });
 

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { API_BASE } from '../services/apiClient';
 import { useGameStore } from './gameStore';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -30,7 +31,6 @@ interface AuthState {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const TOKEN_KEY = 'ma_auth_token';
-const API_BASE: string = ((import.meta as unknown as { env?: { VITE_API_BASE_URL?: string } }).env?.VITE_API_BASE_URL) || '/api';
 
 function saveToken(token: string) {
   try {
