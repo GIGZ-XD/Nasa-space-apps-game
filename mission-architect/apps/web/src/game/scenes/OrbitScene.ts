@@ -3,7 +3,6 @@ import { Starfield } from "../systems/Starfield";
 import { Planet } from "../objects/Planet";
 import { Spacecraft } from "../objects/Spacecraft";
 import { SceneTransitionCoordinator } from "../systems/SceneTransition";
-import { WorkshopScene } from "./WorkshopScene";
 import { LaunchScene } from "./LaunchScene";
 import { OutcomeAnimationController } from "../animations/outcomeAnimation";
 import { MissionOutcomeStatus, MissionOutcomePayload, OUTCOME_EVENTS } from "../types/outcome";
@@ -39,6 +38,10 @@ export class OrbitScene extends Phaser.Scene {
 
   // Orbital mechanics parameters
   private orbitAngle: number = 0;
+  /** Orbits to complete before the result is revealed to the player. */
+  private static readonly ORBITS_REQUIRED = 2;
+  private orbitsFlown = 0; // fractional number of full orbits flown since arrival
+  private orbitsReported = false;
   private orbitCenterX: number = 0;
   private orbitCenterY: number = 0;
   private baseOrbitRadiusX: number = 280;
@@ -55,6 +58,9 @@ export class OrbitScene extends Phaser.Scene {
 
   create(): void {
     const { width, height } = this.scale;
+    this.orbitAngle = 0;
+    this.orbitsFlown = 0;
+    this.orbitsReported = false;
 
     // 1. Starfield Background
     this.starfield = new Starfield(this, {
@@ -292,7 +298,6 @@ export class OrbitScene extends Phaser.Scene {
     const successBtn = makeBtn("[ SUCCESS (S) ]", "#22c55e", () => this.setMissionOutcome("success"));
     const failureBtn = makeBtn("[ FAILURE (F) ]", "#ef4444", () => this.setMissionOutcome("failure", "Power Depletion"));
     const resetBtn = makeBtn("[ RESET (R) ]", "#94a3b8", () => this.setMissionOutcome("pending"));
-    const workshopBtn = makeBtn("[ WORKSHOP (W) ]", "#38bdf8", () => this.returnToWorkshop());
     const relaunchBtn = makeBtn("[ LAUNCH (L) ]", "#f59e0b", () => this.relaunch());
 
     this.hudContainer.add([
@@ -303,7 +308,6 @@ export class OrbitScene extends Phaser.Scene {
       successBtn,
       failureBtn,
       resetBtn,
-      workshopBtn,
       relaunchBtn,
     ]);
   }
@@ -323,19 +327,8 @@ export class OrbitScene extends Phaser.Scene {
       this.setMissionOutcome("pending");
     });
 
-    this.input.keyboard.on("keydown-W", () => {
-      this.returnToWorkshop();
-    });
-
     this.input.keyboard.on("keydown-L", () => {
       this.relaunch();
-    });
-  }
-
-  private returnToWorkshop(): void {
-    SceneTransitionCoordinator.transitionTo({
-      fromScene: this,
-      toSceneKey: WorkshopScene.KEY,
     });
   }
 
@@ -367,6 +360,12 @@ export class OrbitScene extends Phaser.Scene {
 
       // Advance orbital position
       this.orbitAngle += this.orbitSpeed * dt;
+      this.orbitsFlown += (this.orbitSpeed * dt) / (Math.PI * 2);
+      if (!this.orbitsReported && this.orbitsFlown >= OrbitScene.ORBITS_REQUIRED) {
+        this.orbitsReported = true;
+        this.events.emit(OUTCOME_EVENTS.ORBITS_COMPLETE);
+        this.game.events?.emit(OUTCOME_EVENTS.ORBITS_COMPLETE);
+      }
 
       const cos = Math.cos(this.orbitAngle);
       const sin = Math.sin(this.orbitAngle);

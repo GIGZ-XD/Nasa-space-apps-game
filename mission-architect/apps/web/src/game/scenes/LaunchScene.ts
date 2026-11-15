@@ -4,6 +4,7 @@ import { LaunchAnimationController } from "../animations/launchAnimation";
 import { SceneTransitionCoordinator } from "../systems/SceneTransition";
 import { OrbitScene } from "./OrbitScene";
 import { WorkshopScene } from "./WorkshopScene";
+import { OUTCOME_EVENTS } from "../types/outcome";
 
 export type LaunchState = "READY" | "COUNTDOWN" | "IGNITION" | "ASCENT" | "STAGING" | "COMPLETED";
 
@@ -87,7 +88,16 @@ export class LaunchScene extends Phaser.Scene {
       scene: this,
       rocket: this.rocket,
       padY: this.padY,
+      shouldFail: () => this.registry.get("missionOutcome") === "failure",
       callbacks: {
+        onFailure: () => {
+          this.state = "COMPLETED";
+          this.statusText.setText("STATUS: ANOMALY // VEHICLE LOST // MISSION FAILED");
+          this.statusText.setColor("#ef4444");
+          this.telemetryText.setText("TELEMETRY LOST");
+          this.events.emit(OUTCOME_EVENTS.LAUNCH_FAILED);
+          this.game.events?.emit(OUTCOME_EVENTS.LAUNCH_FAILED);
+        },
         onIgnition: () => {
           this.state = "IGNITION";
           this.statusText.setText("STATUS: MAIN ENGINES IGNITED // THRUST BUILDING");
@@ -479,6 +489,17 @@ export class LaunchScene extends Phaser.Scene {
    */
   public skipToOrbit(): void {
     if (this.state === "COMPLETED") return;
+
+    // A doomed mission can't skip past its failure
+    if (this.registry.get("missionOutcome") === "failure") {
+      if (this.countdownTimer) {
+        this.countdownTimer.destroy();
+        this.countdownTimer = undefined;
+      }
+      this.retractGantryArms();
+      this.animController.triggerFailure();
+      return;
+    }
     this.state = "COMPLETED";
 
     if (this.countdownTimer) {

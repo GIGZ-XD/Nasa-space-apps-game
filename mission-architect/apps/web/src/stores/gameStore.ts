@@ -24,6 +24,9 @@ export interface GameState {
   canAfford: (price: number) => boolean;
   addCoins: (amount: number) => void;
   addXp: (amount: number) => void;
+  /** Set when XP raised the player's level; consumed by the results screen. */
+  pendingLevelUp: boolean;
+  clearLevelUp: () => void;
   setInstalledPart: (categoryId: string, partId: string | null) => void;
   /** Toggle a part in a category that holds several parts (sensors / landers). */
   toggleInstalledPart: (categoryId: string, partId: string) => void;
@@ -60,6 +63,8 @@ export const useGameStore = create<GameState>()(
       ownerId: null,
       installedParts: {},
       unlockedMissionIds: [],
+      pendingLevelUp: false,
+      clearLevelUp: () => set({ pendingLevelUp: false }),
 
       toggleInstalledPart: (categoryId, partId) => {
         set((state) => {
@@ -148,7 +153,12 @@ export const useGameStore = create<GameState>()(
             newLevel += 1;
             newXpMax = Math.round(newXpMax * 1.5);
           }
-          return { xp: newXp, level: newLevel, xpMax: newXpMax };
+          return {
+            xp: newXp,
+            level: newLevel,
+            xpMax: newXpMax,
+            pendingLevelUp: state.pendingLevelUp || newLevel > state.level,
+          };
         });
       },
 

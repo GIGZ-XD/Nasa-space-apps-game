@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { playSfx } from "../audio/sfx";
 import { Btn, Coins, Img, Moonscape, Panel, Screen } from "../components/layout/ui";
 import { useLOSStore } from "../stores/losStore";
 import { useGameStore, formatCoins } from "../stores/gameStore";
@@ -19,6 +20,15 @@ export function ResultsPage({ missionId, go, onRetry }: ResultsPageProps) {
   const xp = useGameStore((s) => s.xp);
   const level = useGameStore((s) => s.level);
   const mission = MISSIONS.find((m) => m.id === missionId) ?? MISSIONS[0];
+
+  // Level-up jingle when this mission's XP raised the player's level
+  useEffect(() => {
+    const { pendingLevelUp, clearLevelUp } = useGameStore.getState();
+    if (pendingLevelUp) {
+      playSfx("level_up");
+      clearLevelUp();
+    }
+  }, []);
 
   const isSuccess = evaluationResult ? evaluationResult.mission_status === "SUCCESS" : false;
   const los = evaluationResult ? evaluationResult.los : 0;

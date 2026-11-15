@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { PhaserGame } from "../game";
+import { OUTCOME_EVENTS } from "../game/types/outcome";
+import { playSfx, preloadSfx } from "../audio/sfx";
 import { MISSIONS } from "../data/missions";
 import { HomePage } from "../pages/HomePage";
 import { MissionSelectPage } from "../pages/MissionSelectPage";
@@ -33,7 +35,24 @@ export function App() {
   });
   const [missionId, setMissionId] = useState(4);
   const [marketFromWorkshop, setMarketFromWorkshop] = useState(false);
+  // True once the spacecraft has finished 2 orbits after launch (reveals the result)
+  const [orbitsDone, setOrbitsDone] = useState(false);
+
+  // Sound effects: preload, button clicks, and the mission-success jingle
+  useEffect(() => {
+    preloadSfx();
+    const onClick = (e: MouseEvent) => {
+      if ((e.target as Element | null)?.closest?.("button")) playSfx("click");
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, []);
   const evaluationResult = useLOSStore((s) => s.evaluationResult);
+
+  // Success jingle when "MISSION SUCCESSFUL" appears after the 2 orbits
+  useEffect(() => {
+    if (orbitsDone && evaluationResult?.mission_status === "SUCCESS") playSfx("success");
+  }, [orbitsDone, evaluationResult]);
 
   if (new URLSearchParams(window.location.search).has("dev")) return <DevHarness />;
 
@@ -124,41 +143,79 @@ export function App() {
     );
   }
   if (screen === "workshop") {
-    return <WorkshopPage mission={mission} go={go} launch={() => setScreen("launch")} />;
+    return <WorkshopPage mission={mission} go={go} launch={() => {
+      setOrbitsDone(false);
+      setScreen("launch");
+    }} />;
   }
   if (screen === "launch") {
     const outcome = evaluationResult ? (evaluationResult.mission_status === "SUCCESS" ? "success" : "failure") : "pending";
     return (
       <div style={{ position: "fixed", inset: 0, background: "#030611" }}>
-        <div style={{ position: "absolute", top: 12, left: 16, right: 16, display: "flex", justifyContent: "space-between", zIndex: 1000, pointerEvents: "auto" }}>
-          <button
-            className="overlay-back"
-            onClick={() => setScreen("workshop")}
-            style={{ padding: "8px 16px", cursor: "pointer", background: "rgba(10, 24, 60, 0.85)", border: "2px solid #1b4a99", color: "#eaf2ff", fontWeight: 700 }}
-          >
-            ← Back to workshop
-          </button>
-          <button
-            onClick={() => setScreen("results")}
-            style={{
-              padding: "8px 20px",
-              cursor: "pointer",
-              background: outcome === "success" ? "linear-gradient(#15803d, #166534)" : "linear-gradient(#991b1b, #7f1d1d)",
-              border: `2px solid ${outcome === "success" ? "#4ade80" : "#f87171"}`,
-              color: "#fff",
-              fontWeight: 800,
-              fontSize: 14,
-              letterSpacing: 1,
-              boxShadow: "0 0 14px rgba(0,0,0,0.6)",
-            }}
-          >
-            ★ VIEW MISSION DEBRIEF & REWARDS ›
-          </button>
-        </div>
         <PhaserGame
           initialScene="LaunchScene"
           missionOutcome={outcome}
+          onGameReady={(game) => {
+            // Reveal the result only after the spacecraft has flown 2 orbits
+            game.events.on(OUTCOME_EVENTS.ORBITS_COMPLETE, () => setOrbitsDone(true));
+            // A failed launch explodes instead of reaching orbit
+            // (short delay so the explosion is seen before the message)
+            game.events.on(OUTCOME_EVENTS.LAUNCH_FAILED, () => {
+              playSfx("lose"); // plays with the explosion
+              setTimeout(() => setOrbitsDone(true), 1800);
+            });
+          }}
         />
+        {orbitsDone && (
+          <div
+            style={{
+              position: "absolute",
+              top: "12%",
+              left: 0,
+              right: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 18,
+              zIndex: 1000,
+              pointerEvents: "none",
+              textAlign: "center",
+            }}
+          >
+            <div
+              className="px"
+              style={{
+                fontSize: "clamp(24px, 4.4vw, 64px)",
+                fontWeight: 900,
+                letterSpacing: 2,
+                color: outcome === "success" ? "#4ade80" : "#f87171",
+                textShadow:
+                  outcome === "success"
+                    ? "0 0 24px rgba(74, 222, 128, 0.8), 0 4px 0 #064e3b"
+                    : "0 0 24px rgba(248, 113, 113, 0.8), 0 4px 0 #7f1d1d",
+              }}
+            >
+              {outcome === "success" ? "MISSION SUCCESSFUL" : "MISSION FAILED"}
+            </div>
+            <button
+              onClick={() => setScreen("results")}
+              style={{
+                pointerEvents: "auto",
+                padding: "12px 34px",
+                fontSize: 22,
+                fontWeight: 800,
+                letterSpacing: 2,
+                cursor: "pointer",
+                color: outcome === "success" ? "#2a1600" : "#fff",
+                background: outcome === "success" ? "linear-gradient(#ffe45c,#f0a010)" : "linear-gradient(#991b1b,#7f1d1d)",
+                border: `3px solid ${outcome === "success" ? "#fff0a0" : "#f87171"}`,
+                boxShadow: "0 0 18px rgba(255, 210, 31, 0.6)",
+              }}
+            >
+              {outcome === "success" ? "Claim your rewards ›" : "View debrief ›"}
+            </button>
+          </div>
+        )}
       </div>
     );
   }
