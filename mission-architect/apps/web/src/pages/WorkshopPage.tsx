@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Btn, Coins, Img, Moonscape, Panel, Screen } from "../components/layout/ui";
-import { MARKET_CATEGORIES, type MarketPart } from "../data/marketData";
+import { ALL_MARKET_PARTS, MARKET_CATEGORIES, type MarketPart } from "../data/marketData";
 import type { Mission } from "../data/missions";
 import { useGameStore } from "../stores/gameStore";
 
@@ -19,7 +19,13 @@ export function WorkshopPage({
 }) {
   const ownedPartIds = useGameStore((s) => s.ownedPartIds) || [];
   const [selected, setSelected] = useState(MARKET_CATEGORIES[0].id);
-  const [installed, setInstalled] = useState<Record<string, MarketPart | undefined>>({});
+  const installedIds = useGameStore((s) => s.installedParts) || {};
+  const setInstalledPart = useGameStore((s) => s.setInstalledPart);
+  // Resolve saved ids to parts, ignoring any the player no longer owns
+  const installed: Record<string, MarketPart | undefined> = {};
+  for (const [catId, partId] of Object.entries(installedIds)) {
+    if (ownedPartIds.includes(partId)) installed[catId] = ALL_MARKET_PARTS.find((p) => p.id === partId);
+  }
 
   const category = MARKET_CATEGORIES.find((c) => c.id === selected) ?? MARKET_CATEGORIES[0];
   const ownedInCategory = category.parts.filter((p) => ownedPartIds.includes(p.id));
@@ -27,7 +33,7 @@ export function WorkshopPage({
   const ready = missing.length === 0;
 
   const toggle = (part: MarketPart) =>
-    setInstalled((cur) => ({ ...cur, [category.id]: cur[category.id]?.id === part.id ? undefined : part }));
+    setInstalledPart(category.id, installed[category.id]?.id === part.id ? null : part.id);
 
   // Bottom-to-top assembly order for the build bay
   const stack = ["launchpad", "vehicle", "satellite", "sensors", "lander"];

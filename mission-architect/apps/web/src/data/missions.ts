@@ -14,7 +14,7 @@ export interface Mission {
   objectives: Objective[];
 }
 
-export const PLAYER = { name: "Commander_01", level: 1, xp: 150, xpMax: 500, coins: "2.50M" };
+export const PLAYER = { name: "Commander_01", level: 1, xp: 150, xpMax: 500, coins: "50M" };
 
 export const MISSIONS: Mission[] = [
   {

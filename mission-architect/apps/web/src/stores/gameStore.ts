@@ -11,6 +11,8 @@ export interface GameState {
   ownedPartIds: string[];
   ownedIntelIds: string[];
   ownerId: string | null;
+  /** Parts placed in the workshop assembly bay, keyed by category id. */
+  installedParts: Record<string, string>;
 
   // Actions
   buyPart: (part: MarketPart) => { success: boolean; reason?: string };
@@ -20,10 +22,13 @@ export interface GameState {
   canAfford: (price: number) => boolean;
   addCoins: (amount: number) => void;
   addXp: (amount: number) => void;
+  setInstalledPart: (categoryId: string, partId: string | null) => void;
   resetProgress: () => void;
   /** Reset all progress unless the given user already owns the saved state. */
   switchUser: (userId: string, playerName?: string) => void;
 }
+
+export const STARTING_COINS = 50_000_000;
 
 export function formatCoins(amount: number): string {
   if (amount >= 1_000_000) {
@@ -40,7 +45,7 @@ export function formatCoins(amount: number): string {
 export const useGameStore = create<GameState>()(
   persist(
     (set, get) => ({
-      coins: 2_500_000,
+      coins: STARTING_COINS,
       xp: 150,
       xpMax: 500,
       level: 1,
@@ -48,6 +53,16 @@ export const useGameStore = create<GameState>()(
       ownedPartIds: [],
       ownedIntelIds: [],
       ownerId: null,
+      installedParts: {},
+
+      setInstalledPart: (categoryId, partId) => {
+        set((state) => {
+          const next = { ...(state.installedParts || {}) };
+          if (partId) next[categoryId] = partId;
+          else delete next[categoryId];
+          return { installedParts: next };
+        });
+      },
 
       buyPart: (part: MarketPart) => {
         const state = get();
@@ -113,7 +128,7 @@ export const useGameStore = create<GameState>()(
 
       resetProgress: () => {
         set({
-          coins: 2_500_000,
+          coins: STARTING_COINS,
           xp: 150,
           xpMax: 500,
           level: 1,
@@ -121,13 +136,14 @@ export const useGameStore = create<GameState>()(
           ownedPartIds: [],
           ownedIntelIds: [],
           ownerId: null,
+          installedParts: {},
         });
       },
 
       switchUser: (userId: string, playerName?: string) => {
         if (get().ownerId === userId) return;
         set({
-          coins: 2_500_000,
+          coins: STARTING_COINS,
           xp: 150,
           xpMax: 500,
           level: 1,
@@ -135,6 +151,7 @@ export const useGameStore = create<GameState>()(
           ownedPartIds: [],
           ownedIntelIds: [],
           ownerId: userId,
+          installedParts: {},
         });
       },
     }),

@@ -30,10 +30,13 @@ export function App() {
     return "login";
   });
   const [missionId, setMissionId] = useState(4);
+  const [marketFromWorkshop, setMarketFromWorkshop] = useState(false);
 
   if (new URLSearchParams(window.location.search).has("dev")) return <DevHarness />;
 
   const go = (s: string) => {
+    if (s === "market") setMarketFromWorkshop(screen === "workshop" || (screen === "market" && marketFromWorkshop));
+    else if (s !== "inventory") setMarketFromWorkshop(false);
     setScreen(s as Screen);
     if (s === "login" || s === "signup") {
       window.history.pushState({}, "", `/${s}`);
@@ -135,7 +138,7 @@ export function App() {
     );
   }
   if (screen === "market") {
-    return <MarketPage go={go} />;
+    return <MarketPage go={go} fromWorkshop={marketFromWorkshop} />;
   }
   if (screen === "inventory") {
     return <InventoryPage go={go} />;
