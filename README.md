@@ -1,4 +1,3 @@
-<<<<<<< develop
 # 🚀 Mission Architect
 
 > **NASA Space Apps Challenge** — An educational space-mission design, spacecraft engineering, budget management, and orbital physics simulation game.
