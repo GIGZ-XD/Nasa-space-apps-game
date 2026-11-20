@@ -1,4 +1,3 @@
-# 🚀 Mission Architect
 
 > **NASA Space Apps Challenge** — An educational space-mission design, spacecraft engineering, budget management, and orbital physics simulation game.
 
@@ -10,364 +9,182 @@
 [![Express](https://img.shields.io/badge/Express-4.19-000000?logo=express&logoColor=white)](https://expressjs.com/)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A518-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 
----
+# Cosmo!
+### Design. Build. Launch. Explore.
 
-## 📖 Table of Contents
+Cosmo! is a browser-based interactive space exploration game developed during the NASA Space Apps Challenge 2026.
 
-- [Overview](#-overview)
-- [Core Gameplay Loop](#-core-gameplay-loop)
-- [Key Features](#-key-features)
-- [Missions Catalog](#-missions-catalog)
-- [Architecture & Tech Stack](#-architecture--tech-stack)
-- [Repository Structure](#-repository-structure)
-- [Getting Started](#-getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Running Development Servers](#running-development-servers)
-  - [Building for Production](#building-for-production)
-- [API Reference](#-api-reference)
-- [Game Mechanics & Engineering Details](#-game-mechanics--engineering-details)
-- [Contributing & Team](#-contributing--team)
-- [License](#-license)
+Step into the role of a space mission designer. Design and assemble spacecraft, manage resources, make engineering decisions, launch missions and explore the universe.
 
----
+From orbital missions to challenging deep-space exploration, put your spacecraft engineering skills to the test!
 
-## 🌌 Overview
+## Game Features
 
-**Mission Architect** puts players in the commander's seat of an aerospace space agency. Guided by the AI companion **STELLA**, cadets design, finance, construct, and launch authentic spacecraft to achieve real-world spaceflight objectives. 
+- Mission Progression: Explore five mission levels, from simpler orbital missions to complex deep-space exploration.
+- Spacecraft Builder: Design and assemble spacecraft using different components.
+- Interactive Gameplay: Experience animated spacecraft launches, orbital environments and mission scenarios.
+- Economy & Resource Management: Purchase spacecraft components, manage inventory and make budget-conscious decisions.
+- Mission Systems: Evaluate mission performance and work with Line-of-Sight (LOS) communication mechanics.
+- Achievements & Rewards: Track progress through achievements, rewards and leaderboards.
 
-From launching a geostationary telecommunications satellite from Wallops Flight Facility, to navigating trans-lunar injection, executing powered descent on the far side of the Moon, or orchestrating complex Entry, Descent, and Landing (EDL) for a Mars rover, **Mission Architect** blends real aerospace engineering constraints (payload mass, power budgets, Line-of-Sight communications, orbital mechanics) with rich 2D/2.5D visual simulation.
+## Technology Stack
 
----
+### Frontend & Game Engine
+- React 18
+- TypeScript
+- Phaser 3
+- Vite
+- Zustand
+- Web Audio API
 
-## 🔁 Core Gameplay Loop
+### Backend & Infrastructure
+- Node.js
+- Express.js
+- Zod
+- Prisma
+- API authentication and rate limiting
+- Vercel
+- Render
 
-```mermaid
-flowchart LR
-    A["Select Mission\n& Review Briefing"] --> B["Procure Hardware\n& Intel Dossiers"]
-    B --> C["Assemble Spacecraft\nin Workshop Bay"]
-    C --> D["Launch & Visual\nPhaser Simulation"]
-    D --> E["Telemetry & Line of Sight\n(LOS) Validation"]
-    E --> F["Mission Debrief,\nXP & Rewards"]
-    F --> A
-```
+## Project Architecture
 
-1. **Mission Briefing**: Study target orbital parameters, payload criteria, budget, and environmental hazards.
-2. **Aerospace Market & Intel**: Purchase real-world launchpads, rockets, satellite buses, scientific sensors, landers, and classified planetary intelligence dossiers.
-3. **Spacecraft Workshop**: Assemble modules inside the assembly bay while balancing cost, mass, power, and mission constraints.
-4. **Launch & Simulation**: Experience a multi-phase animated ascent rendered in Phaser 3—countdown, ignition, liftoff, gantry clearing, stage separation, orbital insertion, and planetary landing.
-5. **Telemetry & LOS**: Track communication windows with ground stations and avoid communication blackouts.
-6. **Debriefing & Progression**: Receive detailed mission scoring, earn XP and credits, level up your commander rank, and unlock higher-tier interplanetary expeditions.
+Cosmo! follows a monorepo architecture with separate frontend and backend applications, alongside shared packages and project documentation.
 
----
-
-## ✨ Key Features
-
-### 🛠️ Spacecraft Workshop & Modular Assembly
-- **Modular Bays**: Install compatible Launchpads, Launch Vehicles, Satellite Buses, Payloads/Sensors, and Landers/Rovers.
-- **Feasibility Verification**: Live checks against budget limitations, payload capacity, power distribution, and objective compatibility.
-- **Interactive Assembly Canvas**: Real-time visual feedback of your custom spacecraft build before rollout to the pad.
-
-### 🎮 Hybrid React + Phaser 3 Simulation Engine
-- **Decoupled Architecture**: React/Zustand acts as the authoritative state machine for scores and mission evaluation; Phaser 3 provides high-fidelity hardware-accelerated 2D/2.5D visual effects.
-- **Dynamic Flight Scenes**:
-  - `BootScene` & `PreloadScene`: Asset initialization, audio preloading, and responsive canvas sizing.
-  - `WorkshopScene`: Orbital spacecraft design lab with real-time assembly visuals.
-  - `LaunchScene`: Cape Canaveral / Wallops launchpad with cryogenic smoke vents, T-3 countdown, fiery plume particle emitters, gantry clearance, and fairing jettison.
-  - `OrbitScene`: Planetary orbit simulation with multi-layer parallax starfields, realistic Earth atmosphere glow, antenna downlinks, and failure decay trajectories.
-  - `LandingScene`: Atmospheric entry, supersonic parachute deployment, sky crane descent, and touchdown dust plumes.
-  - `DriftScene`: Deep-space interplanetary cruise.
-
-### 🛰️ Line-of-Sight (LOS) & Telemetry Tracker
-- **Ground Station Links**: Calculates geometric visibility between orbiting spacecraft and Earth ground stations.
-- **Radio Blackout Handling**: Simulates atmospheric plasma blackout corridors and planetary occlusion (e.g., lunar far side).
-
-### 🛒 Aerospace Market & Classified Intel
-- **Authentic Aerospace Catalog**: Procure parts modeled after real missions—Falcon 9, Falcon Heavy, Atlas V, SLS, CAPSTONE, Lunar Reconnaissance Orbiter (LRO), InSight, Perseverance, VIPER, and more.
-- **Intelligence Dossiers**: Purchase classified science dossiers revealing lunar water-ice deposits at Shackleton crater, Mars EDL atmospheric corridors, and asteroid orbital ephemerides.
-
-### 🎓 Educational Companion & Space Facts
-- **STELLA AI Guide**: Step-by-step interactive tutorial walking new cadets through their very first orbital mission.
-- **NASA Space Facts**: Real-world trivia and physics principles delivered during each phase of gameplay.
-
-### 🔐 Space Command Registry & Leaderboard
-- **Cadet Authentication**: Secure registration and login using PBKDF2 with unique salts, session management, and rate-limited endpoints.
-- **Leaderboards**: Track top commanders globally across All-Time, Monthly, and Weekly timeframes.
-
-### 🔊 Procedural Audio & SFX
-- Built-in Web Audio synthesis engine (`sfx.ts`) generating custom sound effects for countdown beeps, engine roar, stage staging clanks, thruster bursts, telemetry pings, and victory fanfare.
-
----
-
-## 🪐 Missions Catalog
-
-| ID | Mission Name | Destination | Unlock Level | Budget | Objectives |
-|:--:|:---|:---|:---:|:---:|:---|
-| **1** | **Geo-Satellite Mission** | Earth GEO (35,786 km) | Lvl 1 | 3M | Clear launch tower, achieve stable LEO, perform transfer burn to geostationary orbit. |
-| **2** | **Lunar Satellite** | Moon Polar Orbit | Lvl 2 | 5M | Translunar injection, lunar orbit capture, multispectral surface mapping. |
-| **3** | **Lunar Lander (Dark Side)** | Moon Far Side | Lvl 3 | 7M | Lunar transfer, powered descent, soft touchdown in radio shadow with deployed instrumentation. |
-| **4** | **Mars Rover** | Mars Surface (Jezero Crater) | Lvl 4 | 9M | Interplanetary trajectory, atmospheric entry & sky-crane landing, surface exploration & sample caching. |
-| **5** | **Deep-Space Mission** | Outer Solar System | Lvl 5 | 10M | Heavy-lift launch, multi-year interplanetary cruise, flyby science collection at target celestial body. |
-
----
-
-## 🏗️ Architecture & Tech Stack
-
-```
-nasa-space-apps-game/
-├── mission-architect/
-│   ├── apps/
-│   │   ├── api/          # Express REST API (Auth, Leaderboards, Missions)
-│   │   └── web/          # React 18 + Vite + Phaser 3 Client
-│   ├── packages/
-│   │   └── shared/       # Cross-cutting TypeScript types & schemas
-│   └── docs/             # Technical specifications & phase reports
-```
-
-### Frontend (`apps/web`)
-- **Framework**: [React 18](https://react.dev/) + [Vite 5](https://vitejs.dev/)
-- **Game Engine**: [Phaser 3.90](https://phaser.io/)
-- **State Management**: [Zustand 5](https://github.com/pmndrs/zustand) (with `localStorage` persistence)
-- **Styling**: Tailwind CSS & custom sci-fi HUD theme variables
-- **Language**: TypeScript 5.5
-
-### Backend (`apps/api`)
-- **Runtime**: Node.js with `tsx` (TypeScript execute)
-- **Web Framework**: [Express 4](https://expressjs.com/)
-- **Validation**: [Zod 4](https://zod.dev/)
-- **Security**: PBKDF2 password hashing (crypto), `express-rate-limit`, CORS
-- **Database/Persistence**: In-memory repository with seed data; Prisma ORM schema ready for SQLite/PostgreSQL
-
-### Shared Package (`packages/shared`)
-- Reusable TypeScript types, schemas, and physics constants shared across frontend and backend.
-
----
-
-## 📁 Repository Structure
-
-```
+```text
 .
 ├── LICENSE
 ├── package.json
 └── mission-architect/
-    ├── package.json               # Monorepo workspaces configuration
-    ├── tsconfig.base.json         # Shared TypeScript compiler options
+    ├── package.json
+    ├── tsconfig.base.json
     ├── apps/
-    │   ├── api/                   # Backend API service
+    │   ├── api/
     │   │   ├── package.json
     │   │   └── src/
-    │   │       ├── app.ts         # Express application configuration
-    │   │       ├── server.ts      # Server entrypoint (Port 4000)
-    │   │       ├── middleware/    # Error handler & rate limiters
-    │   │       ├── routes/        # Auth, mission, and leaderboard routes
-    │   │       ├── services/      # Business logic & auth service
-    │   │       └── repositories/  # In-memory user & session repository
-    │   └── web/                   # Frontend React & Phaser game
+    │   │       ├── app.ts
+    │   │       ├── server.ts
+    │   │       ├── middleware/
+    │   │       ├── routes/
+    │   │       ├── services/
+    │   │       └── repositories/
+    │   │
+    │   └── web/
     │       ├── index.html
-    │       ├── vite.config.ts     # Dev server & /api proxy to :4000
+    │       ├── vite.config.ts
     │       └── src/
-    │           ├── main.tsx       # React root mount
-    │           ├── audio/         # Procedural Web Audio sound effects
-    │           ├── components/    # Reusable UI cards, panels, HUD widgets
-    │           ├── data/          # Missions catalog & aerospace market data
-    │           ├── game/          # Phaser 3 Game Engine
-    │           │   ├── PhaserGame.tsx # React-Phaser bridge component
-    │           │   ├── scenes/    # Launch, Orbit, Landing, Drift, Workshop scenes
-    │           │   └── systems/   # Procedural Earth atmosphere & starfields
-    │           ├── pages/         # Screen pages (Workshop, Launch, Market, etc.)
-    │           └── stores/        # Zustand stores (game, auth, LOS)
+    │           ├── main.tsx
+    │           ├── audio/
+    │           ├── components/
+    │           ├── data/
+    │           ├── game/
+    │           │   ├── PhaserGame.tsx
+    │           │   ├── scenes/
+    │           │   └── systems/
+    │           ├── pages/
+    │           └── stores/
+    │
     ├── packages/
-    │   └── shared/                # Cross-package types and utilities
-    ├── prisma/                    # Database schema and seed scripts
-    └── docs/                      # Phase audit reports & integration contracts
+    │   └── shared/
+    │
+    ├── prisma/
+    └── docs/
 ```
 
----
+### Architecture Overview
 
-## ⚡ Getting Started
+- apps/web: React frontend and Phaser-powered game.
+- apps/api: Express backend providing authentication, mission and leaderboard APIs.
+- packages/shared: Shared TypeScript types and utilities.
+- prisma: Database schema and seed scripts.
+- docs: Phase audit reports and integration documentation.
+
+The frontend and backend communicate through API endpoints, with Vite providing API proxy configuration during development.
+
+## Getting Started
 
 ### Prerequisites
-- **Node.js**: v18.0.0 or higher (v20+ / v22+ recommended)
-- **npm**: v9.0.0 or higher
 
-Check your installed versions:
-```bash
-node -v
-npm -v
-```
+- Node.js
+- npm
+- Git
 
 ### Installation
 
-Clone the repository and install dependencies from the `mission-architect` workspace:
+Clone the repository:
 
 ```bash
-git clone https://github.com/Pannaga03/Nasa-space-apps-game.git
+git clone https://github.com/GIGZ-XD/Nasa-space-apps-game.git
+```
+
+Navigate to the application workspace:
+
+```bash
 cd Nasa-space-apps-game/mission-architect
+```
+
+Install dependencies:
+
+```bash
 npm install
 ```
 
-### Running Development Servers
+### Running the Application
 
-You can launch both the backend API and frontend client in parallel:
-
-#### Terminal 1 — Backend API
-```bash
-cd mission-architect
-npm run dev:api
-```
-*The API server will start on [http://localhost:4000](http://localhost:4000).*
-
-#### Terminal 2 — Frontend Web
-```bash
-cd mission-architect
-npm run dev:web
-```
-*The Vite development server will start on [http://localhost:5173](http://localhost:5173).*
-
-> **Tip**: Vite is preconfigured to proxy all `/api` requests directly to `http://localhost:4000`.
-
-### Building for Production
-
-To create an optimized production build of the frontend:
+Start the backend API:
 
 ```bash
-cd mission-architect
-npm run build
+npm run dev --workspace apps/api
 ```
 
-This compiles TypeScript definitions (`tsc -b`) and runs `vite build`, bundling static assets into `mission-architect/apps/web/dist/`.
+Start the frontend in a separate terminal:
+
+```bash
+npm run dev --workspace apps/web
+```
+
+The backend runs on port 4000, while the Vite development server provides the frontend and proxies API requests to the backend.
+
+Configure the required environment variables, including `VITE_API_BASE_URL`, according to your local environment.
+
+## Play Online
+
+Experience Cosmo! directly in your browser:
+
+[Play Cosmo!](https://nasa-space-apps-game-psi.vercel.app/)
+
+## Project Background
+
+Cosmo! was developed as part of the NASA Space Apps Challenge 2026.
+
+We participated in the Bengaluru Local Event on November 14–15, 2026, at Jain School of Sciences, Bengaluru.
+
+### Team
+
+- Pannaga
+- Vineeth
+- Sonakshi
+- Tanishka
+- Sriganesh
+
+## Ongoing Development
+
+Cosmo! is an evolving project. Development continues beyond the event, with ongoing improvements to gameplay, existing systems and new features.
+
+The published version represents one stage of the project's development.
+
+## Acknowledgements
+
+Special thanks to NASA, its partners and the NASA Space Apps Challenge team for providing this platform and opportunity to learn, collaborate and innovate.
+
+Thanks to our teammates for their dedication, ideas and contributions throughout the development process.
+
+## Links
+
+- Play Online: https://nasa-space-apps-game-psi.vercel.app/
+- GitHub Repository: https://github.com/GIGZ-XD/Nasa-space-apps-game
 
 ---
 
-## 📡 API Reference
+Made with curiosity, teamwork and a passion for space exploration.
 
-The backend API runs on port `4000` by default.
-
-### Health Check
-- `GET /health`
-  - Returns `{ "status": "ok" }`.
-
-### Authentication (`/api/auth`)
-- `POST /api/auth/register`
-  - **Body**: `{ "username": "pilot1", "password": "password123", "callsign": "Apollo" }`
-  - Returns user profile, bearer token, and clearance message.
-- `POST /api/auth/login`
-  - **Body**: `{ "username": "pilot1", "password": "password123" }`
-  - Rate-limited to 10 requests per minute.
-  - Returns bearer token and user profile.
-- `GET /api/auth/me`
-  - **Headers**: `Authorization: Bearer <token>`
-  - Returns the currently authenticated user.
-- `POST /api/auth/logout`
-  - **Headers**: `Authorization: Bearer <token>`
-  - Invalidates the active session.
-
-> **Default Seed User**:  
-> Username: `commander` | Password: `spaceapps2026`
-
-### Missions (`/api/missions`)
-- `GET /api/missions`: Returns the complete catalog of 5 space missions.
-- `GET /api/missions/:id`: Returns details and objectives for a specific mission.
-
-### Leaderboard (`/api/leaderboard`)
-- `GET /api/leaderboard?timeframe=all-time`
-  - Supported timeframes: `all-time`, `monthly`, `weekly`.
-  - Returns top ranked commanders, XP, level, and mission completion statistics.
-
----
-
-## ⚙️ Game Mechanics & Engineering Details
-
-### 1. The React ↔ Phaser Integration Contract
-The application uses a clean event-driven interface between React state management and the Phaser visual canvas:
-- `<PhaserGame />` mounts inside any React page (`LaunchPage`, `ResultsPage`, `WorkshopPage`).
-- **One-Way State Flow**: React passes authoritative evaluation results (`missionOutcome="success" | "failure"`) as props or dispatches events via the Phaser Event Bus (`launch:trigger`, `launch:skip`).
-- **Resilience**: If WebGL/Canvas is unsupported or restricted, the React UI degrades gracefully without interrupting gameplay or debriefing screens.
-
-### 2. Line of Sight (LOS) Communications
-A dedicated telemetry calculation algorithm checks whether the spacecraft maintains line of sight with ground tracking networks based on altitude, orbital position, and celestial horizon curvature. Loss of signal triggers warnings on the mission control telemetry dashboard.
-
----
-
-## 👥 Contributing & Team
-
-Developed for the **NASA Space Apps Challenge** by:
-
-- **Pannaga M Davasam** — Lead Integrator & Fullstack Frontend Architect
-- **Sonakshi V Jain** — Phaser 2D Visuals, Animation Specialist & QA
-- **Sriganesh Doddaballapur** — Game Mechanics & Backend Engineering
-- **Vineeth** — Systems Engineering & Integration
-- **GIGZ-XD** — Gameplay & Design
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
-=======
-# Cosmo-naut — Mission Architect
-
-Mission Architect is a space-mission design and simulation game. Plan a mission, assemble a spacecraft, launch it, and review the outcome in a mission-control experience.
-
-The project is organized as an npm workspaces monorepo with a React/TypeScript web app and an Express/TypeScript API. The web app uses Vite for development and Phaser for 2D game visuals.
-
-## Project structure
-
-```text
-mission-architect/
-├── apps/
-│   ├── api/       # Express API
-│   └── web/       # React, Vite, and Phaser client
-├── docs/          # Design notes and integration contracts
-├── packages/      # Shared packages
-└── prisma/        # Database schema and migrations
-```
-
-## Requirements
-
-- Node.js 18 or newer
-- npm
-
-## Getting started
-
-Run commands from the `mission-architect` directory:
-
-```bash
-cd mission-architect
-npm install
-```
-
-Start the API in one terminal:
-
-```bash
-npm run dev:api
-```
-
-Start the web app in another terminal:
-
-```bash
-npm run dev
-```
-
-Vite proxies requests to `/api` to the API at `http://localhost:4000`. The API listens on port `4000` by default; set `PORT` to use a different port.
-
-## Available scripts
-
-Run these from `mission-architect/`:
-
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Start the web app in Vite development mode. |
-| `npm run dev:web` | Start the web app in Vite development mode. |
-| `npm run dev:api` | Start the API with automatic reload. |
-| `npm run build` | Type-check and build the web app for production. |
-| `npm start` | Start the API. |
-
-## Documentation
-
-Project design and integration documents are in [`mission-architect/docs`](mission-architect/docs), including launch/orbit integration and mission-outcome contracts.
-
-## License
-
-See [`LICENSE`](LICENSE) for license details.
->>>>>>> main
+**Welcome aboard, Cosmonaut!**
