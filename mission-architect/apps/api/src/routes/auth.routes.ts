@@ -85,3 +85,25 @@ authRoutes.post("/logout", (req, res, next) => {
     next(err);
   }
 });
+
+// DELETE /api/auth/account
+authRoutes.delete("/account", (req, res, next) => {
+  try {
+    const { password } = req.body || {};
+    const result = authService.deleteAccount(req.headers.authorization, password);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/auth/reset
+authRoutes.post("/reset", (req, res, next) => {
+  try {
+    const { password } = req.body || {};
+    const result = authService.resetAccount(req.headers.authorization, password);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
