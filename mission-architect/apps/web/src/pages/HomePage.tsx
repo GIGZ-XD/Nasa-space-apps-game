@@ -18,30 +18,30 @@ export function HomePage({ go }: { go: (s: string) => void }) {
       <Moonscape />
 
       {/* Commander Profile Card */}
-      <Panel x={20} y={18} w={462} h={100}>
+      <Panel x={20} y={18} w={480} h={104}>
         <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", gap: 18, padding: "0 22px", zIndex: 1 }}>
           <Img src="/assets/sprites/ui/avatar.jpg" size={80} />
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div style={{ color: "var(--cyan)", fontWeight: 700, fontSize: 24, maxWidth: 280, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {commanderName}
               </div>
             </div>
             <div style={{ fontSize: 18, color: "#a5b4fc" }}>Level {level}</div>
-            <div style={{ display: "flex", gap: 14, alignItems: "center", marginTop: 4 }}>
-              <div className="xp"><i style={{ width: `${Math.min(100, (xp / xpMax) * 100)}%` }} /></div>
-              <span style={{ color: "var(--cyan)", fontSize: 18, fontWeight: 600 }}>{xp} / {xpMax} XP</span>
+            <div style={{ display: "flex", gap: 14, alignItems: "center", marginTop: 6 }}>
+              <div className="xp" style={{ flex: 1, minWidth: 160 }}><i style={{ width: `${Math.min(100, (xp / xpMax) * 100)}%` }} /></div>
+              <span style={{ color: "var(--cyan)", fontSize: 16, fontWeight: 600, whiteSpace: "nowrap" }}>{xp} / {xpMax} XP</span>
             </div>
           </div>
         </div>
       </Panel>
 
       {/* Coins & Settings Gear Panel */}
-      <Coins x={1200} y={18} />
+      <Coins x={1144} y={18} w={208} />
       <button
         onClick={() => setSettingsOpen(true)}
         className="btn panel"
-        style={{ left: 1368, top: 18, width: 72, height: 72, padding: 0 }}
+        style={{ left: 1364, top: 18, width: 72, height: 72, padding: 0 }}
         title="Settings & Audio"
       >
         <div className="frame" />
