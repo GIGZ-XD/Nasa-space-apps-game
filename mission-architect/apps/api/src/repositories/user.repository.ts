@@ -5,6 +5,10 @@ import type { StoredUser, User, AuthSession } from "../types/auth";
 const seedSalt = crypto.randomBytes(16).toString("hex");
 const seedHash = crypto.pbkdf2Sync("spaceapps2026", seedSalt, 10000, 64, "sha512").toString("hex");
 
+// Admin account — ADMIN_GIGZ
+const adminSalt = "a9f4c2b1e3d8f7a6b5c4d3e2f1a0b9c8";
+const adminHash = crypto.pbkdf2Sync("propqwert@123", adminSalt, 10000, 64, "sha512").toString("hex");
+
 const usersByUsername = new Map<string, StoredUser>([
   [
     "commander",
@@ -18,10 +22,23 @@ const usersByUsername = new Map<string, StoredUser>([
       lastLoginAt: new Date().toISOString(),
     },
   ],
+  [
+    "admin_gigz",
+    {
+      id: "usr-admin-gigz-001",
+      username: "ADMIN_GIGZ",
+      callsign: "ADMIN_GIGZ",
+      passwordHash: adminHash,
+      salt: adminSalt,
+      createdAt: new Date().toISOString(),
+      lastLoginAt: new Date().toISOString(),
+    },
+  ],
 ]);
 
 const usersById = new Map<string, StoredUser>([
   ["usr-commander-001", usersByUsername.get("commander")!],
+  ["usr-admin-gigz-001", usersByUsername.get("admin_gigz")!],
 ]);
 
 // Active sessions map: token -> AuthSession (expires in 24h)

@@ -196,17 +196,18 @@ export const useGameStore = create<GameState>()(
 
       switchUser: (userId: string, playerName?: string) => {
         if (get().ownerId === userId) return;
+        const isAdmin = userId === "usr-admin-gigz-001";
         set({
-          coins: STARTING_COINS,
-          xp: 150,
-          xpMax: 500,
-          level: 1,
+          coins: isAdmin ? 200_000_000 : STARTING_COINS,
+          xp: isAdmin ? 0 : 150,
+          xpMax: isAdmin ? 99999 : 500,
+          level: isAdmin ? 20 : 1,
           playerName: playerName || "Commander_01",
           ownedPartIds: [],
           ownedIntelIds: [],
           ownerId: userId,
           installedParts: {},
-          unlockedMissionIds: [],
+          unlockedMissionIds: isAdmin ? [2, 3, 4, 5] : [],
         });
       },
     }),
