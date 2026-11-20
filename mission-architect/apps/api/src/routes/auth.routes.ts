@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { authService } from "../services/auth.service";
+import { userRepository } from "../repositories/user.repository";
 
 export const authRoutes = Router();
 
@@ -59,6 +60,17 @@ authRoutes.get("/me", (req, res, next) => {
   try {
     const user = authService.getMe(req.headers.authorization);
     res.json({ user });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PUT /api/auth/progress
+authRoutes.put("/progress", (req, res, next) => {
+  try {
+    const user = authService.getMe(req.headers.authorization);
+    const updated = userRepository.updateProgress(user.id, req.body.progress || req.body);
+    res.json({ success: true, progress: updated?.progress });
   } catch (err) {
     next(err);
   }

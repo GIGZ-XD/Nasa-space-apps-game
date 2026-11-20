@@ -7,13 +7,14 @@ function hashPassword(password: string, salt: string): string {
   return crypto.pbkdf2Sync(password, salt, 10000, 64, "sha512").toString("hex");
 }
 
-function sanitizeUser(stored: { id: string; username: string; callsign?: string; createdAt: string; lastLoginAt?: string }): User {
+function sanitizeUser(stored: { id: string; username: string; callsign?: string; createdAt: string; lastLoginAt?: string; progress?: any }): User {
   return {
     id: stored.id,
     username: stored.username,
     callsign: stored.callsign,
     createdAt: stored.createdAt,
     lastLoginAt: stored.lastLoginAt,
+    progress: stored.progress,
   };
 }
 

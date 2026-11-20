@@ -32,7 +32,7 @@ export function WorkshopPage({
   const installedIds = useGameStore((s) => s.installedParts) || {};
   const setInstalledPart = useGameStore((s) => s.setInstalledPart);
   const toggleInstalledPart = useGameStore((s) => s.toggleInstalledPart);
-  const unlockMission = useGameStore((s) => s.unlockMission);
+  const completeMission = useGameStore((s) => s.completeMission);
   const consumeParts = useGameStore((s) => s.consumeParts);
   const addCoins = useGameStore((s) => s.addCoins);
   const addXp = useGameStore((s) => s.addXp);
@@ -100,7 +100,7 @@ export function WorkshopPage({
     if (result.rewarded) {
       if (result.coinsAwarded > 0) addCoins(result.coinsAwarded);
       if (result.xpAwarded > 0) addXp(result.xpAwarded);
-      if (result.next_level_unlocked) unlockMission(mission.id + 1);
+      if (result.mission_status === "SUCCESS") completeMission(mission.id);
     }
     // Snapshot the chosen parts' pictures for the launch scenes, then the parts are
     // destroyed by the mission (success or failure) and can't be used again.

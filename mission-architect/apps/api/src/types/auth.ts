@@ -4,6 +4,7 @@ export interface User {
   callsign?: string;
   createdAt: string;
   lastLoginAt?: string;
+  progress?: any;
 }
 
 export interface StoredUser extends User {
