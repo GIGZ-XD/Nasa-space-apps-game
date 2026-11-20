@@ -9,7 +9,7 @@
 [![Express](https://img.shields.io/badge/Express-4.19-000000?logo=express&logoColor=white)](https://expressjs.com/)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A518-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 
-# Cosmo!
+# Cosmo! (Cosmo-naut) or (Cosmo-not)
 ### Design. Build. Launch. Explore.
 
 Cosmo! is a browser-based interactive space exploration game developed during the NASA Space Apps Challenge 2026.
