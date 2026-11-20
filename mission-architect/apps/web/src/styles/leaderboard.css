@@ -253,10 +253,19 @@
 .lb-podium-bronze .lb-pod-place { color: rgba(205,127,50,0.5); }
 
 /* ── rankings table ──────────────────────────────── */
-.lb-table-wrap {
+.lb-table-container {
   position: absolute;
-  left: 10px; right: 10px;
-  top: 60px; bottom: 10px;
+  inset: 0;
+  top: 36px;
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px 12px;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.lb-table-wrap {
+  flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
@@ -284,13 +293,15 @@
 
 .lb-row-header {
   border-bottom: 2px solid #163668 !important;
+  padding-top: 4px;
   padding-bottom: 8px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   font-size: 11px;
   font-weight: 800;
   color: #4a6a9a;
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  flex-shrink: 0;
 }
 
 .lb-row-current {

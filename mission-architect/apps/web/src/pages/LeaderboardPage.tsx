@@ -173,25 +173,27 @@ export function LeaderboardPage({ go }: { go: (s: string) => void }) {
           {/* RANKINGS TABLE */}
           <Panel x={788} y={98} w={654} h={620}>
             <div className="lb-section-label">GLOBAL RANKINGS</div>
-            {/* table header */}
-            <div className="lb-row lb-row-header">
-              <span className="lb-rank-num" style={{ opacity: 0.7 }}>RANK</span>
-              <span style={{ width: 36 }} />
-              <span className="lb-row-name" style={{ opacity: 0.7 }}>COMMANDER</span>
-              <span className="lb-row-level" style={{ opacity: 0.7 }}>LVL</span>
-              <span className="lb-row-xp" style={{ opacity: 0.7 }}>
-                {timeframe === "weekly" ? "WEEK XP" : "TOTAL XP"}
-              </span>
-            </div>
-            {/* scrollable rows */}
-            <div className="lb-table-wrap" ref={tableRef}>
-              {data.entries.map((e) => (
-                <RankRow key={e.playerId} entry={
-                  timeframe === "weekly"
-                    ? { ...e, totalXp: e.weeklyXp }  // show weeklyXp in xp column
-                    : e
-                } />
-              ))}
+            <div className="lb-table-container">
+              {/* table header */}
+              <div className="lb-row lb-row-header">
+                <span className="lb-rank-num" style={{ opacity: 0.7 }}>RANK</span>
+                <span style={{ width: 36 }} />
+                <span className="lb-row-name" style={{ opacity: 0.7 }}>COMMANDER</span>
+                <span className="lb-row-level" style={{ opacity: 0.7 }}>LVL</span>
+                <span className="lb-row-xp" style={{ opacity: 0.7 }}>
+                  {timeframe === "weekly" ? "WEEK XP" : "TOTAL XP"}
+                </span>
+              </div>
+              {/* scrollable rows */}
+              <div className="lb-table-wrap" ref={tableRef}>
+                {data.entries.map((e) => (
+                  <RankRow key={e.playerId} entry={
+                    timeframe === "weekly"
+                      ? { ...e, totalXp: e.weeklyXp }  // show weeklyXp in xp column
+                      : e
+                  } />
+                ))}
+              </div>
             </div>
           </Panel>
 
