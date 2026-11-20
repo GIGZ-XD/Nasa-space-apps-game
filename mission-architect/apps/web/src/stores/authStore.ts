@@ -116,7 +116,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         throw new Error(extractErrorMessage(data, 'Login failed. Please check credentials.'));
       }
       saveToken(data.token);
-      useGameStore.getState().switchUser(String(data.user?.id), data.user?.callsign || data.user?.username);
+      useGameStore.getState().switchUser(String(data.user?.id), data.user?.callsign || data.user?.username, data.user?.progress);
       set({
         user: data.user,
         token: data.token,
@@ -144,7 +144,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         throw new Error(extractErrorMessage(data, 'Registration failed. Please try again.'));
       }
       saveToken(data.token);
-      useGameStore.getState().switchUser(String(data.user?.id), data.user?.callsign || data.user?.username);
+      useGameStore.getState().switchUser(String(data.user?.id), data.user?.callsign || data.user?.username, data.user?.progress);
       set({
         user: data.user,
         token: data.token,
@@ -169,7 +169,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
     } catch {}
     clearToken();
-    useGameStore.getState().resetProgress();
+    useGameStore.getState().logoutUser();
     set({
       user: null,
       token: null,
@@ -191,7 +191,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const res = await apiFetch('/auth/me', {}, token);
       if (res.ok) {
         const data = await res.json();
-        useGameStore.getState().switchUser(String(data.user?.id), data.user?.callsign || data.user?.username);
+        useGameStore.getState().switchUser(String(data.user?.id), data.user?.callsign || data.user?.username, data.user?.progress);
         set({ user: data.user, token, isAuthenticated: true, isLoading: false, isInitialized: true });
       } else {
         clearToken();

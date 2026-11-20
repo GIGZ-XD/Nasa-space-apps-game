@@ -25,7 +25,10 @@ export function HomePage({ go }: { go: (s: string) => void }) {
               </div>
               {isAuthenticated ? (
                 <button
-                  onClick={() => logout()}
+                  onClick={async () => {
+                    await logout();
+                    go("login");
+                  }}
                   style={{
                     background: "rgba(220, 38, 38, 0.2)",
                     border: "1px solid rgba(239, 68, 68, 0.5)",

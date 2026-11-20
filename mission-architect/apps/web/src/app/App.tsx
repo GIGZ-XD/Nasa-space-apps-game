@@ -34,7 +34,7 @@ export function App() {
     if (s === "signup" || s === "market") return s;
     return "login";
   });
-  const [missionId, setMissionId] = useState(4);
+  const [missionId, setMissionId] = useState(1);
   const [marketFromWorkshop, setMarketFromWorkshop] = useState(false);
   // True once the spacecraft has finished 2 orbits after launch (reveals the result)
   const [orbitsDone, setOrbitsDone] = useState(false);

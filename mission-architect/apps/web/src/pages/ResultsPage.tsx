@@ -39,7 +39,12 @@ export function ResultsPage({ missionId, go, onRetry }: ResultsPageProps) {
   const missing = evaluationResult ? evaluationResult.missing_equipment : [];
   const threshold = evaluationResult?.success_threshold ?? 60;
   const poor = scores.filter((s) => s.difference > 0 && s.suitability > 0).map((s) => `${s.label} (${s.suitability}/${s.idealSuitability})`);
-  const nextUnlocked = evaluationResult?.next_level_unlocked ?? false;
+  const isMissionUnlocked = useGameStore((s) => s.isMissionUnlocked);
+  const nextMissionId = missionId + 1;
+  const nextMission = MISSIONS.find((m) => m.id === nextMissionId);
+  const nextUnlocked = nextMission
+    ? (isMissionUnlocked ? isMissionUnlocked(nextMissionId) : level >= nextMission.unlockLevel)
+    : false;
 
   return (
     <Screen>
@@ -191,7 +196,7 @@ export function ResultsPage({ missionId, go, onRetry }: ResultsPageProps) {
               <div style={{ color: "#e2e8f0" }}>
                 Orbital telemetry confirmed! The spacecraft configuration met mission constraints with a{" "}
                 <b style={{ color: "#86efac" }}>{los.toFixed(2)}%</b> operational rating. Full recovery
-                and mission science rewards have been transferred to your command account. All spacecraft parts used on this mission were expended and cannot be reused.{missionId < 5 && (nextUnlocked ? " Next mission unlocked!" : "")}
+                and mission science rewards have been transferred to your command account. All spacecraft parts used on this mission were expended and cannot be reused.{missionId < 5 && (nextUnlocked ? ` Next mission unlocked (Level ${level})!` : ` Reach Level ${nextMission?.unlockLevel ?? nextMissionId} to unlock Mission ${nextMissionId}.`)}
               </div>
             ) : (
               <div style={{ color: "#fca5a5" }}>
@@ -441,7 +446,7 @@ export function ResultsPage({ missionId, go, onRetry }: ResultsPageProps) {
               }
             }}
           >
-            {missionId < 5 ? "PROCEED TO NEXT MISSION" : "CAMPAIGN COMPLETED"}
+            {missionId < 5 ? (nextUnlocked ? "PROCEED TO NEXT MISSION" : "MISSION SELECT") : "CAMPAIGN COMPLETED"}
           </Btn>
         ) : (
           <Btn
