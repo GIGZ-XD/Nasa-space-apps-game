@@ -97,4 +97,44 @@ export const authService = {
     }
     return { success: true, message: "Logged out from Space Command successfully." };
   },
+
+  deleteAccount(authHeader: string | undefined, password: string): { success: boolean; message: string } {
+    const user = this.getMe(authHeader);
+    if (!password) {
+      throw new HttpError(400, "VALIDATION_ERROR", "Password is required to delete your account.");
+    }
+    const stored = userRepository.findById(user.id);
+    if (!stored) {
+      throw new HttpError(404, "NOT_FOUND", "User not found.");
+    }
+    const inputHash = hashPassword(password, stored.salt);
+    const isMatch = crypto.timingSafeEqual(Buffer.from(inputHash), Buffer.from(stored.passwordHash));
+    if (!isMatch) {
+      throw new HttpError(401, "INVALID_CREDENTIALS", "Incorrect password. Account deletion aborted.");
+    }
+    // Prevent deleting seed admin account
+    if (stored.username.trim().toLowerCase() === "admin_gigz") {
+      throw new HttpError(403, "FORBIDDEN", "Admin accounts cannot be deleted.");
+    }
+    userRepository.deleteUser(user.id);
+    return { success: true, message: "Your Space Command account has been permanently deleted." };
+  },
+
+  resetAccount(authHeader: string | undefined, password: string): { success: boolean; message: string; progress: any } {
+    const user = this.getMe(authHeader);
+    if (!password) {
+      throw new HttpError(400, "VALIDATION_ERROR", "Password is required to reset your account.");
+    }
+    const stored = userRepository.findById(user.id);
+    if (!stored) {
+      throw new HttpError(404, "NOT_FOUND", "User not found.");
+    }
+    const inputHash = hashPassword(password, stored.salt);
+    const isMatch = crypto.timingSafeEqual(Buffer.from(inputHash), Buffer.from(stored.passwordHash));
+    if (!isMatch) {
+      throw new HttpError(401, "INVALID_CREDENTIALS", "Incorrect password. Account reset aborted.");
+    }
+    const updated = userRepository.resetProgress(user.id);
+    return { success: true, message: "Account progress has been reset to default.", progress: updated?.progress };
+  },
 };

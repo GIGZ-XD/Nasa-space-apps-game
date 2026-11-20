@@ -182,4 +182,35 @@ export const userRepository = {
   count(): number {
     return usersByUsername.size;
   },
+
+  deleteUser(userId: string): boolean {
+    const user = usersById.get(userId);
+    if (!user) return false;
+    usersById.delete(userId);
+    usersByUsername.delete(user.username.trim().toLowerCase());
+    // Revoke all sessions for this user
+    for (const [token, session] of activeSessions.entries()) {
+      if (session.userId === userId) activeSessions.delete(token);
+    }
+    saveToDisk();
+    return true;
+  },
+
+  resetProgress(userId: string): StoredUser | undefined {
+    const user = usersById.get(userId);
+    if (!user) return undefined;
+    user.progress = {
+      coins: 5_000_000,
+      xp: 150,
+      xpMax: 500,
+      level: 1,
+      ownedPartIds: [],
+      ownedIntelIds: [],
+      installedParts: {},
+      unlockedMissionIds: [1],
+      completedMissionIds: [],
+    };
+    saveToDisk();
+    return user;
+  },
 };
