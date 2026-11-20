@@ -36,21 +36,19 @@ export function HomePage({ go }: { go: (s: string) => void }) {
         </div>
       </Panel>
 
-      {/* Coins + Settings Gear */}
-      <div className="abs" style={{ right: 0, top: 0, display: "flex", alignItems: "center", gap: 8, zIndex: 5 }}>
-        <Coins />
-        <button
-          onClick={() => setSettingsOpen(true)}
-          className="abs"
-          style={{
-            left: 1434, top: 30, width: 50, height: 50,
-            background: "none", border: "none", cursor: "pointer", padding: 0, zIndex: 6,
-          }}
-          title="Settings"
-        >
-          <Img src="/assets/sprites/ui/gear.jpg" size={46} />
-        </button>
-      </div>
+      {/* Coins & Settings Gear Panel */}
+      <Coins x={1200} y={18} />
+      <button
+        onClick={() => setSettingsOpen(true)}
+        className="btn panel"
+        style={{ left: 1368, top: 18, width: 72, height: 72, padding: 0 }}
+        title="Settings & Audio"
+      >
+        <div className="frame" />
+        <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1 }}>
+          <Img src="/assets/sprites/ui/gear.jpg" size={44} />
+        </span>
+      </button>
 
       <Btn x={14} y={302} w={264} h={72} icon={<Img src="/assets/sprites/ui/trophy.jpg" size={50} />} onClick={() => go("leaderboard")}>Leaderboard</Btn>
       <Btn x={14} y={388} w={264} h={72} icon={<Img src="/assets/sprites/ui/book.jpg" size={50} />} onClick={() => go("tutorial")}>Tutorial</Btn>
@@ -61,7 +59,6 @@ export function HomePage({ go }: { go: (s: string) => void }) {
         </div>
       </Panel>
       <Btn x={12} y={724} w={290} h={82} icon={<Img src="/assets/sprites/ui/rocket.jpg" size={56} />} onClick={() => go("select")}>Missions</Btn>
-      <Btn x={1222} y={634} w={222} h={78} icon={<Img src="/assets/sprites/ui/gear.jpg" size={46} />} chevron={false} onClick={() => go("inventory")}>Inventory</Btn>
       <Btn x={1222} y={724} w={222} h={82} icon={<Img src="/assets/sprites/ui/market.jpg" size={50} />} chevron={false} onClick={() => go("market")}>Market</Btn>
 
       {/* Settings Modal */}
