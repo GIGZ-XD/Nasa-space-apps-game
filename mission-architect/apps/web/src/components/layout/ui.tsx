@@ -60,13 +60,13 @@ export function Btn({ x, y, w, h, icon, children, onClick, gold, chevron = true 
   );
 }
 
-export function Coins({ x = 1196, y = 18 }: { x?: number; y?: number }) {
+export function Coins({ x = 1146, y = 18, w = 206 }: { x?: number; y?: number; w?: number }) {
   const coins = useGameStore((s) => s.coins);
   return (
-    <Panel x={x} y={y} w={156} h={72}>
-      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", gap: 10, padding: "0 16px", zIndex: 1 }}>
+    <Panel x={x} y={y} w={w} h={72}>
+      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 12, padding: "0 18px", zIndex: 1 }}>
         <Img src="/assets/sprites/ui/coin.jpg" size={40} />
-        <b style={{ fontSize: 24, letterSpacing: 0.5 }}>{formatCoins(coins)}</b>
+        <b style={{ fontSize: 24, letterSpacing: 0.5, whiteSpace: "nowrap" }}>{formatCoins(coins)}</b>
       </div>
     </Panel>
   );
