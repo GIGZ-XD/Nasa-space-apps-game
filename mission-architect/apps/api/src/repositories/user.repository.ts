@@ -175,6 +175,10 @@ export const userRepository = {
     return activeSessions.delete(token);
   },
 
+  getAllUsers(): StoredUser[] {
+    return Array.from(usersById.values());
+  },
+
   count(): number {
     return usersByUsername.size;
   },

@@ -1,132 +1,63 @@
-import { PLAYER } from "./missions";
 import { LeaderboardEntry, LeaderboardTimeframe, LeaderboardResponse } from "../types/leaderboard";
 
 /**
- * Seed Space Commanders Dataset
- * Realistic NASA-themed commanders with progression levels and XP records.
+ * Helper to assign title based on level
  */
-export const SEED_COMMANDERS: LeaderboardEntry[] = [
-  {
-    playerId: "cmd-001",
-    username: "AstroValkyrie",
-    avatar: "/assets/sprites/spacecraft/card-1.jpg",
-    level: 12,
-    totalXp: 5420,
-    weeklyXp: 1280,
-    title: "Chief Flight Director",
-    missionsCompleted: 18,
-  },
-  {
-    playerId: "cmd-002",
-    username: "NovaExplorer",
-    avatar: "/assets/sprites/spacecraft/card-2.jpg",
-    level: 11,
-    totalXp: 4890,
-    weeklyXp: 940,
-    title: "Deep Space Navigator",
-    missionsCompleted: 15,
-  },
-  {
-    playerId: "cmd-003",
-    username: "CosmicPioneer",
-    avatar: "/assets/sprites/spacecraft/card-3.jpg",
-    level: 10,
-    totalXp: 4210,
-    weeklyXp: 1120,
-    title: "Orbital Specialist",
-    missionsCompleted: 14,
-  },
-  {
-    playerId: "cmd-004",
-    username: "SpaceRanger_X",
-    avatar: "/assets/sprites/ui/rover.jpg",
-    level: 8,
-    totalXp: 3200,
-    weeklyXp: 750,
-    title: "Surface Explorer",
-    missionsCompleted: 10,
-  },
-  {
-    playerId: "cmd-005",
-    username: "AstroKing",
-    avatar: "/assets/sprites/spacecraft/card-4.jpg",
-    level: 7,
-    totalXp: 2900,
-    weeklyXp: 620,
-    title: "Propulsion Engineer",
-    missionsCompleted: 9,
-  },
-  {
-    playerId: "cmd-006",
-    username: "StarWalker_99",
-    avatar: "/assets/sprites/spacecraft/card-5.jpg",
-    level: 5,
-    totalXp: 1250,
-    weeklyXp: 380,
-    title: "Astrodynamics Pilot",
-    missionsCompleted: 5,
-  },
-  {
-    playerId: "cmd-007",
-    username: "LunarOrbit_X",
-    avatar: "/assets/sprites/planets/earth.jpg",
-    level: 4,
-    totalXp: 980,
-    weeklyXp: 290,
-    title: "Lunar Surveyor",
-    missionsCompleted: 3,
-  },
-  {
-    playerId: "cmd-008",
-    username: "MarsSurveyor",
-    avatar: "/assets/sprites/planets/mars.jpg",
-    level: 3,
-    totalXp: 640,
-    weeklyXp: 140,
-    title: "Atmospheric Analyst",
-    missionsCompleted: 2,
-  },
-  {
-    playerId: "cmd-009",
-    username: "OrionCadet",
-    avatar: "/assets/sprites/ui/rocket.jpg",
-    level: 2,
-    totalXp: 320,
-    weeklyXp: 90,
-    title: "Flight Apprentice",
-    missionsCompleted: 1,
-  },
-  {
-    playerId: "cmd-player",
-    username: PLAYER.name,
-    avatar: "/assets/sprites/ui/avatar.jpg",
-    level: PLAYER.level,
-    totalXp: PLAYER.xp,
-    weeklyXp: PLAYER.xp,
-    title: "Mission Commander",
-    missionsCompleted: 1,
-    isCurrentPlayer: true,
-  },
-  {
-    playerId: "cmd-010",
-    username: "Voyager_07",
-    avatar: "/assets/sprites/ui/gear.jpg",
-    level: 1,
-    totalXp: 100,
-    weeklyXp: 50,
-    title: "Junior Astronaut",
-    missionsCompleted: 0,
-  },
-];
+export function getCommanderTitle(level: number): string {
+  if (level >= 20) return "Fleet Admiral";
+  if (level >= 15) return "Chief Flight Director";
+  if (level >= 10) return "Deep Space Commander";
+  if (level >= 7) return "Orbital Specialist";
+  if (level >= 5) return "Flight Officer";
+  if (level >= 3) return "Space Explorer";
+  if (level >= 2) return "Cadet Pilot";
+  return "Junior Astronaut";
+}
 
 /**
  * Computes deterministic sorted rankings with tie-breaking and rank assigning
+ * from the actual list of real registered users / commanders.
  */
-export function getLeaderboardData(timeframe: LeaderboardTimeframe = "all-time"): LeaderboardResponse {
+export function buildLeaderboardResponse(
+  users: Array<{
+    id: string;
+    username: string;
+    callsign?: string;
+    progress?: {
+      xp?: number;
+      level?: number;
+      completedMissionIds?: number[];
+    };
+  }>,
+  currentUserId?: string | null,
+  timeframe: LeaderboardTimeframe = "all-time"
+): LeaderboardResponse {
+  const entriesRaw: LeaderboardEntry[] = users.map((u) => {
+    const level = u.progress?.level ?? 1;
+    const totalXp = u.progress?.xp ?? 0;
+    const weeklyXp = totalXp; // Total XP earned
+    const missionsCompleted = Array.isArray(u.progress?.completedMissionIds)
+      ? u.progress.completedMissionIds.length
+      : 0;
+    const isCurrentPlayer = Boolean(currentUserId && (u.id === currentUserId || u.username === currentUserId));
+
+    return {
+      playerId: u.id,
+      username: u.callsign || u.username,
+      avatar: "/assets/sprites/ui/avatar.jpg",
+      level,
+      totalXp,
+      weeklyXp,
+      title: getCommanderTitle(level),
+      missionsCompleted,
+      isCurrentPlayer,
+    };
+  });
+
   const xpKey = timeframe === "weekly" ? "weeklyXp" : "totalXp";
 
-  // Sort by selected XP descending, then level descending, then username ascending
-  const sorted = [...SEED_COMMANDERS].sort((a, b) => {
+  // Sort by XP descending, then level descending, then username ascending
+  const sorted = entriesRaw.sort((a, b) => {
     const xpDiff = b[xpKey] - a[xpKey];
     if (xpDiff !== 0) return xpDiff;
     const levelDiff = b.level - a.level;
@@ -134,7 +65,7 @@ export function getLeaderboardData(timeframe: LeaderboardTimeframe = "all-time")
     return a.username.localeCompare(b.username);
   });
 
-  // Assign deterministic ranks and podium badges
+  // Assign ranks and badges
   const entries: LeaderboardEntry[] = sorted.map((entry, index) => {
     const rank = index + 1;
     let badge: "gold" | "silver" | "bronze" | null = null;
@@ -149,15 +80,15 @@ export function getLeaderboardData(timeframe: LeaderboardTimeframe = "all-time")
     };
   });
 
-  const currentPlayer = entries.find((e) => e.isCurrentPlayer) || {
-    playerId: "cmd-player",
-    username: PLAYER.name,
+  const currentPlayer = entries.find((e) => e.isCurrentPlayer) || entries[0] || {
+    playerId: "guest",
+    username: "Commander",
     avatar: "/assets/sprites/ui/avatar.jpg",
-    level: PLAYER.level,
-    totalXp: PLAYER.xp,
-    weeklyXp: PLAYER.xp,
-    title: "Mission Commander",
-    rank: entries.length,
+    level: 1,
+    totalXp: 0,
+    weeklyXp: 0,
+    title: "Junior Astronaut",
+    rank: 1,
     isCurrentPlayer: true,
   };
 
@@ -166,6 +97,11 @@ export function getLeaderboardData(timeframe: LeaderboardTimeframe = "all-time")
     updatedAt: new Date().toISOString(),
     entries,
     currentPlayer,
-    currentPlayerRank: currentPlayer.rank ?? entries.length,
+    currentPlayerRank: currentPlayer.rank ?? 1,
   };
+}
+
+/** Legacy fallback if needed */
+export function getLeaderboardData(timeframe: LeaderboardTimeframe = "all-time"): LeaderboardResponse {
+  return buildLeaderboardResponse([], null, timeframe);
 }

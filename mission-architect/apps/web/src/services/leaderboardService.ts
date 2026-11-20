@@ -1,5 +1,6 @@
 import { LeaderboardResponse, LeaderboardTimeframe } from "../types/leaderboard";
-import { getLeaderboardData } from "../data/leaderboardData";
+import { buildLeaderboardResponse } from "../data/leaderboardData";
+import { useGameStore } from "../stores/gameStore";
 import { API_BASE } from "./apiClient";
 
 /**
@@ -11,9 +12,13 @@ export const leaderboardService = {
    * Fetches leaderboard data for the specified timeframe
    */
   async getLeaderboard(timeframe: LeaderboardTimeframe = "all-time"): Promise<LeaderboardResponse> {
+    const token = localStorage.getItem("ma_auth_token");
+    const headers: Record<string, string> = { Accept: "application/json" };
+    if (token) headers.Authorization = `Bearer ${token}`;
+
     try {
       const response = await fetch(`${API_BASE}/leaderboard?timeframe=${timeframe}`, {
-        headers: { Accept: "application/json" },
+        headers,
       });
 
       if (response.ok) {
@@ -23,10 +28,20 @@ export const leaderboardService = {
         }
       }
     } catch {
-      // Gracefully fall back to local seed data if backend is offline
+      // Gracefully fall back if backend is offline
     }
 
-    // Return deterministic mock/local data
-    return getLeaderboardData(timeframe);
+    // Build fallback leaderboard from current active player session
+    const current = useGameStore.getState();
+    const fallbackUser = {
+      id: current.ownerId || "current-player",
+      username: current.playerName || "Commander",
+      progress: {
+        xp: current.xp,
+        level: current.level,
+        completedMissionIds: current.completedMissionIds,
+      },
+    };
+    return buildLeaderboardResponse([fallbackUser], fallbackUser.id, timeframe);
   },
 };
